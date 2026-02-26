@@ -1,0 +1,576 @@
+/* album-card.css */
+
+.album-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s, transform 0.3s;
+  cursor: pointer;
+}
+
+.album-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.album-card__image {
+  width: 100%;
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.album-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.album-card__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e1bee7 0%, #ba68c8 100%);
+}
+
+.album-card__placeholder span {
+  font-size: 64px;
+  opacity: 0.8;
+}
+
+.album-card__content {
+  padding: 16px;
+}
+
+.album-card__tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #8b5cf6;
+  color: #fff;
+  font-size: 12px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.album-card__title {
+  margin: 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+}
+
+.album-card__description {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+/* album-element.css */
+
+.album-element {
+  width: 100%;
+}
+
+.album-container {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ── 標題列 ── */
+.album-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.album-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.photo-count {
+  font-size: 14px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.photo-count::before {
+  content: '📷';
+}
+
+/* ── 照片網格 ── */
+.album-grid {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+}
+
+.album-grid.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.album-grid.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.album-grid.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* ── 照片格子 ── */
+.photo-item {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #f3f4f6;
+  transition: transform 0.3s ease;
+  display: block;        /* <a> 標籤也適用 */
+  text-decoration: none;
+}
+
+.photo-item:hover {
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.photo-item:hover .photo-overlay {
+  opacity: 1;
+}
+
+.photo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.overlay-icon {
+  font-size: 32px;
+  color: #ffffff;
+}
+
+/* ── 更多格子 ── */
+.more-item {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.more-item:hover .more-icon {
+  transform: scale(1.1);
+}
+
+.more-content {
+  text-align: center;
+  color: #ffffff;
+}
+
+.more-icon {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  transition: transform 0.3s ease;
+}
+
+.more-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ── 底部按鈕 ── */
+.album-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.view-all-btn:hover {
+  background: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+.arrow-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.view-all-btn:hover .arrow-icon {
+  transform: translateX(4px);
+}
+
+/* ── RWD ── */
+@media (max-width: 768px) {
+  .album-grid.grid-cols-3,
+  .album-grid.grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .album-header {
+    padding: 16px;
+  }
+
+  .album-title {
+    font-size: 18px;
+  }
+
+  .photo-count {
+    font-size: 13px;
+  }
+}
+/* button-element.css */
+
+.button-element {
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.element-button {
+  display: inline-block;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.element-button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.element-button:active {
+  transform: translateY(0);
+}
+/* carousel-element.css */
+
+.carousel-element {
+  width: 100%;
+  height: auto;
+}
+
+.carousel-container {
+  width: 100%;
+  position: relative;
+  background: #f5f5f5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.carousel-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #e0e0e0;
+  /* height 由 inline style 控制 */
+}
+
+.carousel-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s ease;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── 控制按鈕 ── */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+}
+
+.carousel-btn svg {
+  width: 20px;
+  height: 20px;
+  color: #333;
+}
+
+.carousel-btn:hover {
+  background: #fff;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.prev-btn { left: 16px; }
+.next-btn { right: 16px; }
+
+/* ── 指示器 ── */
+.carousel-indicators {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease, width 0.3s ease, border-radius 0.3s ease;
+  padding: 0;
+}
+
+.indicator.active {
+  background: #fff;
+  width: 24px;
+  border-radius: 5px;
+}
+
+.indicator:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* ── RWD ── */
+@media (max-width: 768px) {
+  .carousel-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .carousel-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .prev-btn { left: 8px; }
+  .next-btn { right: 8px; }
+
+  .carousel-indicators { bottom: 12px; }
+
+  .indicator { width: 8px; height: 8px; }
+  .indicator.active { width: 20px; }
+}
+/* event-card.css */
+
+.event-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s, transform 0.3s;
+  cursor: pointer;
+}
+
+.event-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.event-card__image {
+  width: 100%;
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.event-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.event-card__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e9d5ff 0%, #a855f7 100%);
+}
+
+.event-card__placeholder span {
+  font-size: 64px;
+  opacity: 0.8;
+}
+
+.event-card__content {
+  padding: 16px;
+}
+
+.event-card__tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #a855f7;
+  color: #fff;
+  font-size: 12px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.event-card__title {
+  margin: 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+}
+
+.event-card__description {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+/* hero-banner.css */
+
+.hero-banner {
+  width: 100%;
+  position: relative;
+}
+
+/* 預覽模式（對外網站永遠是預覽模式）*/
+.hero-banner.preview-mode {
+  cursor: default;
+}
+
+.hero-container {
+  position: relative;
+  width: 100%;
+  min-height: 600px;       /* inline style 會覆蓋此值 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+/* 半透明遮罩 */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  /* background-color 和 opacity 由 inline style 控制 */
+}
+
+/* 文字內容區 */
+.hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1400px;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-text-box {
+  background: transparent;
+  padding: 60px 80px;
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+  /* border-radius 由 inline style 控制 */
+}
+
+.hero-title {
+  font-weight: 700;
+  margin: 0 0 20px;
+  line-height: 1.2;
+  /* color 和 font-size 由 inline style 控制 */
+}
+
+.hero-subtitle {
+  margin: 0;
+  line-height: 1.6;
+  /* color 和 font-size 由 inline style 控制 */
+}
+
+/* ── RWD ── */
+@media (max-width: 1024px) {
+  .hero-text-box  { padding: 50px 60px; max-width: 700px; }
+  .hero-title     { font-size: 40px !important; }
+  .hero-subtitle  { font-size: 18px !important; }
+}
+
+@media (max-width: 768px) {
+  .hero-container { min-height: 500px; }
+  .hero-content   { padding: 0 20px; }
+  .hero-text-box  { padding: 40px 30px; }
+  .hero-title     { font-size: 32px !important; margin-bottom: 16px; }
+  .hero-subtitle  { font-size: 16px !important; }
+}
+
+@media (max-width: 480px) {
+  .hero-container { min-height: 400px; }
+  .hero-text-box  { padding: 30px 20px; }
+  .hero-title     { font-size: 24px !important; margin-bottom: 12px; }
+  .hero-subtitle  { font-size: 14px !important; }
+}
