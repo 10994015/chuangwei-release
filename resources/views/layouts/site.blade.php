@@ -35,7 +35,7 @@
   @endif
 
   {{-- ==================== CSS ==================== --}}
-  <link rel="stylesheet" href="{{ asset('css/app.css') }}" />
+  @vite(['resources/css/app.css', 'resources/css/components.css',  'resources/js/app.js'])
 
   {{-- ==================== Meta Pixel ==================== --}}
   @if(!empty($settings['metaPixel']))
@@ -65,10 +65,9 @@
   @yield('content')
 
   {{-- ==================== JS ==================== --}}
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="{{ asset('js/carousel-element.js') }}"></script>
-
   {{-- 其他元件 JS 陸續補在這裡 --}}
   @stack('scripts')
-
 </body>
 </html>

@@ -1,56 +1,104 @@
-{{-- resources/views/frames/system/first_picture.blade.php --}}
+{{-- resources/views/elements/first_picture.blade.php --}}
 @php
-  $fd = $frame['data'] ?? [];
+    $data = $frame['data'] ?? [];
 
-  $PLACEHOLDER_BG = 'https://images.unsplash.com/photo-1548013146-72479768bada?w=1280&h=600&fit=crop';
+    $placeholderBg = 'https://images.unsplash.com/photo-1548013146-72479768bada?w=1280&h=600&fit=crop';
 
-  // 工具函數：優先 camelCase，fallback 到 snake_case，再 fallback 預設值
-  $get = fn($camel, $snake, $default) =>
-      $fd[$camel] ?? $fd[$snake] ?? $default;
+    $bgImg         = $data['heroBgImgSrc']        ?? $data['hero_bg_img_src']        ?? $placeholderBg;
+    $heroTitle     = $data['heroTitle']            ?? $data['hero_title']             ?? '';
+    $heroSubtitle  = $data['heroSubtitle']         ?? $data['hero_subtitle']          ?? '';
 
-  $bgSrc          = $fd['heroBgImgSrc']   ?? $fd['hero_bg_img_src']   ?? null;
-  $backgroundImage = $bgSrc ?: $PLACEHOLDER_BG;
+    $heroHeight    = $data['heroHeight']           ?? $data['hero_height']            ?? '600px';
+    $overlayColor  = $data['overlayColor']         ?? $data['overlay_color']          ?? '#000000';
+    $overlayOpacity= isset($data['overlayOpacity'])
+        ? ($data['overlayOpacity'] / 100)
+        : (isset($data['overlay_opacity']) ? ($data['overlay_opacity'] / 100) : 0.4);
 
-  $heroTitle      = $fd['heroTitle']      ?? $fd['hero_title']      ?? '';
-  $heroSubtitle   = $fd['heroSubtitle']   ?? $fd['hero_subtitle']   ?? '';
-  $heroHeight     = $get('heroHeight',    'hero_height',            '600px');
+    $borderRadius  = $data['textBoxBorderRadius']  ?? $data['text_box_border_radius'] ?? '12px';
+    $titleColor    = $data['titleColor']           ?? $data['title_color']            ?? '#ffffff';
+    $titleSize     = $data['titleFontSize']        ?? $data['title_font_size']        ?? '48px';
+    $subtitleColor = $data['subtitleColor']        ?? $data['subtitle_color']         ?? '#eeeeee';
+    $subtitleSize  = $data['subtitleFontSize']     ?? $data['subtitle_font_size']     ?? '20px';
 
-  $overlayOpacityRaw = $fd['overlayOpacity'] ?? $fd['overlay_opacity'] ?? 40;
-  $overlayOpacity    = round($overlayOpacityRaw / 100, 2);  // 0~1
-  $overlayColor      = $get('overlayColor',   'overlay_color',   '#000000');
-
-  $textBoxBorderRadius = $get('textBoxBorderRadius', 'text_box_border_radius', '12px');
-
-  $titleColor      = $get('titleColor',    'title_color',    '#ffffff');
-  $titleFontSize   = $get('titleFontSize', 'title_font_size','48px');
-  $subtitleColor   = $get('subtitleColor', 'subtitle_color', '#eeeeee');
-  $subtitleFontSize= $get('subtitleFontSize','subtitle_font_size','20px');
-
-  // inline style 字串
-  $heroStyle    = "min-height:{$heroHeight}; background-image:url('{$backgroundImage}');";
-  $overlayStyle = "background-color:{$overlayColor}; opacity:{$overlayOpacity};";
-  $textBoxStyle = "border-radius:{$textBoxBorderRadius};";
-  $titleStyle   = "color:{$titleColor}; font-size:{$titleFontSize};";
-  $subtitleStyle= "color:{$subtitleColor}; font-size:{$subtitleFontSize};";
+    // 確保高度有單位
+    if (is_numeric($heroHeight)) {
+        $heroHeight = $heroHeight . 'px';
+    }
+    if (is_numeric($borderRadius)) {
+        $borderRadius = $borderRadius . 'px';
+    }
+    if (is_numeric($titleSize)) {
+        $titleSize = $titleSize . 'px';
+    }
+    if (is_numeric($subtitleSize)) {
+        $subtitleSize = $subtitleSize . 'px';
+    }
 @endphp
 
-<div class="hero-banner preview-mode">
-  <div class="hero-container" style="{{ $heroStyle }}">
+<section
+    class="first-picture"
+    style="
+        min-height: {{ $heroHeight }};
+        background-image: url('{{ $bgImg }}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    "
+>
+    {{-- 遮罩層 --}}
+    <div style="
+        position: absolute;
+        inset: 0;
+        background-color: {{ $overlayColor }};
+        opacity: {{ $overlayOpacity }};
+        pointer-events: none;
+        z-index: 1;
+    "></div>
 
-    {{-- 半透明遮罩層 --}}
-    <div class="hero-overlay" style="{{ $overlayStyle }}"></div>
+    {{-- 文字內容 --}}
+    <div style="
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 1400px;
+        padding: 0 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    ">
+        <div style="
+            padding: 60px 80px;
+            border-radius: {{ $borderRadius }};
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        ">
+            @if($heroTitle)
+                <h1 style="
+                    font-size: {{ $titleSize }};
+                    color: {{ $titleColor }};
+                    font-weight: 700;
+                    margin: 0 0 20px;
+                    line-height: 1.2;
+                ">
+                    {{ $heroTitle }}
+                </h1>
+            @endif
 
-    {{-- 文字內容區 --}}
-    <div class="hero-content">
-      <div class="hero-text-box" style="{{ $textBoxStyle }}">
-        @if($heroTitle)
-          <h1 class="hero-title" style="{{ $titleStyle }}">{{ $heroTitle }}</h1>
-        @endif
-        @if($heroSubtitle)
-          <p class="hero-subtitle" style="{{ $subtitleStyle }}">{{ $heroSubtitle }}</p>
-        @endif
-      </div>
+            @if($heroSubtitle)
+                <p style="
+                    font-size: {{ $subtitleSize }};
+                    color: {{ $subtitleColor }};
+                    margin: 0;
+                    line-height: 1.6;
+                ">
+                    {{ $heroSubtitle }}
+                </p>
+            @endif
+        </div>
     </div>
-
-  </div>
-</div>
+</section>

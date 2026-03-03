@@ -34,22 +34,18 @@ class PageController extends Controller
      */
     private function getPageContent(string $templeId, string $slug, string $locale): ?array
     {
-        $cacheKey = "page:{$templeId}:{$slug}:{$locale}";
+        $response = Http::get(
+            config('api.base_url') . "/api/web-site/page/{$slug}",
+            ['tenantId' => $templeId, 'locale' => $locale]
+        );
 
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($templeId, $slug, $locale) {
-            $response = Http::get(
-                config('api.base_url') . "/api/tenant/{$templeId}/web-site/draft-page/{$slug}",
-                ['locale' => $locale]
-            );
+        if ($response->failed()) return null;
 
-            if ($response->failed()) return null;
+        $result = $response->json();
 
-            $result = $response->json();
-
-            return ($result['statusCode'] === 200 && isset($result['data']))
-                ? $result['data']
-                : null;
-        });
+        return ($result['statusCode'] === 200 && isset($result['data']))
+            ? $result['data']
+            : null;
     }
 
     /**
