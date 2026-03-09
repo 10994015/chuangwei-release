@@ -3,22 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PageController extends Controller
 {
-    /**
-     * 從設定檔解析 templeId（正式環境留空，由 API 從 hostname 判斷）
-     */
-    private function resolveTempleId(): string
-    {
-        return config('api.tenant_id', '');
-    }
-
-    /**
-     * 取得網站設定
-     * GET /api/web-site/
-     */
-    private function getWebsiteSettings(string $templeId): array
+    private function getWebsiteSettings(string $templeId = ''): array
     {
         $params   = $templeId ? ['tenantId' => $templeId] : [];
         $response = Http::get(config('api.base_url') . "/api/web-site/", $params);
@@ -32,19 +21,20 @@ class PageController extends Controller
             : [];
     }
 
-    /**
-     * 取得頁面內容
-     * GET /api/web-site/page/{slug}
-     */
-    private function getPageContent(string $templeId, string $slug, string $locale): ?array
+    private function getPageContent(string $templeId = '', string $slug = 'home', string $locale = 'ZH-TW'): ?array
     {
         $params = ['locale' => $locale];
         if ($templeId) $params['tenantId'] = $templeId;
 
-        $response = Http::get(
-            config('api.base_url') . "/api/web-site/page/{$slug}",
-            $params
-        );
+        $url      = config('api.base_url') . "/api/web-site/page/{$slug}";
+        $response = Http::get($url, $params);
+
+        Log::debug('getPageContent', [
+            'url'        => $url,
+            'params'     => $params,
+            'status'     => $response->status(),
+            'body'       => $response->body(),
+        ]);
 
         if ($response->failed()) return null;
 
@@ -55,9 +45,6 @@ class PageController extends Controller
             : null;
     }
 
-    /**
-     * 共用渲染邏輯
-     */
     private function renderPage(string $templeId, string $slug): \Illuminate\View\View
     {
         $locale   = request()->query('locale', 'ZH-TW');
@@ -96,26 +83,16 @@ class PageController extends Controller
         return view('page', compact('basemaps', 'settings', 'templeId', 'slug', 'footerData'));
     }
 
-    /**
-     * 正式路由：GET /{slug}
-     * templeId 由 config/env 或 hostname 決定
-     */
     public function show(string $slug = 'home')
     {
-        return $this->renderPage($this->resolveTempleId(), $slug);
+        return $this->renderPage('', $slug);
     }
 
-    /**
-     * 開發路由：GET /site/{templeId}/{slug?}
-     */
     public function showWithTempleId(string $templeId, string $slug = 'home')
     {
         return $this->renderPage($templeId, $slug);
     }
 
-    /**
-     * 清除快取（發布時呼叫）
-     */
     public function clearCache(string $templeId)
     {
         return response()->json(['ok' => true]);
