@@ -10,5 +10,5 @@ return [
     | 例如：https://angkeinfo.com
     */
     'base_url' => env('API_BASE_URL', ''),
-
+    'base_domain' => env('API_BASE_DOMAIN', 'angkeinfo.com'),
 ];
