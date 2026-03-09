@@ -486,93 +486,139 @@
   line-height: 1.5;
 }
 /* hero-banner.css */
+/* resources/css/components/hero.css */
 
-.hero-banner {
-  width: 100%;
-  position: relative;
+.hero {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
 }
 
-/* 預覽模式（對外網站永遠是預覽模式）*/
-.hero-banner.preview-mode {
-  cursor: default;
+.hero .hero-swiper {
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
-.hero-container {
-  position: relative;
-  width: 100%;
-  min-height: 600px;       /* inline style 會覆蓋此值 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  overflow: hidden;
+.hero .swiper-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
-/* 半透明遮罩 */
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  /* background-color 和 opacity 由 inline style 控制 */
+.hero .swiper-slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
 }
 
-/* 文字內容區 */
-.hero-content {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 1200px;
-  padding: 0 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.hero .swiper-slide.active {
+    opacity: 1;
+    z-index: 1;
 }
 
-.hero-text-box {
-  background: transparent;
-  padding: 60px 80px;
-  text-align: center;
-  max-width: 800px;
-  width: 100%;
-  /* border-radius 由 inline style 控制 */
+.hero .slide-image {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
-.hero-title {
-  font-weight: 700;
-  margin: 0 0 20px;
-  line-height: 1.2;
-  /* color 和 font-size 由 inline style 控制 */
+/* 每張 slide 獨立遮罩（opacity 由 Alpine inline style 控制）*/
+.hero .slide-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
 }
 
-.hero-subtitle {
-  margin: 0;
-  line-height: 1.6;
-  /* color 和 font-size 由 inline style 控制 */
+/* 每張 slide 獨立文字（顏色/大小由 Alpine inline style 控制）*/
+.hero .slide-text-content {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 60px;
+    pointer-events: none;
 }
 
-/* ── RWD ── */
-@media (max-width: 1024px) {
-  .hero-text-box  { padding: 50px 60px; max-width: 700px; }
-  .hero-title     { font-size: 40px !important; }
-  .hero-subtitle  { font-size: 18px !important; }
+.hero .slide-title {
+    margin: 0 0 16px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 }
 
+.hero .slide-subtitle {
+    margin: 0;
+    line-height: 1.6;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+    max-width: 720px;
+}
+
+/* ==================== 控制按鈕 ==================== */
+.hero .hero-btn {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 24px; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+}
+
+.hero .hero-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.hero .hero-btn.prev { left: 2rem; }
+.hero .hero-btn.next { right: 2rem; }
+
+/* ==================== 頁碼點 ==================== */
+.hero .hero-pagination {
+    position: absolute;
+    bottom: 2rem; left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex; gap: 12px;
+}
+
+.hero .pagination-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    border: none; cursor: pointer;
+    transition: all 0.3s; padding: 0;
+}
+
+.hero .pagination-dot:hover {
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(1.2);
+}
+
+.hero .pagination-dot.active {
+    background: #fff;
+    width: 30px;
+    border-radius: 6px;
+}
+
+/* ==================== RWD ==================== */
 @media (max-width: 768px) {
-  .hero-container { min-height: 500px; }
-  .hero-content   { padding: 0 20px; }
-  .hero-text-box  { padding: 40px 30px; }
-  .hero-title     { font-size: 32px !important; margin-bottom: 16px; }
-  .hero-subtitle  { font-size: 16px !important; }
-}
-
-@media (max-width: 480px) {
-  .hero-container { min-height: 400px; }
-  .hero-text-box  { padding: 30px 20px; }
-  .hero-title     { font-size: 24px !important; margin-bottom: 12px; }
-  .hero-subtitle  { font-size: 14px !important; }
+    .hero .hero-btn              { width: 40px; height: 40px; font-size: 20px; }
+    .hero .hero-btn.prev         { left: 1rem; }
+    .hero .hero-btn.next         { right: 1rem; }
+    .hero .slide-text-content    { padding: 24px 30px; }
 }
 /* hline-element.css */
 
@@ -2109,7 +2155,7 @@
 /* resources/css/components/navbar.css */
 
 .navbar {
-    background: #fff;
+    background: transparent;
     border-bottom: 1px solid #e5e5e5;
     padding: 0 2rem;
     position: sticky;
@@ -2123,7 +2169,7 @@
 }
 
 .navbar .navbar-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     display: flex;
     align-items: center;
