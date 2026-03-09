@@ -17,25 +17,39 @@
   <meta property="og:type"        content="website" />
 
   {{-- ==================== 字型（從 API 取得 frontFamily）==================== --}}
-  @if(!empty($settings['frontFamily']))
     @php
-      // Google Fonts 字型名稱轉換為 URL 格式（空格換成 +）
-      $fontName    = $settings['frontFamily'];
-      $fontEncoded = urlencode($fontName);
+        $fontMap = [
+            'bona-nova'           => 'Bona Nova',
+            'cormorant-garamond'  => 'Cormorant Garamond',
+            'inter'               => 'Inter',
+            'montserrat'          => 'Montserrat',
+            'playfair-display'    => 'Playfair Display',
+            'ibm-plex-sans-tc'    => 'IBM Plex Sans TC',
+            'lxgw-wenkai-mono-tc' => 'LXGW WenKai Mono TC',
+            'noto-sans-tc'        => 'Noto Sans TC',
+            'noto-serif-tc'       => 'Noto Serif TC',
+            'noto-sans-sc'        => 'Noto Sans SC',
+            'noto-serif-sc'       => 'Noto Serif SC',
+            'ibm-plex-sans-sc'    => 'IBM Plex Sans SC',
+        ];
+
+        $locale   = request()->query('locale', 'ZH-TW');
+        $fontId   = match(strtoupper($locale)) {
+            'ZH-CN'       => $settings['frontFamilyZhCn'] ?? null,
+            'EN-US', 'EN' => $settings['frontFamilyEnUs'] ?? null,
+            default       => $settings['frontFamilyZhTw'] ?? null,
+        };
+        $fontName = $fontId ? ($fontMap[$fontId] ?? null) : null;
     @endphp
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family={{ $fontEncoded }}:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      body { font-family: '{{ $fontName }}', sans-serif; }
-    </style>
-  @endif
+
+    @if(!empty($fontName))
+        <style>
+            body { font-family: '{{ $fontName }}', sans-serif; }
+        </style>
+    @endif
 
   {{-- ==================== CSS ==================== --}}
-  @vite(['resources/css/app.css', 'resources/css/components.css',  'resources/js/app.js'])
+  @vite(['resources/css/app.css', 'resources/css/components.css', 'resources/js/app.js'])
 
   {{-- ==================== Meta Pixel ==================== --}}
   @if(!empty($settings['metaPixel']))
@@ -57,16 +71,24 @@
       />
     </noscript>
   @endif
-
+<style>
+    #app{
+        max-width: 1920px;
+        margin: 0 auto;
+    }
+</style>
 </head>
 <body>
 
   {{-- ==================== 頁面主體內容 ==================== --}}
-  @yield('content')
+  <div id="app">
+    @yield('content')
+  </div>
 
   {{-- ==================== JS ==================== --}}
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="{{ asset('js/carousel-element.js') }}"></script>
+  <script src="{{ asset('js/map-element.js') }}" defer></script>
   {{-- 其他元件 JS 陸續補在這裡 --}}
   @stack('scripts')
 </body>

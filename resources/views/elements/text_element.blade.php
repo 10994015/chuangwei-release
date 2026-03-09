@@ -18,5 +18,5 @@
 
 <div class="text-element"
      style="font-size: {{ $fontSize }}; color: {{ $color }}; text-align: {{ $align }};">
-  {!! nl2br(e($text)) !!}
+  {!! $text !!}
 </div>

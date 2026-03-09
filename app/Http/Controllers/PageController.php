@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
 
 class PageController extends Controller
 {
@@ -13,24 +12,21 @@ class PageController extends Controller
      */
     private function getWebsiteSettings(string $templeId): array
     {
-        $cacheKey = "website_settings:{$templeId}";
+        $url      = config('api.base_url') . "/api/web-site/";
+        $response = Http::get($url, ['tenantId' => $templeId]);
 
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($templeId) {
-            $response = Http::get(config('api.base_url') . "/api/tenant/{$templeId}/web-site/");
+        if ($response->failed()) return [];
 
-            if ($response->failed()) return [];
+        $result = $response->json();
 
-            $result = $response->json();
-
-            return ($result['statusCode'] === 200 && isset($result['data']))
-                ? $result['data']
-                : [];
-        });
+        return ($result['statusCode'] === 200 && isset($result['data']))
+            ? $result['data']
+            : [];
     }
 
     /**
      * 取得頁面內容
-     * GET /api/tenant/{tid}/web-site/draft-page/{slug}
+     * GET /api/web-site/page/{slug}
      */
     private function getPageContent(string $templeId, string $slug, string $locale): ?array
     {
@@ -53,37 +49,49 @@ class PageController extends Controller
      */
     public function show(string $templeId, string $slug = 'home')
     {
-        $locale = request()->query('locale', 'ZH-TW');
-
-        // 同時取得網站設定和頁面內容
+        $locale   = request()->query('locale', 'ZH-TW');
         $settings = $this->getWebsiteSettings($templeId);
         $basemaps = $this->getPageContent($templeId, $slug, $locale);
+        if (!$basemaps) abort(404);
 
-        if (!$basemaps) {
-            abort(404);
+        // ── 從 basemaps 解析 header / footer ──────────────────────────
+        $headerFrame = null;
+        $footerFrame = null;
+
+        foreach ($basemaps as $section) {
+            if (($section['bgType'] ?? '') === 'HEADER') {
+                $headerFrame = $section['frames'][0]['data'] ?? null;
+            }
+            if (($section['bgType'] ?? '') === 'FOOTER') {
+                $footerFrame = $section['frames'][0]['data'] ?? null;
+            }
         }
 
-        return view('page', compact('basemaps', 'settings', 'templeId', 'slug'));
+        // ── tabs 拆成兩欄給 footer columns ────────────────────────────
+        $tabs    = $headerFrame['tabs'] ?? [];
+        $half    = (int) ceil(count($tabs) / 2);
+        $columns = [
+            array_slice($tabs, 0, $half),
+            array_slice($tabs, $half),
+        ];
+
+        $footerData = [
+            'tenantName'    => $footerFrame['tenantName']    ?? null,
+            'tenantPhone'   => $footerFrame['tenantPhone']   ?? null,
+            'tenantAddress' => $footerFrame['tenantAddress'] ?? null,
+            'tenantEmail'   => $footerFrame['tenantEmail']   ?? null,
+            'columns'       => $columns,
+        ];
+
+        return view('page', compact('basemaps', 'settings', 'templeId', 'slug', 'footerData'));
     }
 
     /**
      * 清除指定宮廟的快取（發布時呼叫）
+     * 開發中暫時保留介面，之後加快取時再實作
      */
     public function clearCache(string $templeId)
     {
-        // 清網站設定快取
-        Cache::forget("website_settings:{$templeId}");
-
-        // 清所有頁面快取（常見的 slug）
-        $slugs   = ['home', 'about-us', 'products', 'events', 'news', 'album', 'donation', 'light'];
-        $locales = ['ZH-TW', 'EN'];
-
-        foreach ($slugs as $slug) {
-            foreach ($locales as $locale) {
-                Cache::forget("page:{$templeId}:{$slug}:{$locale}");
-            }
-        }
-
         return response()->json(['ok' => true]);
     }
 }

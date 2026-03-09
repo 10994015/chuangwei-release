@@ -19,12 +19,12 @@
 
         {{-- Logo --}}
         <div class="logo-wrapper">
-            <div class="logo">
+            <a href="/site/{{ $tid }}" class="logo">
                 @if ($logoSrc)
                     <img src="{{ $logoSrc }}" alt="Logo" class="logo-image" />
                 @endif
                 <span class="logo-name">{{ $tenantName }}</span>
-            </div>
+            </a>
         </div>
 
         {{-- 桌機導航 --}}

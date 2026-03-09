@@ -1,28 +1,49 @@
 {{-- resources/views/components/product-list-section.blade.php --}}
-@props([
-    'productsList' => [
-        ['id' => 1, 'rank' => 1, 'title' => '個人光明燈', 'price' => 'NT$600',   'image' => null],
-        ['id' => 2, 'rank' => 2, 'title' => '平安符',     'price' => 'NT$200',   'image' => null, 'badge' => '熱門', 'badgeClass' => 'hot'],
-        ['id' => 3, 'rank' => 3, 'title' => '全家光明燈', 'price' => 'NT$1,200', 'image' => null, 'badge' => '推薦', 'badgeClass' => 'recommended'],
-        ['id' => 4,              'title' => '平安香',     'price' => 'NT$150',   'image' => null],
-        ['id' => 5,              'title' => '祈福金紙組', 'price' => 'NT$300',   'image' => null],
-        ['id' => 6,              'title' => '問事服務',   'price' => 'NT$500',   'image' => null],
-        ['id' => 7,              'title' => '文昌燈',     'price' => 'NT$600',   'image' => null],
-        ['id' => 8,              'title' => '太歲燈',     'price' => 'NT$800',   'image' => null, 'badge' => '熱門', 'badgeClass' => 'hot'],
-        ['id' => 9,              'title' => '財神燈',     'price' => 'NT$800',   'image' => null],
-    ],
-    'festivalOptions'  => [],
-    'typeOptions'      => [],
-    'categoryOptions'  => [],
-    'sortOptions'      => [['label' => '價格低到高', 'value' => 'price_asc'], ['label' => '價格高到低', 'value' => 'price_desc']],
-    'device'           => 'desktop',
-])
+@php
+    $data            = $frame['data'] ?? [];
+
+    // ── 精選商品（featuredProduct）────────────────────────────────
+    $featuredRaw     = $data['featuredProduct'] ?? [];
+    $featuredList    = array_map(fn($item) => [
+        'id'         => $item['id']     ?? null,
+        'rank'       => $item['no']     ?? null,
+        'title'      => $item['name']   ?? '',
+        'price'      => 'NT$' . number_format($item['price'] ?? 0),
+        'image'      => $item['imgSrc'] ?? null,
+        'badge'      => !empty($item['labels']) ? $item['labels'][0] : null,
+        'badgeClass' => 'hot',
+    ], $featuredRaw);
+
+    // ── 一般商品清單（productList.data）──────────────────────────
+    $productRaw      = $data['productList']['data'] ?? [];
+    $productList     = array_map(fn($item) => [
+        'id'         => $item['id']     ?? null,
+        'rank'       => null,
+        'title'      => $item['name']   ?? '',
+        'price'      => 'NT$' . number_format($item['price'] ?? 0),
+        'image'      => $item['imgSrc'] ?? null,
+        'badge'      => !empty($item['labels']) ? $item['labels'][0] : null,
+        'badgeClass' => '',
+    ], $productRaw);
+
+    // ── 合併：精選在前，一般在後 ─────────────────────────────────
+    $allProducts     = array_merge($featuredList, $productList);
+
+    $festivalOptions = [];
+    $typeOptions     = [];
+    $categoryOptions = [];
+    $sortOptions     = [
+        ['label' => '價格低到高', 'value' => 'price_asc'],
+        ['label' => '價格高到低', 'value' => 'price_desc'],
+    ];
+    $device          = $device ?? 'desktop';
+@endphp
 
 <section
     class="product-list-section device-{{ $device }}"
     x-data="{
         keyword: '',
-        products: {{ json_encode(array_values((array) $productsList)) }},
+        products: {{ json_encode(array_values($allProducts)) }},
         get filtered() {
             if (!this.keyword.trim()) return this.products
             const kw = this.keyword.trim().toLowerCase()
@@ -39,7 +60,7 @@
                 <select class="filter-select wide" name="festival">
                     <option value="">全部</option>
                     @foreach ($festivalOptions as $opt)
-                        <option value="{{ $opt['value'] }}" {{ request('festival') == $opt['value'] ? 'selected' : '' }}>{{ $opt['label'] }}</option>
+                        <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
                     @endforeach
                 </select>
             </div>
@@ -49,7 +70,7 @@
                 <select class="filter-select narrow" name="type">
                     <option value="">全部</option>
                     @foreach ($typeOptions as $opt)
-                        <option value="{{ $opt['value'] }}" {{ request('type') == $opt['value'] ? 'selected' : '' }}>{{ $opt['label'] }}</option>
+                        <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
                     @endforeach
                 </select>
             </div>
@@ -59,7 +80,7 @@
                 <select class="filter-select mid" name="category">
                     <option value="">全部</option>
                     @foreach ($categoryOptions as $opt)
-                        <option value="{{ $opt['value'] }}" {{ request('category') == $opt['value'] ? 'selected' : '' }}>{{ $opt['label'] }}</option>
+                        <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
                     @endforeach
                 </select>
             </div>
@@ -68,7 +89,7 @@
                 <label class="filter-label">排序方式</label>
                 <select class="filter-select mid" name="sort">
                     @foreach ($sortOptions as $opt)
-                        <option value="{{ $opt['value'] }}" {{ request('sort') == $opt['value'] ? 'selected' : '' }}>{{ $opt['label'] }}</option>
+                        <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
                     @endforeach
                 </select>
             </div>

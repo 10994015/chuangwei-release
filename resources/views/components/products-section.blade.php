@@ -1,22 +1,26 @@
 {{-- resources/views/components/products-section.blade.php --}}
-@props([
-    'productsList' => [
-        ['id' => 1, 'rank' => 1, 'title' => '平安符',     'price' => 'NT$200',   'image' => null, 'badge' => '熱門', 'badgeClass' => 'hot'],
-        ['id' => 2, 'rank' => 2, 'title' => '個人光明燈', 'price' => 'NT$600',   'image' => null, 'badge' => '推薦', 'badgeClass' => 'recommended'],
-        ['id' => 3, 'rank' => 3, 'title' => '全家光明燈', 'price' => 'NT$1,200', 'image' => null],
-        ['id' => 4,              'title' => '平安米',     'price' => 'NT$150',   'image' => null, 'badge' => '新品', 'badgeClass' => 'new'],
-        ['id' => 5,              'title' => '香油錢',     'price' => 'NT$500',   'image' => null],
-        ['id' => 6,              'title' => '祈福手環',   'price' => 'NT$350',   'image' => null, 'badge' => '熱門', 'badgeClass' => 'hot'],
-    ],
-    'viewAllUrl' => '#',
-    'device'     => 'desktop',
-])
-
 @php
-    $displayProducts = array_slice((array) $productsList, 0, 3);
+    $data     = $frame['data'] ?? [];
+    $rawList  = $data['products'] ?? [];
+
+    $products = array_map(fn($item) => [
+        'id'    => $item['id']     ?? null,
+        'rank'  => $item['no']     ?? null,
+        'title' => $item['name']   ?? '',
+        'price' => 'NT$' . number_format($item['price'] ?? 0),
+        'image' => $item['imgSrc'] ?? null,
+        'badge' => !empty($item['labels']) ? $item['labels'][0] : null,
+    ], $rawList);
+
+    // 首頁只顯示前 3 筆
+    $displayProducts = array_slice($products, 0, 3);
+
+    $device     = $device ?? 'desktop';
+    $templeId   = $templeId ?? '';
+    $viewAllUrl = $templeId ? "/site/{$templeId}/products" : '#';
 @endphp
 
-<section class="products-section device-{{ $device }}">
+<section class="products-section">
     <div class="container">
 
         {{-- 標題列 --}}
@@ -26,7 +30,7 @@
 
         {{-- 商品 Grid — 固定 3 筆 --}}
         <div class="products-grid">
-            @foreach ($displayProducts as $product)
+            @forelse ($displayProducts as $product)
                 <div class="product-card">
 
                     {{-- 圖片區 --}}
@@ -46,7 +50,7 @@
                     {{-- 資訊區 --}}
                     <div class="product-info">
                         @if (!empty($product['badge']))
-                            <span class="product-badge {{ $product['badgeClass'] ?? '' }}">{{ $product['badge'] }}</span>
+                            <span class="product-badge">{{ $product['badge'] }}</span>
                         @else
                             <div class="badge-placeholder"></div>
                         @endif
@@ -66,13 +70,19 @@
                     </div>
 
                 </div>
-            @endforeach
+            @empty
+                <div class="empty-state">
+                    <p>目前尚無商品</p>
+                </div>
+            @endforelse
         </div>
 
         {{-- 查看更多 --}}
-        <div class="view-more-wrap">
-            <a href="{{ $viewAllUrl }}" class="view-more-btn">查看更多商品</a>
-        </div>
+        @if (!empty($displayProducts))
+            <div class="view-more-wrap">
+                <a href="{{ $viewAllUrl }}" class="view-more-btn">查看更多商品</a>
+            </div>
+        @endif
 
     </div>
 </section>

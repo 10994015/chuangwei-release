@@ -1,45 +1,61 @@
 {{-- resources/views/components/event-list-section.blade.php --}}
-@props([
-    'eventsList' => [
-        ['id' => 1, 'title' => '農曆九月初九 天公聖誕慶典', 'date' => '2024-12-10', 'time' => '上午8:00 - 下午5:00', 'location' => '本宮大殿',  'tags' => ['熱門', '推薦'], 'image' => null, 'category' => ''],
-        ['id' => 2, 'title' => '冬至祭祖法會',               'date' => '2024-12-21', 'time' => '上午9:00 - 下午3:00', 'location' => '本宮後殿',  'tags' => [],              'image' => null, 'category' => ''],
-        ['id' => 3, 'title' => '新春開廟門迎春',             'date' => '2025-01-29', 'time' => '凌晨12:00',          'location' => '本宮',      'tags' => ['熱門'],        'image' => null, 'category' => ''],
-        ['id' => 4, 'title' => '元宵燈會活動',               'date' => '2025-02-12', 'time' => '下午6:00 - 晚上10:00','location' => '本宮廣場', 'tags' => [],              'image' => null, 'category' => ''],
-        ['id' => 5, 'title' => '清明祭祖大典',               'date' => '2025-04-04', 'time' => '上午8:00 - 下午4:00', 'location' => '本宮大殿', 'tags' => [],              'image' => null, 'category' => ''],
-        ['id' => 6, 'title' => '端午祈福慶典',               'date' => '2025-05-31', 'time' => '上午9:00 - 下午5:00', 'location' => '本宮',     'tags' => [],              'image' => null, 'category' => ''],
-        ['id' => 7, 'title' => '中元普渡法會',               'date' => '2025-08-22', 'time' => '上午8:00 - 下午6:00', 'location' => '本宮大殿', 'tags' => ['推薦'],        'image' => null, 'category' => ''],
-        ['id' => 8, 'title' => '中秋賞月活動',               'date' => '2025-09-15', 'time' => '下午7:00 - 晚上11:00','location' => '本宮廣場', 'tags' => ['熱門'],        'image' => null, 'category' => ''],
-        ['id' => 9, 'title' => '重陽敬老活動',               'date' => '2025-10-11', 'time' => '上午9:00 - 下午3:00', 'location' => '本宮',     'tags' => [],              'image' => null, 'category' => ''],
-    ],
-    'perPage' => 3,
-    'device'  => 'desktop',
-])
-
 @php
-    $categories = [
-        ['id' => 'all',       'name' => '全部'],
-        ['id' => 'ceremony',  'name' => '慶典法會'],
-        ['id' => 'prayer',    'name' => '祈福活動'],
-        ['id' => 'culture',   'name' => '文化活動'],
-        ['id' => 'volunteer', 'name' => '志工服務'],
+    $data       = $frame['data'] ?? [];
+
+    // ── 分類（從 API 的 eventCategories 組成 tab）────────────────
+    $apiCategories = $data['eventCategories'] ?? [];
+    $categories    = array_merge(
+        [['id' => 'all', 'name' => '全部']],
+        array_map(fn($c) => ['id' => $c, 'name' => $c], $apiCategories)
+    );
+
+    // ── 活動清單（從 eventList.data）────────────────────────────
+    $rawEvents  = $data['eventList']['data'] ?? [];
+    $eventsList = array_map(function($item) {
+        $startAt  = $item['startAt'] ?? null;
+        $endAt    = $item['endAt']   ?? null;
+        $date     = $startAt ? date('Y-m-d', strtotime($startAt)) : '';
+        $timeFrom = $startAt ? date('H:i', strtotime($startAt)) : '';
+        $timeTo   = $endAt   ? date('H:i', strtotime($endAt))   : '';
+        $time     = $timeFrom && $timeTo ? "{$timeFrom} - {$timeTo}" : $timeFrom;
+
+        return [
+            'id'       => $item['id']       ?? null,
+            'title'    => $item['name']     ?? '',
+            'date'     => $date,
+            'time'     => $time,
+            'location' => $item['location'] ?? '',
+            'tags'     => $item['labels']   ?? [],
+            'image'    => $item['imgSrc']   ?? null,
+            'category' => !empty($item['labels']) ? $item['labels'][0] : '',
+        ];
+    }, $rawEvents);
+
+    $perPage  = 3;
+
+    $tagColors = [
+        '#E8572A', '#2563eb', '#27a163', '#c2185b', '#e67e00',
+        '#7c3aed', '#0891b2', '#be123c', '#15803d', '#b45309',
     ];
+    $getTagColor = function(string $tag) use ($tagColors): string {
+        $index = abs(crc32($tag)) % count($tagColors);
+        return $tagColors[$index];
+    };
 
-    $tagClassMap = ['熱門' => 'hot', '推薦' => 'recommended'];
-
-    // 篩選
+    // ── 篩選 ──────────────────────────────────────────────────────
     $selectedCategory = request('category', 'all');
-    $filteredEvents = $selectedCategory === 'all'
+    $filteredEvents   = $selectedCategory === 'all'
         ? $eventsList
-        : array_values(array_filter($eventsList, fn($e) => ($e['category'] ?? '') === $selectedCategory));
+        : array_values(array_filter($eventsList, fn($e) => in_array($selectedCategory, $e['tags'] ?? [])));
 
-    // 分頁
-    $total      = count($filteredEvents);
-    $totalPages = $perPage > 0 ? (int) ceil($total / $perPage) : 1;
+    // ── 分頁 ──────────────────────────────────────────────────────
+    $total       = count($filteredEvents);
+    $totalPages  = $perPage > 0 ? (int) ceil($total / $perPage) : 1;
     $currentPage = max(1, min((int) request('page', 1), $totalPages));
     $offset      = ($currentPage - 1) * $perPage;
     $pagedEvents = array_slice($filteredEvents, $offset, $perPage);
 
-    // 頁碼按鈕（含省略號）
+    // ── 頁碼按鈕 ─────────────────────────────────────────────────
     $pageNumbers = [];
     if ($totalPages <= 7) {
         $pageNumbers = range(1, $totalPages);
@@ -54,7 +70,7 @@
     $queryBase = array_filter(request()->except(['page', 'category']));
 @endphp
 
-<section class="event-list-section device-{{ $device }}">
+<section class="event-list-section">
     <div class="container">
 
         {{-- 分類 Tab --}}
@@ -67,14 +83,12 @@
             @endforeach
         </div>
 
-        {{-- 分隔線 --}}
         <hr class="divider" />
 
         {{-- 活動 Grid --}}
         <div class="events-grid">
             @foreach ($pagedEvents as $event)
                 <div class="event-card">
-                    {{-- 圖片區 --}}
                     <div class="event-image">
                         @if (!empty($event['image']))
                             <img src="{{ $event['image'] }}" alt="{{ $event['title'] }}" class="image" />
@@ -90,12 +104,13 @@
                         @endif
                     </div>
 
-                    {{-- 資訊區 --}}
                     <div class="event-info">
                         @if (!empty($event['tags']))
                             <div class="event-tags">
                                 @foreach ($event['tags'] as $tag)
-                                    <span class="event-tag {{ $tagClassMap[$tag] ?? 'default' }}">{{ $tag }}</span>
+                                    <span class="event-tag" style="background: {{ $getTagColor($tag) }}; color: #fff;">
+                                        {{ $tag }}
+                                    </span>
                                 @endforeach
                             </div>
                         @else

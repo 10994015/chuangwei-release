@@ -18,7 +18,7 @@
 @endphp
 
 <div
-    class="donation-product-basemap device-{{ $device }}"
+    class="donation-product-basemap"
     x-data="{
         selectedThumb: 0,
         selectedItem: '{{ $items[0]['value'] ?? 'general' }}',

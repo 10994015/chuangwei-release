@@ -1,29 +1,38 @@
 {{-- resources/views/components/events-section.blade.php --}}
-@props([
-    'eventsList' => [
-        ['id' => 1, 'title' => '農曆九月初九 天公聖誕慶典', 'date' => '2024年12月10日', 'time' => '上午8:00 - 下午5:00',   'location' => '本宮大殿', 'tags' => ['熱門', '推薦'], 'image' => null],
-        ['id' => 2, 'title' => '冬至祭祖法會',               'date' => '2024年12月21日', 'time' => '上午9:00 - 下午3:00',   'location' => '本宮後殿', 'tags' => [],              'image' => null],
-        ['id' => 3, 'title' => '新春開廟門迎春',             'date' => '2025年1月29日',  'time' => '凌晨12:00',             'location' => '本宮',     'tags' => ['熱門'],        'image' => null],
-        ['id' => 4, 'title' => '元宵燈會活動',               'date' => '2025年2月12日',  'time' => '下午6:00 - 晚上10:00', 'location' => '本宮廣場', 'tags' => [],              'image' => null],
-        ['id' => 5, 'title' => '清明祭祖大典',               'date' => '2025年4月4日',   'time' => '上午8:00 - 下午4:00',  'location' => '本宮大殿', 'tags' => [],              'image' => null],
-        ['id' => 6, 'title' => '端午祈福慶典',               'date' => '2025年5月31日',  'time' => '上午9:00 - 下午5:00',  'location' => '本宮',     'tags' => [],              'image' => null],
-    ],
-    'viewAllUrl' => '#',
-    'device'     => 'desktop',
-])
-
 @php
-    $tagClassMap = [
-        '熱門' => 'hot',
-        '推薦' => 'recommended',
-        '重要' => 'important',
-        '法會' => 'ceremony',
-    ];
+    $data      = $frame['data'] ?? [];
+    $rawEvents = $data['events'] ?? [];
 
-    $displayEvents = array_slice((array) $eventsList, 0, 3);
+    $tagColors   = ['#E8572A','#2563eb','#27a163','#c2185b','#e67e00','#7c3aed','#0891b2','#be123c','#15803d','#b45309'];
+    $getTagColor = fn(string $tag): string => $tagColors[abs(crc32($tag)) % count($tagColors)];
+
+    $eventsList = array_map(function($item) {
+        $startAt  = $item['startAt'] ?? null;
+        $endAt    = $item['endAt']   ?? null;
+        $date     = $startAt ? date('Y-m-d', strtotime($startAt)) : '';
+        $timeFrom = $startAt ? date('H:i', strtotime($startAt)) : '';
+        $timeTo   = $endAt   ? date('H:i', strtotime($endAt))   : '';
+        $time     = $timeFrom && $timeTo ? "{$timeFrom} - {$timeTo}" : $timeFrom;
+
+        return [
+            'id'       => $item['id']       ?? null,
+            'title'    => $item['name']     ?? '',
+            'date'     => $date,
+            'time'     => $time,
+            'location' => $item['location'] ?? '',
+            'tags'     => $item['labels']   ?? [],
+            'image'    => $item['imgSrc']   ?? null,
+        ];
+    }, $rawEvents);
+
+    $displayEvents = array_slice($eventsList, 0, 3);
+
+    $device     = $device ?? 'desktop';
+    $templeId   = $templeId ?? '';
+    $viewAllUrl = $templeId ? "/site/{$templeId}/events" : '#';
 @endphp
 
-<section class="events-section device-{{ $device }}">
+<section class="events-section ">
     <div class="container">
 
         {{-- 標題列 --}}
@@ -33,7 +42,7 @@
 
         {{-- 活動 Grid — 固定 3 筆 --}}
         <div class="events-grid">
-            @foreach ($displayEvents as $event)
+            @forelse ($displayEvents as $event)
                 <div class="event-card">
 
                     {{-- 圖片區 --}}
@@ -57,7 +66,10 @@
                         @if (!empty($event['tags']))
                             <div class="event-tags">
                                 @foreach ($event['tags'] as $tag)
-                                    <span class="event-tag {{ $tagClassMap[$tag] ?? 'default' }}">{{ $tag }}</span>
+                                    <span class="event-tag"
+                                          style="background: {{ $getTagColor($tag) }}; color: #fff;">
+                                        {{ $tag }}
+                                    </span>
                                 @endforeach
                             </div>
                         @else
@@ -94,13 +106,19 @@
                     </div>
 
                 </div>
-            @endforeach
+            @empty
+                <div class="empty-state">
+                    <p>目前尚無活動</p>
+                </div>
+            @endforelse
         </div>
 
         {{-- 查看更多 --}}
-        <div class="view-more-wrap">
-            <a href="{{ $viewAllUrl }}" class="view-more-btn">查看更多活動</a>
-        </div>
+        @if (!empty($displayEvents))
+            <div class="view-more-wrap">
+                <a href="{{ $viewAllUrl }}" class="view-more-btn">查看更多活動</a>
+            </div>
+        @endif
 
     </div>
 </section>

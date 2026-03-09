@@ -7,7 +7,7 @@
 
   // 高度處理（對應 Vue 的 carouselHeight computed）
   $heightRaw = $value['height'] ?? 400;
-  $height    = is_numeric($heightRaw) ? (int)$heightRaw : (int)filter_var($heightRaw, FILTER_SANITIZE_NUMBER_INT) ?: 400;
+    $height = (is_numeric($heightRaw) ? (int)$heightRaw : (int)filter_var($heightRaw, FILTER_SANITIZE_NUMBER_INT)) ?: 400;
 
   // 圖片來源：支援 {id, src} 新格式和純字串舊格式
   $displayImages = [];

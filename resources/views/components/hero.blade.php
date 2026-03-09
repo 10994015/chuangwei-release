@@ -1,41 +1,32 @@
 {{-- resources/views/components/hero.blade.php --}}
-@props([
-    'slides'                 => [],
-    'caroiselWallImgs'       => [],
-    'carouselWallHeight'     => 600,
-    'carouselWallAutoPlay'   => true,
-    'carouselWallInterval'   => 5000,
-])
-
 @php
+    $data                  = $frame['data'] ?? [];
+    $caroiselWallImgs      = $data['caroiselWallImgs']     ?? $data['carouselWallImgs'] ?? [];
+    $carouselWallHeight    = $data['carouselWallHeight']   ?? 600;
+    $carouselWallAutoPlay  = $data['carouselWallAutoPlay'] ?? true;
+    $carouselWallInterval  = $data['carouselWallInterval'] ?? 5000;
+
     $placeholderSlides = [
         ['image' => 'https://images.unsplash.com/photo-1548013146-72479768bada?w=1280&h=600&fit=crop', 'title' => '輪播圖片 1'],
         ['image' => 'https://images.unsplash.com/photo-1528127269322-539801943592?w=1280&h=600&fit=crop', 'title' => '輪播圖片 2'],
         ['image' => 'https://images.unsplash.com/photo-1604881991720-f91add269bed?w=1280&h=600&fit=crop', 'title' => '輪播圖片 3'],
     ];
 
-    // 優先用 caroiselWallImgs，其次 slides，否則 placeholder
     if (!empty($caroiselWallImgs)) {
         $displaySlides = array_map(fn($item) => [
             'image' => $item['src'] ?? $item['image'] ?? '',
             'title' => $item['title'] ?? '',
         ], $caroiselWallImgs);
-    } elseif (!empty($slides)) {
-        $displaySlides = $slides;
     } else {
         $displaySlides = $placeholderSlides;
     }
 
-    $heightVal = is_numeric($carouselWallHeight)
-        ? $carouselWallHeight . 'px'
-        : $carouselWallHeight;
-
-    $autoPlay        = $carouselWallAutoPlay ? 'true' : 'false';
-    $interval        = (int) $carouselWallInterval;
-    $slidesJson      = json_encode(array_values($displaySlides));
-    $multipleSlides  = count($displaySlides) > 1;
+    $heightVal      = is_numeric($carouselWallHeight) ? $carouselWallHeight . 'px' : $carouselWallHeight;
+    $autoPlay       = $carouselWallAutoPlay ? 'true' : 'false';
+    $interval       = (int) $carouselWallInterval;
+    $slidesJson     = json_encode(array_values($displaySlides));
+    $multipleSlides = count($displaySlides) > 1;
 @endphp
-
 <section
     class="hero"
     style="height: {{ $heightVal }}"
