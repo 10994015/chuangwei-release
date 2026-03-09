@@ -17,4 +17,5 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/site/{templeId}/{slug?}', [PageController::class, 'show']);
+Route::get('/', [PageController::class, 'show']);
+// Route::get('/site/{templeId}/{slug?}', [PageController::class, 'show']);
