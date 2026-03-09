@@ -1,13 +1,9 @@
 {{-- resources/views/components/navbar.blade.php --}}
 @php
-    $data        = $frame['data'] ?? [];
-    $logoSrc     = $data['logoImgSrc']  ?? null;
-    $tenantName  = $data['tenantName']  ?? 'LOGO';
-    $tabs        = $data['tabs']        ?? [];
-
-    // tabs 的 url 要組合，JSON 只有 slug，要拼成完整路徑
-    // 取 templeId（由 page.blade.php 傳入）
-    $tid = $templeId ?? '';
+    $data       = $frame['data'] ?? [];
+    $logoSrc    = $data['logoImgSrc'] ?? null;
+    $tenantName = $data['tenantName'] ?? 'LOGO';
+    $tabs       = $data['tabs']       ?? [];
 @endphp
 
 <header
@@ -19,7 +15,7 @@
 
         {{-- Logo --}}
         <div class="logo-wrapper">
-            <a href="/site/{{ $tid }}" class="logo">
+            <a href="/home" class="logo">
                 @if ($logoSrc)
                     <img src="{{ $logoSrc }}" alt="Logo" class="logo-image" />
                 @endif
@@ -30,12 +26,9 @@
         {{-- 桌機導航 --}}
         <nav class="nav-menu">
             @foreach ($tabs as $tab)
-                @php
-                    $tabSlug = $tab['slug'] ?? '';
-                    $tabUrl  = $tid ? "/site/{$tid}/{$tabSlug}" : '#';
-                @endphp
+                @php $tabSlug = $tab['slug'] ?? ''; @endphp
                 <a
-                    href="{{ $tabUrl }}"
+                    href="/{{ $tabSlug }}"
                     class="nav-item {{ ($slug ?? '') === $tabSlug ? 'active' : '' }}"
                 >
                     {{ $tab['name'] }}
@@ -71,13 +64,9 @@
     >
         <nav class="mobile-nav">
             @foreach ($tabs as $tab)
-                @php
-                    $tabSlug = $tab['slug'] ?? '';
-                    $tabUrl  = $tid ? "/site/{$tid}/{$tabSlug}" : '#';
-                @endphp
-
+                @php $tabSlug = $tab['slug'] ?? ''; @endphp
                 <a
-                    href="{{ $tabUrl }}"
+                    href="/{{ $tabSlug }}"
                     class="mobile-nav-item {{ ($slug ?? '') === $tabSlug ? 'active' : '' }}"
                     @click="mobileMenuOpen = false"
                 >
