@@ -7,15 +7,16 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
 */
 
+// ── 開發用：帶 templeId ──────────────────────────────────────────────────
+Route::get('/site/{templeId}/{slug?}', [PageController::class, 'showWithTempleId']);
 
-Route::get('/', [PageController::class, 'show']);
-//test
-// Route::get('/site/{templeId}/{slug?}', [PageController::class, 'show']);
-//test
+// ── 正式：根目錄 → /home ─────────────────────────────────────────────────
+Route::get('/', function () {
+    return redirect('/home');
+});
+
+// ── 正式：/{slug} ────────────────────────────────────────────────────────
+Route::get('/{slug}', [PageController::class, 'show'])
+    ->where('slug', '[a-zA-Z0-9\-_]+');

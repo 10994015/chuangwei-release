@@ -7,13 +7,21 @@ use Illuminate\Support\Facades\Http;
 class PageController extends Controller
 {
     /**
-     * 取得網站設定（SEO、字型、Meta Pixel 等）
-     * GET /api/tenant/{tid}/web-site/
+     * 從設定檔解析 templeId（正式環境留空，由 API 從 hostname 判斷）
+     */
+    private function resolveTempleId(): string
+    {
+        return config('api.tenant_id', '');
+    }
+
+    /**
+     * 取得網站設定
+     * GET /api/web-site/
      */
     private function getWebsiteSettings(string $templeId): array
     {
-        $url      = config('api.base_url') . "/api/web-site/";
-        $response = Http::get($url, ['tenantId' => $templeId]);
+        $params   = $templeId ? ['tenantId' => $templeId] : [];
+        $response = Http::get(config('api.base_url') . "/api/web-site/", $params);
 
         if ($response->failed()) return [];
 
@@ -30,9 +38,12 @@ class PageController extends Controller
      */
     private function getPageContent(string $templeId, string $slug, string $locale): ?array
     {
+        $params = ['locale' => $locale];
+        if ($templeId) $params['tenantId'] = $templeId;
+
         $response = Http::get(
             config('api.base_url') . "/api/web-site/page/{$slug}",
-            ['tenantId' => $templeId, 'locale' => $locale]
+            $params
         );
 
         if ($response->failed()) return null;
@@ -45,16 +56,16 @@ class PageController extends Controller
     }
 
     /**
-     * 顯示頁面
+     * 共用渲染邏輯
      */
-    public function show(string $templeId, string $slug = 'home')
+    private function renderPage(string $templeId, string $slug): \Illuminate\View\View
     {
         $locale   = request()->query('locale', 'ZH-TW');
         $settings = $this->getWebsiteSettings($templeId);
         $basemaps = $this->getPageContent($templeId, $slug, $locale);
+
         if (!$basemaps) abort(404);
 
-        // ── 從 basemaps 解析 header / footer ──────────────────────────
         $headerFrame = null;
         $footerFrame = null;
 
@@ -67,7 +78,6 @@ class PageController extends Controller
             }
         }
 
-        // ── tabs 拆成兩欄給 footer columns ────────────────────────────
         $tabs    = $headerFrame['tabs'] ?? [];
         $half    = (int) ceil(count($tabs) / 2);
         $columns = [
@@ -87,8 +97,24 @@ class PageController extends Controller
     }
 
     /**
-     * 清除指定宮廟的快取（發布時呼叫）
-     * 開發中暫時保留介面，之後加快取時再實作
+     * 正式路由：GET /{slug}
+     * templeId 由 config/env 或 hostname 決定
+     */
+    public function show(string $slug = 'home')
+    {
+        return $this->renderPage($this->resolveTempleId(), $slug);
+    }
+
+    /**
+     * 開發路由：GET /site/{templeId}/{slug?}
+     */
+    public function showWithTempleId(string $templeId, string $slug = 'home')
+    {
+        return $this->renderPage($templeId, $slug);
+    }
+
+    /**
+     * 清除快取（發布時呼叫）
      */
     public function clearCache(string $templeId)
     {
