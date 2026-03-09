@@ -2215,7 +2215,7 @@
 
 .navbar .nav-menu {
     display: flex;
-    gap: 2rem;
+    gap: 1rem;
     flex: 1;
     justify-content: center;
 }
