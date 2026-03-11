@@ -1461,7 +1461,6 @@
 .event-list-section {
     padding: 2rem 0 4rem;
     background: transparent;
-    min-height: 100vh;
 }
 
 .event-list-section .container {
@@ -2556,7 +2555,6 @@
 .news-list-section {
     padding: 2rem 0 4rem;
     background: transparent;
-    min-height: 100vh;
 }
 
 .news-list-section .container {
@@ -2983,7 +2981,6 @@
 .product-list-section {
     padding: 2rem 0 4rem;
     background: transparent;
-    min-height: 100vh;
 }
 
 .product-list-section .container {
