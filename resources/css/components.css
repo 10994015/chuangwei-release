@@ -2797,7 +2797,6 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    border: 1px solid var(--frame-border-color, #ddd);
 }
 
 /* ==================== 商品卡片 ==================== */
