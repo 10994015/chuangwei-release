@@ -10,8 +10,7 @@
   @if(!empty($settings['seoKeywords']))
     <meta name="keywords" content="{{ $settings['seoKeywords'] }}" />
   @endif
-  <link rel="icon" href="/favicon.ico">
-  {{-- Open Graph --}}
+  <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=2">  {{-- Open Graph --}}
   <meta property="og:title"       content="{{ $settings['seoTitle'] ?? config('app.name') }}" />
   <meta property="og:description" content="{{ $settings['seoDescription'] ?? '' }}" />
   <meta property="og:type"        content="website" />
