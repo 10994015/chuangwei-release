@@ -19,13 +19,13 @@
 @endphp
 
 <div class="button-element" style="text-align: {{ $align }};">
-
-    href="{{ $link }}"
-    class="element-button"
-    target="_blank"
-    rel="noopener noreferrer"
-    style="display: inline-block; color: {{ $textColor }}; background-color: {{ $bgColor }}; font-size: {{ $fontSize }}; padding: {{ $padding }};"
-  >
-    {{ $text }}
-  </a>
+    <a
+        href="{{ $link }}"
+        class="element-button"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="display: inline-block; color: {{ $textColor }}; background-color: {{ $bgColor }}; font-size: {{ $fontSize }}; padding: {{ $padding }};"
+    >
+        {{ $text }}
+    </a>
 </div>
