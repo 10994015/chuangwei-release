@@ -7,7 +7,6 @@
   $textColor = $value['textColor'] ?? '#fff';
   $bgColor   = $value['bgColor']   ?? '#E8572A';
 
-  // 確保數值自動加上 px 單位（對應 Vue 的 ensureUnit）
   $ensureUnit = function($value, $default) {
       if (!$value) return $default;
       if (is_numeric($value)) return $value . 'px';
@@ -20,12 +19,12 @@
 @endphp
 
 <div class="button-element" style="text-align: {{ $align }};">
-  <a
+
     href="{{ $link }}"
     class="element-button"
     target="_blank"
     rel="noopener noreferrer"
-    style="color: {{ $textColor }}; background-color: {{ $bgColor }}; font-size: {{ $fontSize }}; padding: {{ $padding }};"
+    style="display: inline-block; color: {{ $textColor }}; background-color: {{ $bgColor }}; font-size: {{ $fontSize }}; padding: {{ $padding }};"
   >
     {{ $text }}
   </a>
