@@ -42,6 +42,11 @@ class FrameHelper
     ];
 
     /**
+     * 不應將 metadata.backgroundColor 套到外層 cf-col 的元件類型
+     */
+    private static array $noBgColorTypes = ['BUTTON'];
+
+    /**
      * 從 frame.data 解析文字色主題，回傳 CSS 變數字串
      * 供系統框架 / 自訂框架 wrapper div 的 style 屬性使用
      *
@@ -128,15 +133,21 @@ class FrameHelper
         $textAlign  = $meta['textAlign']       ?? $meta['text_align']       ?? null;
         $bgColor    = $meta['backgroundColor'] ?? $meta['background_color'] ?? null;
 
+        $elementType = $element['type'] ?? '';
+
         $metaStyle = '';
         if ($color)      $metaStyle .= "color: {$color};";
         if ($fontSize)   $metaStyle .= "font-size: {$fontSize};";
         if ($fontWeight) $metaStyle .= "font-weight: {$fontWeight};";
         if ($textAlign)  $metaStyle .= "text-align: {$textAlign};";
-        if ($bgColor)    $metaStyle .= "background-color: {$bgColor};";
+
+        // 按鈕元件的背景色由元件自身處理，不套到外層 cf-col
+        if ($bgColor && !in_array($elementType, self::$noBgColorTypes)) {
+            $metaStyle .= "background-color: {$bgColor};";
+        }
 
         return [
-            'type'         => $element['type']  ?? '',
+            'type'         => $elementType,
             'value'        => $element['value'] ?? [],
             'meta'         => $meta,
             'paddingStyle' => "padding: {$pt}px {$pr}px {$pb}px {$pl}px;",
