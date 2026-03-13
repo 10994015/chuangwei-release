@@ -16,6 +16,7 @@
 
   $fontSize = $ensureUnit($value['fontSize'] ?? null, '16px');
   $padding  = $ensureUnit($value['padding']  ?? null, '12px 32px');
+{{ dd($element) }}
 @endphp
 
 <div class="button-element" style="text-align: {{ $align }};">
