@@ -1,7 +1,7 @@
 {{-- resources/views/frames/elements/product_card.blade.php --}}
 @php
   $value = $element['value'] ?? [];
-  $image = $value['image'] ?? null;
+  $image = $value['image'] ?? '/images/service-card/02.png';
   $tag   = $value['tag']   ?? '法會活動';
   $title = $value['title'] ?? '商品標題';
   $date  = $value['date']  ?? '2024-08-22';

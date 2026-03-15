@@ -71,7 +71,7 @@
         justify-content: center;
     ">
         <div style="
-            padding: 60px 80px;
+            padding: 60px 16px;
             border-radius: {{ $borderRadius }};
             text-align: center;
             max-width: 800px;

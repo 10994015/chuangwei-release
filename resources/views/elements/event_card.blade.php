@@ -1,7 +1,7 @@
 {{-- resources/views/frames/elements/event_card.blade.php --}}
 @php
   $value       = $element['value'] ?? [];
-  $image       = $value['image']       ?? null;
+  $image       = $value['image']       ?? '/images/service-card/04.png';
   $tag         = $value['tag']         ?? '法會活動';
   $title       = $value['title']       ?? '中元普渡法會';
   $description = $value['description'] ?? '2024年中元普渡法會活動紀錄';

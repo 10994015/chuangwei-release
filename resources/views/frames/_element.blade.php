@@ -22,7 +22,7 @@
 @elseif($elType === 'GOOGLE_MAP')
   @include('elements.map_element', ['address' => $elValue['address'] ?? '', 'lat' => $elValue['lat'] ?? null, 'lng' => $elValue['lng'] ?? null, 'zoom' => $elValue['zoom'] ?? 15, 'meta' => $elMeta])
 @elseif($elType === 'ALBUM')
-  @include('elements.album_element', ['data' => $elValue, 'meta' => $elMeta])
+  @include('elements.album_card', ['data' => $elValue, 'meta' => $elMeta])
 @elseif($elType === 'PRODUCT_CARD')
   @include('elements.product_card', ['data' => $elValue, 'meta' => $elMeta])
 @elseif($elType === 'SERVICE_CARD')

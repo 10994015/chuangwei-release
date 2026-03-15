@@ -1,7 +1,7 @@
 {{-- resources/views/frames/elements/service_card.blade.php --}}
 @php
   $value = $element['value'] ?? [];
-  $image = $value['image'] ?? null;
+  $image = $value['image'] ?? '/images/service-card/03.png';
   $tag   = $value['tag']   ?? '祈福服務';
   $title = $value['title'] ?? '服務標題';
   $date  = $value['date']  ?? '2024-08-22';

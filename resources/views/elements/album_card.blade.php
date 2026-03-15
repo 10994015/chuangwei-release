@@ -1,6 +1,6 @@
 {{-- resources/views/frames/elements/album_card.blade.php --}}
 @php
-  $image       = $element['value']['image']       ?? null;
+  $image       = $element['value']['image']       ?? '/images/service-card/01.png';
   $tag         = $element['value']['tag']         ?? '相簿封面';
   $title       = $element['value']['title']       ?? '相簿標題';
   $description = $element['value']['description'] ?? '';
