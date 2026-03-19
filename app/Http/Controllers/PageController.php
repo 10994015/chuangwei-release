@@ -60,18 +60,28 @@ class PageController extends Controller
 
         $result = $response->json();
 
-        return ($result['statusCode'] === 200 && isset($result['data']))
-            ? $result['data']
-            : null;
+        if ($result['statusCode'] !== 200 || !isset($result['data'])) return null;
+
+        return $result['data'];
     }
 
     private function renderPage(string $slug): \Illuminate\View\View
     {
         $locale   = request()->query('locale', 'ZH-TW');
         $settings = $this->getWebsiteSettings();
-        $basemaps = $this->getPageContent($slug, $locale);
+        $pageData = $this->getPageContent($slug, $locale);
+
+        if (!$pageData) abort(404);
+
+        $basemaps = $pageData['contentJson'] ?? null;
 
         if (!$basemaps) abort(404);
+
+        $pageMeta = [
+            'seoTitle'       => $pageData['seoTitle']       ?? null,
+            'seoDescription' => $pageData['seoDescription'] ?? null,
+            'seoKeywords'    => $pageData['seoKeywords']    ?? null,
+        ];
 
         $headerFrame = null;
         $footerFrame = null;
@@ -102,7 +112,7 @@ class PageController extends Controller
 
         $templeId = ''; // 正式環境不需要，保留供 view 相容
 
-        return view('page', compact('basemaps', 'settings', 'templeId', 'slug', 'footerData'));
+        return view('page', compact('basemaps', 'settings', 'pageMeta', 'templeId', 'slug', 'footerData'));
     }
 
     public function show(string $slug = 'home')

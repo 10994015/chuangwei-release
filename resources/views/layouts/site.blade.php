@@ -4,16 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  {{-- ==================== SEO ==================== --}}
-  <title>{{ $settings['seoTitle'] ?? config('app.name') }}</title>
-  <meta name="description" content="{{ $settings['seoDescription'] ?? '' }}" />
-  @if(!empty($settings['seoKeywords']))
-    <meta name="keywords" content="{{ $settings['seoKeywords'] }}" />
-  @endif
-  <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=2">  {{-- Open Graph --}}
-  <meta property="og:title"       content="{{ $settings['seoTitle'] ?? config('app.name') }}" />
-  <meta property="og:description" content="{{ $settings['seoDescription'] ?? '' }}" />
-  <meta property="og:type"        content="website" />
+    {{-- ==================== SEO ==================== --}}
+    @php
+    $seoTitle       = (!empty($pageMeta['seoTitle']))       ? $pageMeta['seoTitle']       : ($settings['seoTitle']       ?? config('app.name'));
+    $seoDescription = (!empty($pageMeta['seoDescription'])) ? $pageMeta['seoDescription'] : ($settings['seoDescription'] ?? '');
+    $seoKeywords    = (!empty($pageMeta['seoKeywords']))    ? $pageMeta['seoKeywords']    : ($settings['seoKeywords']    ?? null);
+    @endphp
+    <title>{{ $seoTitle }}</title>
+    <meta name="description" content="{{ $seoDescription }}" />
+    @if(!empty($seoKeywords))
+    <meta name="keywords" content="{{ $seoKeywords }}" />
+    @endif
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=2">
+    <meta property="og:title"       content="{{ $seoTitle }}" />
+    <meta property="og:description" content="{{ $seoDescription }}" />
+    <meta property="og:type"        content="website" />
 
   {{-- ==================== 字型（從 API 取得 frontFamily）==================== --}}
   @php
