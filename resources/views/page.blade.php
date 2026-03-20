@@ -15,7 +15,7 @@
       'INDEX_EVENT'      => 'components.events-section',
       'INDEX_PRODUCT'    => 'components.products-section',
       'INDEX_DONATION'   => 'components.donation-section',
-      'BRIGHT_LAMP'      => 'components.about-section',
+      'BRIGHT_LAMP'      => 'components.bright-lamp',
       'NEWS_LIST'        => 'components.news-list-section',
       'PRODUCT_LIST'     => 'components.product-list-section',
       'ALBUM_LIST'       => 'components.album-list-section',
