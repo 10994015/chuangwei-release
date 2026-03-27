@@ -18,13 +18,15 @@
 
   $fontSize = $ensureUnit($meta['fontSize'] ?? null, '16px');
   $padding  = $ensureUnit($value['padding'] ?? null, '12px 32px');
+
+  $internalSlug = $value['internalSlug'] ?? null;
+  $link = $internalSlug ? '/' . $internalSlug : $link;
 @endphp
 
 <div class="button-element" style="text-align: {{ $align }};">
   <a
     href="{{ $link }}"
     class="element-button"
-    target="_blank"
     rel="noopener noreferrer"
     style="display: inline-block; color: {{ $textColor }}; background-color: {{ $bgColor }}; font-size: {{ $fontSize }}; padding: {{ $padding }};"
   >
