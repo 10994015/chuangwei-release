@@ -21,14 +21,16 @@
 
   $internalSlug = $value['internalSlug'] ?? null;
   $link = $internalSlug ? '/' . $internalSlug : $link;
+  $isDisabled = (empty($link) || $link === '#') && empty($internalSlug);
 @endphp
 
 <div class="button-element" style="text-align: {{ $align }};">
   <a
-    href="{{ $link }}"
+    href="{{ $isDisabled ? 'javascript:void(0);' : $link }}"
     class="element-button"
     rel="noopener noreferrer"
     style="display: inline-block; color: {{ $textColor }}; background-color: {{ $bgColor }}; font-size: {{ $fontSize }}; padding: {{ $padding }};"
+    @if($isDisabled) onclick="return false;" @endif
   >
     {{ $text }}
   </a>
