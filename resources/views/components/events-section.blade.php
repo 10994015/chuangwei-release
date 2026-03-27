@@ -3,8 +3,13 @@
     $data      = $frame['data'] ?? [];
     $rawEvents = $data['events'] ?? [];
 
-    $tagColors   = ['#E8572A','#2563eb','#27a163','#c2185b','#e67e00','#7c3aed','#0891b2','#be123c','#15803d','#b45309'];
-    $getTagColor = fn(string $tag): string => $tagColors[abs(crc32($tag)) % count($tagColors)];
+    $getTagClass = function(string $tag): string {
+        if ($tag === '熱門') return 'hot';
+        if ($tag === '推薦') return 'recommended';
+        if ($tag === '重要') return 'important';
+        if ($tag === '祭典') return 'ceremony';
+        return 'default';
+    };
 
     $eventsList = array_map(function($item) {
         $startAt  = $item['startAt'] ?? null;
@@ -32,7 +37,7 @@
     $viewAllUrl = $templeId ? "/site/{$templeId}/events" : '#';
 @endphp
 
-<section class="events-section ">
+<section class="events-section">
     <div class="container">
 
         {{-- 標題列 --}}
@@ -66,10 +71,7 @@
                         @if (!empty($event['tags']))
                             <div class="event-tags">
                                 @foreach ($event['tags'] as $tag)
-                                    <span class="event-tag"
-                                          style="background: {{ $getTagColor($tag) }}; color: #fff;">
-                                        {{ $tag }}
-                                    </span>
+                                    <span class="event-tag {{ $getTagClass($tag) }}">{{ $tag }}</span>
                                 @endforeach
                             </div>
                         @else

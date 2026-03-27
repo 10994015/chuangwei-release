@@ -2,14 +2,12 @@
 @php
     $data          = $frame['data'] ?? [];
 
-    // ── 分類（從 API 的 postCategories 組成 tab）─────────────────
     $apiCategories = $data['postCategories'] ?? [];
     $categories    = array_merge(
         [['id' => 'all', 'name' => '全部']],
         array_map(fn($c) => ['id' => $c, 'name' => $c], $apiCategories)
     );
 
-    // ── 消息清單（從 postList.data）──────────────────────────────
     $rawNews  = $data['postList']['data'] ?? [];
     $newsList = array_map(fn($item) => [
         'id'          => $item['id']        ?? null,
@@ -21,26 +19,19 @@
                             : '',
     ], $rawNews);
 
-    // ── tag 顏色（hash 自動產生）────────────────────────────────
-    $tagColors   = ['#E8572A','#2563eb','#27a163','#c2185b','#e67e00','#7c3aed','#0891b2','#be123c','#15803d','#b45309'];
-    $getTagColor = fn(string $tag): string => $tagColors[abs(crc32($tag)) % count($tagColors)];
-
     $pageSize = 5;
 
-    // ── 篩選 ─────────────────────────────────────────────────────
     $selectedCategory = request('category', 'all');
     $filteredNews     = $selectedCategory === 'all'
         ? $newsList
         : array_values(array_filter($newsList, fn($n) => ($n['tag'] ?? '') === $selectedCategory));
 
-    // ── 分頁 ─────────────────────────────────────────────────────
     $total       = count($filteredNews);
     $totalPages  = $pageSize > 0 ? (int) ceil($total / $pageSize) : 1;
     $currentPage = max(1, min((int) request('page', 1), $totalPages));
     $offset      = ($currentPage - 1) * $pageSize;
     $pagedNews   = array_slice($filteredNews, $offset, $pageSize);
 
-    // ── 頁碼 ─────────────────────────────────────────────────────
     $pageNumbers = [];
     if ($totalPages <= 7) {
         $pageNumbers = range(1, $totalPages);
@@ -74,10 +65,7 @@
         <div class="news-list">
             @foreach ($pagedNews as $news)
                 <div class="news-item">
-                    <div class="news-tag"
-                         style="background: {{ $getTagColor($news['tag']) }}; color: #fff;">
-                        {{ $news['tag'] }}
-                    </div>
+                    <div class="news-tag notice">{{ $news['tag'] }}</div>
                     <div class="news-content">
                         <h3 class="news-title">{{ $news['title'] }}</h3>
                         <p class="news-description">{{ $news['description'] }}</p>

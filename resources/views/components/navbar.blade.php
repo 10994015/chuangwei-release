@@ -60,6 +60,12 @@
         class="mobile-menu"
         x-show="mobileMenuOpen"
         x-cloak
+        x-transition:enter="mobile-menu-enter-active"
+        x-transition:enter-start="mobile-menu-enter-from"
+        x-transition:enter-end=""
+        x-transition:leave="mobile-menu-leave-active"
+        x-transition:leave-start=""
+        x-transition:leave-end="mobile-menu-leave-to"
         @click.stop
     >
         <nav class="mobile-nav">
@@ -89,6 +95,12 @@
         class="menu-overlay"
         x-show="mobileMenuOpen"
         x-cloak
+        x-transition:enter="overlay-fade-enter-active"
+        x-transition:enter-start="overlay-fade-enter-from"
+        x-transition:enter-end=""
+        x-transition:leave="overlay-fade-leave-active"
+        x-transition:leave-start=""
+        x-transition:leave-end="overlay-fade-leave-to"
         @click="mobileMenuOpen = false"
     ></div>
 </header>

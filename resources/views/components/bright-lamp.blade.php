@@ -1,12 +1,4 @@
 {{-- resources/views/components/bright-lamp.blade.php --}}
-{{--
-  對應 BrightLampBasemap.vue
-  接收變數：$frame（完整 frame 物件）
-  frame['data'] 包含：
-    bgImgSrc, bgImgId, mainImgSrc, mainImgId,
-    borderOption, pillarOption, lampTypes（array）
---}}
-
 @php
   $data         = $frame['data'] ?? [];
   $bgImgSrc     = $data['bgImgSrc']     ?? '/images/bright-light/bg.png';
@@ -169,8 +161,8 @@
   filter: brightness(0.7) blur(1px) drop-shadow(0 0 12px rgba(255, 160, 0, 0.25));
   z-index: 1;
 }
-.bl-scene__pillar--left-back  { left: 26%; }
-.bl-scene__pillar--right-back { right: 26%; transform: scaleX(-1); }
+.bl-scene__pillar--left-back  { left: 16%; }
+.bl-scene__pillar--right-back { right: 16%; transform: scaleX(-1); }
 
 .bl-scene__pillar--left-front,
 .bl-scene__pillar--right-front {
@@ -180,8 +172,8 @@
   filter: drop-shadow(0 0 28px rgba(255, 180, 0, 0.5));
   z-index: 2;
 }
-.bl-scene__pillar--left-front  { left: 16%; }
-.bl-scene__pillar--right-front { right: 16%; transform: scaleX(-1); }
+.bl-scene__pillar--left-front  { left: 6%; }
+.bl-scene__pillar--right-front { right: 6%; transform: scaleX(-1); }
 
 .bl-scene__main {
   position: absolute;
@@ -306,23 +298,24 @@
 .bl-panel__btn:hover  { background: #5e4525; }
 .bl-panel__btn:active { background: #4a3318; }
 
-/* ==================== 響應式 ==================== */
+/* ==================== 平板 RWD（1024px）==================== */
 @media (max-width: 1024px) {
   .bl-scene__pillar--left-back,
   .bl-scene__pillar--right-back  { max-width: 7%; }
-  .bl-scene__pillar--left-back   { left: 20%; }
-  .bl-scene__pillar--right-back  { right: 20%; }
+  .bl-scene__pillar--left-back   { left: 12%; }
+  .bl-scene__pillar--right-back  { right: 12%; }
 
   .bl-scene__pillar--left-front,
   .bl-scene__pillar--right-front { max-width: 9%; }
-  .bl-scene__pillar--left-front  { left: 10%; }
-  .bl-scene__pillar--right-front { right: 10%; }
+  .bl-scene__pillar--left-front  { left: 3%; }
+  .bl-scene__pillar--right-front { right: 3%; }
 
   .bl-scene__main { max-width: 42%; height: 78%; }
-  .bl-panel-wrap { max-width: 460px; }
+  .bl-panel-wrap  { max-width: 460px; }
   .bl-panel__body { padding: 20px 24px 24px; }
 }
 
+/* ==================== 手機 RWD（768px）==================== */
 @media (max-width: 768px) {
   .bright-lamp-section {
     min-height: 0;
@@ -401,8 +394,8 @@
 
     var lampTypeSelect = document.getElementById('bl-lamp-type');
     var lampTypeLabel  = lampTypeSelect.options[lampTypeSelect.selectedIndex]?.text || '光明燈';
-    var name    = document.getElementById('bl-input-name')?.value   || '';
-    var phone   = document.getElementById('bl-input-phone')?.value  || '';
+    var name    = document.getElementById('bl-input-name')?.value    || '';
+    var phone   = document.getElementById('bl-input-phone')?.value   || '';
     var lampNo  = document.getElementById('bl-input-lamp-no')?.value || '';
 
     if (window.__blGoDetail) {
@@ -424,7 +417,6 @@
   document.getElementById('bl-search-btn').addEventListener('click', goToDetail);
   document.getElementById('bl-search-btn-no').addEventListener('click', goToDetail);
 
-  // 讓 detail 頁的返回按鈕可以呼叫 goBack
   window.__blGoBack = goBack;
 })();
 </script>

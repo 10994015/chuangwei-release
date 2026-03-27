@@ -2,14 +2,12 @@
 @php
     $data       = $frame['data'] ?? [];
 
-    // ── 分類（從 API 的 eventCategories 組成 tab）────────────────
     $apiCategories = $data['eventCategories'] ?? [];
     $categories    = array_merge(
         [['id' => 'all', 'name' => '全部']],
         array_map(fn($c) => ['id' => $c, 'name' => $c], $apiCategories)
     );
 
-    // ── 活動清單（從 eventList.data）────────────────────────────
     $rawEvents  = $data['eventList']['data'] ?? [];
     $eventsList = array_map(function($item) {
         $startAt  = $item['startAt'] ?? null;
@@ -31,31 +29,26 @@
         ];
     }, $rawEvents);
 
-    $perPage  = 3;
+    $perPage = 9;
 
-    $tagColors = [
-        '#E8572A', '#2563eb', '#27a163', '#c2185b', '#e67e00',
-        '#7c3aed', '#0891b2', '#be123c', '#15803d', '#b45309',
-    ];
-    $getTagColor = function(string $tag) use ($tagColors): string {
-        $index = abs(crc32($tag)) % count($tagColors);
-        return $tagColors[$index];
+    $getTagClass = function(string $tag): string {
+        if ($tag === '熱門') return 'hot';
+        if ($tag === '推薦') return 'recommended';
+        return 'default';
     };
+    // 對應 Vue 版 getTagClass：hot=#dc3545, recommended=#1a73e8, default=#95a5a6
 
-    // ── 篩選 ──────────────────────────────────────────────────────
     $selectedCategory = request('category', 'all');
     $filteredEvents   = $selectedCategory === 'all'
         ? $eventsList
         : array_values(array_filter($eventsList, fn($e) => in_array($selectedCategory, $e['tags'] ?? [])));
 
-    // ── 分頁 ──────────────────────────────────────────────────────
     $total       = count($filteredEvents);
     $totalPages  = $perPage > 0 ? (int) ceil($total / $perPage) : 1;
     $currentPage = max(1, min((int) request('page', 1), $totalPages));
     $offset      = ($currentPage - 1) * $perPage;
     $pagedEvents = array_slice($filteredEvents, $offset, $perPage);
 
-    // ── 頁碼按鈕 ─────────────────────────────────────────────────
     $pageNumbers = [];
     if ($totalPages <= 7) {
         $pageNumbers = range(1, $totalPages);
@@ -108,9 +101,7 @@
                         @if (!empty($event['tags']))
                             <div class="event-tags">
                                 @foreach ($event['tags'] as $tag)
-                                    <span class="event-tag" style="background: {{ $getTagColor($tag) }}; color: #fff;">
-                                        {{ $tag }}
-                                    </span>
+                                    <span class="event-tag {{ $getTagClass($tag) }}">{{ $tag }}</span>
                                 @endforeach
                             </div>
                         @else

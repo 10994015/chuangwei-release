@@ -22,7 +22,7 @@
                             : '',
     ], $rawAlbums);
 
-    $perPage = 3;
+    $perPage = 9;
     // ── 篩選 ─────────────────────────────────────────────────────
     $activeCategory = request('category', 'all');
     $filteredAlbums = $activeCategory === 'all'

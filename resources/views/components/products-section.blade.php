@@ -12,7 +12,6 @@
         'badge' => !empty($item['labels']) ? $item['labels'][0] : null,
     ], $rawList);
 
-    // 首頁只顯示前 3 筆
     $displayProducts = array_slice($products, 0, 3);
 
     $device     = $device ?? 'desktop';
@@ -50,7 +49,7 @@
                     {{-- 資訊區 --}}
                     <div class="product-info">
                         @if (!empty($product['badge']))
-                            <span class="product-badge">{{ $product['badge'] }}</span>
+                            <span class="product-badge hot">{{ $product['badge'] }}</span>
                         @else
                             <div class="badge-placeholder"></div>
                         @endif
