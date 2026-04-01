@@ -1,9 +1,9 @@
 {{-- resources/views/components/donation-section.blade.php --}}
 @php
     $data       = $frame['data'] ?? [];
-    $title      = $data['donationTitle']      ?? '捐款護持';
-    $text = $data['donationBrief'] ?? "您的捐款將用於宮廟維護與慈善公益\n支持本宮日常運作、建設修繕及幫助弱勢族群\n每一分善款都將妥善運用 功德無量";
-    $btnText    = $data['donationButtonText'] ?? '前往捐款 ›';
+    $title      = $data['donationTitle']      ?? __('ui.donationBasemap.title');
+    $text = $data['donationBrief'] ?? __('ui.donationBasemap.brief');
+    $btnText    = $data['donationButtonText'] ?? __('ui.donationBasemap.buttonText');
     $btnLink    = $data['donationButtonLink'] ?? '';
     $templeId   = $templeId ?? '';
 

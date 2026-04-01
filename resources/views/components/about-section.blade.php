@@ -1,15 +1,21 @@
 {{-- resources/views/components/about-section.blade.php --}}
 @props([
-    'title'            => '關於我們',
-    'subtitle'         => '認識天上聖母宮的歷史與特色',
-    'descriptions'     => [
-        '天上聖母宮創建於民國XX年，主祀天上聖母媽祖娘娘，為當地重要信仰中心。',
-        '本宮歷經數十載風雨，香火鼎盛，神威顯赫，守護在地居民，庇佑四方信眾。',
-    ],
-    'linkText'         => '了解宮廟歷史 ›',
+    'title'            => null,
+    'subtitle'         => null,
+    'descriptions'     => [],
+    'linkText'         => null,
     'linkUrl'          => '#',
-    'imagePlaceholder' => '宮廟圖片',
+    'imagePlaceholder' => null,
 ])
+@php
+    $title            = $title            ?? __('ui.aboutSection.title');
+    $subtitle         = $subtitle         ?? '';
+    $linkText         = $linkText         ?? __('ui.aboutSection.historyBtn');
+    $imagePlaceholder = $imagePlaceholder ?? __('ui.aboutSection.imgAlt');
+    if (empty($descriptions)) {
+        $descriptions = ['', ''];
+    }
+@endphp
 
 <section class="about-section">
     <div class="container">

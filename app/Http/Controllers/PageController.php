@@ -33,6 +33,19 @@ class PageController extends Controller
             : config('api.base_url');
     }
 
+    private function getLocales(): array
+    {
+        $response = Http::get($this->buildBaseUrl() . "/api/web-site/locale");
+
+        if ($response->failed()) return [];
+
+        $result = $response->json();
+
+        return ($result['statusCode'] === 200 && !empty($result['data']))
+            ? $result['data']
+            : [];
+    }
+
     private function getWebsiteSettings(): array
     {
         $response = Http::get($this->buildBaseUrl() . "/api/web-site/");
@@ -53,7 +66,9 @@ class PageController extends Controller
 
         Log::debug('getPageContent', [
             'url'    => $url,
+            'params' => ['locale' => $locale],
             'status' => $response->status(),
+            'body'   => $response->body(),
         ]);
 
         if ($response->failed()) return null;
@@ -65,10 +80,51 @@ class PageController extends Controller
         return $result['data'];
     }
 
+    /**
+     * 取得所有頁面清單，回傳第一個 slug
+     */
+    private function getFirstSlug(string $locale): string
+    {
+        $url      = $this->buildBaseUrl() . "/api/web-site/page/home";
+        $response = Http::get($url, ['locale' => $locale]);
+
+        if ($response->failed()) return 'home';
+
+        $result = $response->json();
+
+        if ($result['statusCode'] !== 200 || empty($result['data'])) return 'home';
+
+        $contentJson = $result['data']['contentJson'] ?? [];
+
+        foreach ($contentJson as $section) {
+            $bgType = $section['bgType'] ?? '';
+            foreach ($section['frames'] ?? [] as $frame) {
+                if (in_array($bgType, ['HEADER', 'PV_HEADER']) || in_array($frame['type'] ?? '', ['PV_HEADER'])) {
+                    $firstSlug = $frame['data']['tabs'][0]['slug'] ?? null;
+                    if ($firstSlug) return $firstSlug;
+                }
+            }
+        }
+
+        return 'home';
+    }
+
+    /**
+     * 根目錄：自動跳到後端第一個 slug
+     */
+    public function home()
+    {
+        $locale    = request()->query('locale', 'ZH-TW');
+        $firstSlug = $this->getFirstSlug($locale);
+
+        return redirect("/{$firstSlug}?locale={$locale}");
+    }
+
     private function renderPage(string $slug): \Illuminate\View\View
     {
         $locale   = request()->query('locale', 'ZH-TW');
         $settings = $this->getWebsiteSettings();
+        $locales  = $this->getLocales();
         $pageData = $this->getPageContent($slug, $locale);
 
         if (!$pageData) abort(404);
@@ -86,11 +142,17 @@ class PageController extends Controller
         $headerFrame = null;
         $footerFrame = null;
 
+        $headerTypes = ['HEADER', 'PV_HEADER'];
+        $footerTypes = ['FOOTER', 'PV_FOOTER'];
+
         foreach ($basemaps as $section) {
-            if (($section['bgType'] ?? '') === 'HEADER') {
+            $bgType = $section['bgType'] ?? '';
+
+            if (in_array($bgType, $headerTypes) && $headerFrame === null) {
                 $headerFrame = $section['frames'][0]['data'] ?? null;
             }
-            if (($section['bgType'] ?? '') === 'FOOTER') {
+
+            if (in_array($bgType, $footerTypes) && $footerFrame === null) {
                 $footerFrame = $section['frames'][0]['data'] ?? null;
             }
         }
@@ -110,9 +172,9 @@ class PageController extends Controller
             'columns'       => $columns,
         ];
 
-        $templeId = ''; // 正式環境不需要，保留供 view 相容
+        $templeId = '';
 
-        return view('page', compact('basemaps', 'settings', 'pageMeta', 'templeId', 'slug', 'footerData'));
+        return view('page', compact('basemaps', 'settings', 'pageMeta', 'templeId', 'slug', 'footerData', 'locales'));
     }
 
     public function show(string $slug = 'home')

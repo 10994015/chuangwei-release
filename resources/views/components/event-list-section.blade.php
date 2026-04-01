@@ -4,7 +4,7 @@
 
     $apiCategories = $data['eventCategories'] ?? [];
     $categories    = array_merge(
-        [['id' => 'all', 'name' => '全部']],
+        [['id' => 'all', 'name' => __('ui.eventListBasemap.catAll')]],
         array_map(fn($c) => ['id' => $c, 'name' => $c], $apiCategories)
     );
 
@@ -92,7 +92,7 @@
                                     <circle cx="28" cy="32" r="7" stroke="#bbb" stroke-width="3"/>
                                     <path d="M8 50l18-16 14 14 10-10 18 18" stroke="#bbb" stroke-width="3" stroke-linejoin="round"/>
                                 </svg>
-                                <span class="placeholder-text">活動圖片</span>
+                                <span class="placeholder-text">{{ __('ui.eventsBasemap.imagePlaceholder') }}</span>
                             </div>
                         @endif
                     </div>
@@ -143,7 +143,7 @@
         {{-- 無資料 --}}
         @if (count($filteredEvents) === 0)
             <div class="empty-state">
-                <p>此分類目前沒有活動</p>
+                <p>{{ __('ui.eventListBasemap.empty') }}</p>
             </div>
         @endif
 
@@ -151,10 +151,10 @@
         @if ($totalPages > 1)
             <div class="pagination">
                 @if ($currentPage <= 1)
-                    <span class="page-btn page-nav disabled">上一頁</span>
+                    <span class="page-btn page-nav disabled">{{ __('ui.eventListBasemap.prev') }}</span>
                 @else
                     <a href="{{ url()->current() . '?' . http_build_query(array_merge($queryBase, ['category' => $selectedCategory, 'page' => $currentPage - 1])) }}"
-                       class="page-btn page-nav">上一頁</a>
+                       class="page-btn page-nav">{{ __('ui.eventListBasemap.prev') }}</a>
                 @endif
 
                 @foreach ($pageNumbers as $page)
@@ -167,10 +167,10 @@
                 @endforeach
 
                 @if ($currentPage >= $totalPages)
-                    <span class="page-btn page-nav disabled">下一頁</span>
+                    <span class="page-btn page-nav disabled">{{ __('ui.eventListBasemap.next') }}</span>
                 @else
                     <a href="{{ url()->current() . '?' . http_build_query(array_merge($queryBase, ['category' => $selectedCategory, 'page' => $currentPage + 1])) }}"
-                       class="page-btn page-nav">下一頁</a>
+                       class="page-btn page-nav">{{ __('ui.eventListBasemap.next') }}</a>
                 @endif
             </div>
         @endif

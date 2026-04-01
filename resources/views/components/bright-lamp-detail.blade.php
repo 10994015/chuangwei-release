@@ -9,10 +9,10 @@
 @php
   $data      = $frame['data'] ?? [];
   $lampTypes = $data['lampTypes'] ?? [
-    ['value' => 'bright', 'label' => '光明燈'],
-    ['value' => 'peace',  'label' => '平安燈'],
-    ['value' => 'wealth', 'label' => '財神燈'],
-    ['value' => 'wisdom', 'label' => '文昌燈'],
+    ['value' => 'bright', 'label' => __('ui.brightLampBasemap.lampBright')],
+    ['value' => 'peace',  'label' => __('ui.brightLampBasemap.lampPeace')],
+    ['value' => 'wealth', 'label' => __('ui.brightLampBasemap.lampWealth')],
+    ['value' => 'wisdom', 'label' => __('ui.brightLampBasemap.lampWisdom')],
   ];
   $pillarOptions = [
     ['value' => '1', 'label' => '1號柱'],
@@ -30,9 +30,9 @@
            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
-      返回上一頁
+      {{ __('ui.brightLampDetail.backBtn') }}
     </button>
-    <h1 class="bld-title" id="bld-page-title">光明燈</h1>
+    <h1 class="bld-title" id="bld-page-title">{{ __('ui.brightLampDetail.title') }}</h1>
     <div class="bld-nav-placeholder"></div>
   </div>
 
@@ -40,10 +40,10 @@
   <div class="bld-search-bar">
 
     <div class="bld-search-field">
-      <label class="bld-search-label" for="bld-filter-pillar">燈柱</label>
+      <label class="bld-search-label" for="bld-filter-pillar">{{ __('ui.brightLampDetail.pillarLabel') }}</label>
       <div class="bld-select-wrapper">
         <select class="bld-search-select" id="bld-filter-pillar">
-          <option value="">請選擇燈柱</option>
+          <option value="">{{ __('ui.brightLampDetail.pillarPlaceholder') }}</option>
           @foreach($pillarOptions as $opt)
             <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
           @endforeach
@@ -53,32 +53,32 @@
     </div>
 
     <div class="bld-search-field">
-      <label class="bld-search-label" for="bld-filter-lamp-no">燈位編號</label>
-      <input id="bld-filter-lamp-no" class="bld-search-input" type="text" placeholder="請輸入燈位編號" />
+      <label class="bld-search-label" for="bld-filter-lamp-no">{{ __('ui.brightLampDetail.lampNoLabel') }}</label>
+      <input id="bld-filter-lamp-no" class="bld-search-input" type="text" placeholder="{{ __('ui.brightLampDetail.lampNoPlaceholder') }}" />
     </div>
 
     <div class="bld-search-field">
-      <label class="bld-search-label" for="bld-filter-name">姓名</label>
-      <input id="bld-filter-name" class="bld-search-input" type="text" placeholder="請輸入您的姓名" />
+      <label class="bld-search-label" for="bld-filter-name">{{ __('ui.brightLampDetail.nameLabel') }}</label>
+      <input id="bld-filter-name" class="bld-search-input" type="text" placeholder="{{ __('ui.brightLampDetail.namePlaceholder') }}" />
     </div>
 
     <div class="bld-search-field">
-      <label class="bld-search-label" for="bld-filter-phone">電話</label>
-      <input id="bld-filter-phone" class="bld-search-input" type="tel" placeholder="請輸入您的電話" />
+      <label class="bld-search-label" for="bld-filter-phone">{{ __('ui.brightLampDetail.phoneLabel') }}</label>
+      <input id="bld-filter-phone" class="bld-search-input" type="tel" placeholder="{{ __('ui.brightLampDetail.phonePlaceholder') }}" />
     </div>
 
-    <button class="bld-search-btn" id="bld-do-search">搜尋</button>
+    <button class="bld-search-btn" id="bld-do-search">{{ __('ui.brightLampDetail.search') }}</button>
   </div>
 
   {{-- 神位 Grid（由 JS 動態填入） --}}
   <div class="bld-grid" id="bld-lamp-grid">
     {{-- 初始佔位（loading 時顯示） --}}
-    <div class="bld-loading" id="bld-loading">載入中...</div>
+    <div class="bld-loading" id="bld-loading">{{ __('ui.brightLampDetail.loading') }}</div>
   </div>
 
   {{-- 空狀態 --}}
   <div class="bld-empty" id="bld-empty" style="display: none;">
-    <p>查無符合條件的燈位</p>
+    <p>{{ __('ui.brightLampDetail.empty') }}</p>
   </div>
 
 </div>

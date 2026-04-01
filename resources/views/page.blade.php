@@ -7,6 +7,7 @@
     use App\Helpers\FrameHelper;
 
     $componentMap = [
+      // ── 原有框架 ──
       'HEADER'           => 'components.navbar',
       'FOOTER'           => 'components.footer',
       'CAROUSEL_WALL'    => 'components.hero',
@@ -21,11 +22,31 @@
       'ALBUM_LIST'       => 'components.album-list-section',
       'EVENT_LIST'       => 'components.event-list-section',
       'DONATION_PRODUCT' => 'components.donation-product',
+      // ── PV 系列框架 ──
+      'PV_HEADER'        => 'components.pv-navbar',
+      'PV_FOOTER'        => 'components.pv-footer',
+      'PV_CAROUSEL_WALL' => 'components.pv-hero',
+      'PV_FIRST_PICTURE' => 'components.pv-first-picture',
+      'PV_INDEX_NEWS'    => 'components.pv-news-section',
+      'PV_NEWS_LIST'     => 'components.pv-news-list-section',
+      'PV_INDEX_PRODUCT' => 'components.pv-products-section',
+      'PV_PRODUCT_LIST'  => 'components.pv-product-list-section',
+      'PV_INDEX_SERVICE' => 'components.pv-services-section',
     ];
+
     $systemFrameTypes = array_keys($componentMap);
 
     // 這幾種框架有自己的背景色邏輯，不套文字色主題變數
-    $noThemeTypes = ['HEADER', 'FOOTER', 'INDEX_DONATION', 'CAROUSEL_WALL', 'FIRST_PICTURE'];
+    $noThemeTypes = [
+      'HEADER', 'FOOTER', 'INDEX_DONATION', 'CAROUSEL_WALL', 'FIRST_PICTURE',
+      'PV_HEADER', 'PV_FOOTER', 'PV_CAROUSEL_WALL', 'PV_FIRST_PICTURE',
+    ];
+
+    // FOOTER 類型（用來傳 footerData）
+    $footerTypes = ['FOOTER', 'PV_FOOTER'];
+
+    // HEADER 類型（用來判斷 headerFrame，PageController 已處理，這裡備用）
+    $headerTypes = ['HEADER', 'PV_HEADER'];
   @endphp
 
   @foreach($basemaps as $basemap)
@@ -56,16 +77,14 @@
           // ── 計算 wrapper inline style ──────────────────────────────────────
           $wrapperStyle = '';
           if ($isSystem) {
-            if ($frameType === 'FOOTER') {
+            if (in_array($frameType, $footerTypes)) {
               $wrapperStyle = FrameHelper::resolveFooterStyle($frameData);
             } elseif ($frameType === 'INDEX_DONATION') {
               $wrapperStyle = FrameHelper::resolveDonationStyle($frameData);
             } elseif (!in_array($frameType, $noThemeTypes)) {
-              // 一般系統框架套文字色主題
               $wrapperStyle = FrameHelper::resolveTextThemeCssVars($frameData);
             }
           } elseif ($isCustom) {
-            // 自訂框架也繼承文字色主題（basemap 背景圖上文字色需要）
             $wrapperStyle = FrameHelper::resolveTextThemeCssVars($frameData);
           }
         @endphp
@@ -81,9 +100,10 @@
 
             <div class="system-frame-wrapper" @if($wrapperStyle) style="{{ $wrapperStyle }}" @endif>
 
-              @if($frameType === 'FOOTER')
+              @if(in_array($frameType, $footerTypes))
                 @include($systemView, [
                   'frame'         => $frame,
+                  'footerData'    => $footerData ?? [],
                   'tenantName'    => $footerData['tenantName']    ?? null,
                   'tenantPhone'   => $footerData['tenantPhone']   ?? null,
                   'tenantAddress' => $footerData['tenantAddress'] ?? null,
@@ -92,7 +112,11 @@
                   'templeId'      => $templeId,
                 ])
               @else
-                @include($systemView, ['frame' => $frame])
+                @include($systemView, [
+                  'frame'   => $frame,
+                  'slug'    => $slug ?? 'home',
+                  'locales' => $locales ?? [],
+                ])
               @endif
 
             </div>

@@ -147,7 +147,7 @@
   </div>
 
   {{-- ==================== Scroll-to-top 按鈕 ==================== --}}
-  <button id="scroll-top-btn" aria-label="回到頂部" title="回到頂部">
+  <button id="scroll-top-btn" aria-label="{{ __('ui.general.backToTop') }}" title="{{ __('ui.general.backToTop') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
          stroke-linecap="round" stroke-linejoin="round">
       <polyline points="18 15 12 9 6 15"/>

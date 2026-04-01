@@ -150,6 +150,7 @@ class FrameHelper
             'type'         => $elementType,
             'value'        => $element['value'] ?? [],
             'meta'         => $meta,
+            'content'      => $element['content'] ?? [],
             'paddingStyle' => "padding: {$pt}px {$pr}px {$pb}px {$pl}px;",
             'metaStyle'    => $metaStyle,
         ];

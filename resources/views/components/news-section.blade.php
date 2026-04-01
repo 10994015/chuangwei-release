@@ -21,9 +21,9 @@
 <section class="news-section">
     <div class="container">
         <div class="section-header">
-            <h2 class="section-title">最新消息</h2>
+            <h2 class="section-title">{{ __('ui.newsBasemap.title') }}</h2>
             @if (!empty($newsList))
-                <a href="{{ $viewAllUrl }}" class="view-all">查看所有消息 ›</a>
+                <a href="{{ $viewAllUrl }}" class="view-all">{{ __('ui.newsBasemap.viewAll') }}</a>
             @endif
         </div>
 
@@ -39,7 +39,7 @@
                 </div>
             @empty
                 <div class="empty-state">
-                    <p>目前尚無消息</p>
+                    <p>{{ __('ui.newsBasemap.empty') }}</p>
                 </div>
             @endforelse
         </div>

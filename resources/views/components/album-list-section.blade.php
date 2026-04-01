@@ -5,7 +5,7 @@
     // ── 分類（從 API 的 albumCategories 組成 tab）────────────────
     $apiCategories = $data['albumCategories'] ?? [];
     $categories    = array_merge(
-        [['label' => '全部', 'value' => 'all']],
+        [['label' => __('ui.albumListBasemap.all'), 'value' => 'all']],
         array_map(fn($c) => ['label' => $c, 'value' => $c], $apiCategories)
     );
 
@@ -81,7 +81,7 @@
                                         <circle cx="18" cy="22" r="4" stroke="#bbb" stroke-width="2.5"/>
                                         <path d="M4 36l13-13 9 10 7-8 12 13" stroke="#bbb" stroke-width="2.5" stroke-linejoin="round"/>
                                     </svg>
-                                    <span class="placeholder-text">相簿封面</span>
+                                    <span class="placeholder-text">{{ __('ui.albumListBasemap.coverPlaceholder') }}</span>
                                 </div>
                             @endif
                         </div>
@@ -108,7 +108,7 @@
         {{-- 無資料 --}}
         @if (count($filteredAlbums) === 0)
             <div class="empty-state">
-                <p>此分類目前沒有相簿</p>
+                <p>{{ __('ui.albumListBasemap.empty') }}</p>
             </div>
         @endif
 
@@ -116,10 +116,10 @@
         @if ($totalPages > 1)
             <div class="pagination">
                 @if ($currentPage <= 1)
-                    <span class="page-btn page-nav disabled">上一頁</span>
+                    <span class="page-btn page-nav disabled">{{ __('ui.albumListBasemap.prev') }}</span>
                 @else
                     <a href="{{ url()->current() . '?' . http_build_query(array_merge($queryBase, ['category' => $activeCategory, 'page' => $currentPage - 1])) }}"
-                       class="page-btn page-nav">上一頁</a>
+                       class="page-btn page-nav">{{ __('ui.albumListBasemap.prev') }}</a>
                 @endif
 
                 @foreach ($pageNumbers as $page)
@@ -132,10 +132,10 @@
                 @endforeach
 
                 @if ($currentPage >= $totalPages)
-                    <span class="page-btn page-nav disabled">下一頁</span>
+                    <span class="page-btn page-nav disabled">{{ __('ui.albumListBasemap.next') }}</span>
                 @else
                     <a href="{{ url()->current() . '?' . http_build_query(array_merge($queryBase, ['category' => $activeCategory, 'page' => $currentPage + 1])) }}"
-                       class="page-btn page-nav">下一頁</a>
+                       class="page-btn page-nav">{{ __('ui.albumListBasemap.next') }}</a>
                 @endif
             </div>
         @endif

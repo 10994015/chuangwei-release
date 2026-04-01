@@ -29,4 +29,6 @@
   @include('elements.service_card', ['data' => $elValue, 'meta' => $elMeta])
 @elseif($elType === 'EVENT_CARD')
   @include('elements.event_card', ['data' => $elValue, 'meta' => $elMeta])
+@elseif($elType === 'ACCORDION')
+  @include('elements.accordion_element', ['el' => $el])
 @endif

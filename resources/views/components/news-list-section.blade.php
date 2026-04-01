@@ -4,7 +4,7 @@
 
     $apiCategories = $data['postCategories'] ?? [];
     $categories    = array_merge(
-        [['id' => 'all', 'name' => '全部']],
+        [['id' => 'all', 'name' => __('ui.newsListBasemap.catAll')]],
         array_map(fn($c) => ['id' => $c, 'name' => $c], $apiCategories)
     );
 
@@ -78,7 +78,7 @@
         {{-- 無資料 --}}
         @if (count($filteredNews) === 0)
             <div class="empty-state">
-                <p>此分類目前沒有消息</p>
+                <p>{{ __('ui.newsListBasemap.empty') }}</p>
             </div>
         @endif
 
@@ -86,10 +86,10 @@
         @if ($totalPages > 1)
             <div class="pagination">
                 @if ($currentPage <= 1)
-                    <span class="page-btn page-nav disabled">上一頁</span>
+                    <span class="page-btn page-nav disabled">{{ __('ui.newsListBasemap.prev') }}</span>
                 @else
                     <a href="{{ url()->current() . '?' . http_build_query(array_merge($queryBase, ['category' => $selectedCategory, 'page' => $currentPage - 1])) }}"
-                       class="page-btn page-nav">上一頁</a>
+                       class="page-btn page-nav">{{ __('ui.newsListBasemap.prev') }}</a>
                 @endif
 
                 @foreach ($pageNumbers as $page)
@@ -102,10 +102,10 @@
                 @endforeach
 
                 @if ($currentPage >= $totalPages)
-                    <span class="page-btn page-nav disabled">下一頁</span>
+                    <span class="page-btn page-nav disabled">{{ __('ui.newsListBasemap.next') }}</span>
                 @else
                     <a href="{{ url()->current() . '?' . http_build_query(array_merge($queryBase, ['category' => $selectedCategory, 'page' => $currentPage + 1])) }}"
-                       class="page-btn page-nav">下一頁</a>
+                       class="page-btn page-nav">{{ __('ui.newsListBasemap.next') }}</a>
                 @endif
             </div>
         @endif

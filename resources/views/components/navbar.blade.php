@@ -39,7 +39,7 @@
         {{-- 右側按鈕 --}}
         <div class="nav-actions">
             <button class="cart-btn">🛒</button>
-            <button class="login-btn">會員登入</button>
+            <button class="login-btn">{{ __('ui.navbarBasemap.login') }}</button>
         </div>
 
         {{-- 漢堡按鈕（手機） --}}
@@ -47,7 +47,7 @@
             class="hamburger-btn"
             :class="{ 'is-open': mobileMenuOpen }"
             @click.stop="mobileMenuOpen = !mobileMenuOpen"
-            aria-label="開啟選單"
+            aria-label="{{ __('ui.navbarBasemap.openMenu') }}"
         >
             <span class="hamburger-line"></span>
             <span class="hamburger-line"></span>
@@ -85,8 +85,8 @@
         </nav>
 
         <div class="mobile-actions">
-            <button class="mobile-cart-btn">🛒 購物車</button>
-            <button class="mobile-login-btn">會員登入</button>
+            <button class="mobile-cart-btn">{{ __('ui.navbarBasemap.cart') }}</button>
+            <button class="mobile-login-btn">{{ __('ui.navbarBasemap.login') }}</button>
         </div>
     </div>
 

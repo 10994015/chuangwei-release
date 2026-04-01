@@ -24,7 +24,7 @@
 
         {{-- 標題列 --}}
         <div class="section-header">
-            <h2 class="section-title">祈福商品</h2>
+            <h2 class="section-title">{{ __('ui.productsBasemap.title') }}</h2>
         </div>
 
         {{-- 商品 Grid — 固定 3 筆 --}}
@@ -41,7 +41,7 @@
                             <img src="{{ $product['image'] }}" alt="{{ $product['title'] }}" class="image" />
                         @else
                             <div class="image-placeholder">
-                                <span>商品圖片</span>
+                                <span>{{ __('ui.productsBasemap.imagePlaceholder') }}</span>
                             </div>
                         @endif
                     </div>
@@ -71,7 +71,7 @@
                 </div>
             @empty
                 <div class="empty-state">
-                    <p>目前尚無商品</p>
+                    <p>{{ __('ui.productsBasemap.empty') }}</p>
                 </div>
             @endforelse
         </div>
@@ -79,7 +79,7 @@
         {{-- 查看更多 --}}
         @if (!empty($displayProducts))
             <div class="view-more-wrap">
-                <a href="{{ $viewAllUrl }}" class="view-more-btn">查看更多商品</a>
+                <a href="{{ $viewAllUrl }}" class="view-more-btn">{{ __('ui.productsBasemap.viewMore') }}</a>
             </div>
         @endif
 

@@ -6,10 +6,10 @@
   $borderOption = $data['borderOption'] ?? 'border';
   $pillarOption = $data['pillarOption'] ?? 'pillar';
   $lampTypes    = $data['lampTypes']    ?? [
-    ['value' => 'bright', 'label' => '光明燈'],
-    ['value' => 'peace',  'label' => '平安燈'],
-    ['value' => 'wealth', 'label' => '財神燈'],
-    ['value' => 'wisdom', 'label' => '文昌燈'],
+    ['value' => 'bright', 'label' => __('ui.brightLampBasemap.lampBright')],
+    ['value' => 'peace',  'label' => __('ui.brightLampBasemap.lampPeace')],
+    ['value' => 'wealth', 'label' => __('ui.brightLampBasemap.lampWealth')],
+    ['value' => 'wisdom', 'label' => __('ui.brightLampBasemap.lampWisdom')],
   ];
 
   $borderSrc = match($borderOption) {
@@ -53,7 +53,7 @@
           <div class="bl-panel__selects">
             <div class="bl-select-wrapper">
               <select class="bl-panel__select" id="bl-lamp-type">
-                <option value="">請選擇燈別</option>
+                <option value="">{{ __('ui.brightLampBasemap.selectLampType') }}</option>
                 @foreach($lampTypes as $opt)
                   <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
                 @endforeach
@@ -63,8 +63,8 @@
 
             <div class="bl-select-wrapper">
               <select class="bl-panel__select" id="bl-search-mode">
-                <option value="name-phone">姓名電話搜尋</option>
-                <option value="lamp-no">燈位編號搜尋</option>
+                <option value="name-phone">{{ __('ui.brightLampBasemap.searchByNamePhone') }}</option>
+                <option value="lamp-no">{{ __('ui.brightLampBasemap.searchByLampNo') }}</option>
               </select>
               <span class="bl-select-arrow">&#9662;</span>
             </div>
@@ -76,14 +76,14 @@
             {{-- 模式一：姓名電話 --}}
             <div class="bl-panel__fields" id="bl-fields-name-phone">
               <div class="bl-field-group">
-                <label class="bl-field-label" for="bl-input-name">姓名</label>
-                <input id="bl-input-name" class="bl-panel__input" type="text" placeholder="請輸入您的姓名" />
+                <label class="bl-field-label" for="bl-input-name">{{ __('ui.brightLampBasemap.labelName') }}</label>
+                <input id="bl-input-name" class="bl-panel__input" type="text" placeholder="{{ __('ui.brightLampBasemap.placeholderName') }}" />
               </div>
               <div class="bl-field-group">
-                <label class="bl-field-label" for="bl-input-phone">電話</label>
+                <label class="bl-field-label" for="bl-input-phone">{{ __('ui.brightLampBasemap.labelPhone') }}</label>
                 <div class="bl-input-with-btn">
-                  <input id="bl-input-phone" class="bl-panel__input" type="tel" placeholder="請輸入您的電話" />
-                  <button class="bl-panel__btn" id="bl-search-btn">搜尋</button>
+                  <input id="bl-input-phone" class="bl-panel__input" type="tel" placeholder="{{ __('ui.brightLampBasemap.placeholderPhone') }}" />
+                  <button class="bl-panel__btn" id="bl-search-btn">{{ __('ui.brightLampBasemap.search') }}</button>
                 </div>
               </div>
             </div>
@@ -91,10 +91,10 @@
             {{-- 模式二：燈位編號 --}}
             <div class="bl-panel__fields" id="bl-fields-lamp-no" style="display: none;">
               <div class="bl-field-group">
-                <label class="bl-field-label" for="bl-input-lamp-no">燈位編號</label>
+                <label class="bl-field-label" for="bl-input-lamp-no">{{ __('ui.brightLampBasemap.labelLampNo') }}</label>
                 <div class="bl-input-with-btn">
-                  <input id="bl-input-lamp-no" class="bl-panel__input" type="text" placeholder="請輸入燈位編號" />
-                  <button class="bl-panel__btn" id="bl-search-btn-no">搜尋</button>
+                  <input id="bl-input-lamp-no" class="bl-panel__input" type="text" placeholder="{{ __('ui.brightLampBasemap.placeholderLampNo') }}" />
+                  <button class="bl-panel__btn" id="bl-search-btn-no">{{ __('ui.brightLampBasemap.search') }}</button>
                 </div>
               </div>
             </div>

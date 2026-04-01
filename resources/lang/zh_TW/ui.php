@@ -1,0 +1,215 @@
+<?php
+
+return [
+
+    'general' => [
+        'backToTop' => '回到頂部',
+    ],
+
+    'navbarBasemap' => [
+        'login'         => '會員登入',
+        'loginRegister' => '登入 / 註冊',
+        'openMenu'      => '開啟選單',
+        'cart'          => '🛒 購物車',
+    ],
+
+    'heroBasemap' => [
+        'placeholder1'    => '輪播圖片 1',
+        'placeholder2'    => '輪播圖片 2',
+        'placeholder3'    => '輪播圖片 3',
+        'imagePlaceholder'=> '輪播圖片',
+        'prev'            => '上一張',
+        'next'            => '下一張',
+    ],
+
+    'newsBasemap' => [
+        'title'   => '最新消息',
+        'viewAll' => '查看所有消息 ›',
+        'empty'   => '目前尚無消息',
+        'subtitle'=> '掌握宮廟活動與文化資訊',
+        'viewAllShort' => '查看全部',
+    ],
+
+    'newsListBasemap' => [
+        'title'  => '最新消息',
+        'catAll' => '全部',
+        'empty'  => '此分類目前沒有消息',
+        'prev'   => '上一頁',
+        'next'   => '下一頁',
+    ],
+
+    'productsBasemap' => [
+        'title'            => '祈福商品',
+        'imagePlaceholder' => '商品圖片',
+        'empty'            => '目前尚無商品',
+        'viewMore'         => '查看更多商品',
+    ],
+
+    'pvProductsSection' => [
+        'title'     => '精選結緣品',
+        'subtitle'  => '嚴選優質結緣品，傳遞祝福與心意',
+        'viewMore'  => '查看更多',
+        'prev'      => '上一頁',
+        'next'      => '下一頁',
+        'noImage'   => '暫無圖片',
+        'empty'     => '目前尚無商品',
+        'addToCart' => '加入購物車',
+    ],
+
+    'productListBasemap' => [
+        'labelEvent'       => '慶典活動',
+        'labelType'        => '類型',
+        'labelCategory'    => '需求分類',
+        'labelSort'        => '排序方式',
+        'labelKeyword'     => '關鍵字搜尋',
+        'all'              => '全部',
+        'allTypes'         => '所有類型',
+        'allNeeds'         => '所有需求',
+        'defaultSort'      => '預設排序',
+        'sortPriceAsc'     => '價格低到高',
+        'sortPriceDesc'    => '價格高到低',
+        'searchPlaceholder'=> '搜尋商品或服務名稱',
+        'keywordPlaceholder'=> '請輸入關鍵字',
+        'searchBtn'        => '搜尋',
+        'batchSelect'      => '批次選擇',
+        'sectionTitle'     => '精選推薦',
+        'featuredTitle'    => '精選推薦',
+        'imagePlaceholder' => '商品圖片',
+        'noImage'          => '暫無圖片',
+        'empty'            => '找不到符合條件的商品',
+        'featuredEmpty'    => '目前尚無精選商品',
+        'addToCart'        => '加入購物車',
+        'pageTitle'        => '精選結緣品',
+    ],
+
+    'eventsBasemap' => [
+        'title'            => '慶典活動',
+        'imagePlaceholder' => '活動圖片',
+        'empty'            => '目前尚無活動',
+        'viewMore'         => '查看更多活動',
+        'tagHot'           => '熱門',
+        'tagRecommended'   => '推薦',
+        'tagImportant'     => '重要',
+        'tagCeremony'      => '法會',
+    ],
+
+    'eventListBasemap' => [
+        'catAll' => '全部',
+        'empty'  => '此分類目前沒有活動',
+        'prev'   => '上一頁',
+        'next'   => '下一頁',
+    ],
+
+    'albumListBasemap' => [
+        'all'              => '全部',
+        'coverPlaceholder' => '相簿封面',
+        'empty'            => '此分類目前沒有相簿',
+        'prev'             => '上一頁',
+        'next'             => '下一頁',
+    ],
+
+    'donationBasemap' => [
+        'title'      => '捐款護持',
+        'brief'      => "您的捐款將用於宮廟維護與慈善公益\n支持本宮日常運作、建設修繕及幫助弱勢族群\n每一分善款都將妥善運用 功德無量",
+        'buttonText' => '前往捐款 ›',
+    ],
+
+    'donationProductBasemap' => [
+        'mainImageAlt'      => '捐款商品主圖',
+        'thumbAlt'          => '縮圖',
+        'itemLabel'         => '捐款項目',
+        'receiptHint'       => '購買此規格將提供',
+        'receiptBadge'      => '電子捐款收據',
+        'amountLabel'       => '捐款金額',
+        'amountPlaceholder' => '請輸入捐款金額（最低 NT$:min）',
+        'total'             => '總計',
+        'donateBtn'         => '立即捐款',
+        'defaultItem1'      => '一般捐款',
+        'defaultItem2'      => '助建基金',
+        'defaultItem3'      => '慈善專案',
+        'defaultItem4'      => '祭典活動',
+        'amountError'       => '最低捐款金額為 NT$:min',
+    ],
+
+    'brightLampBasemap' => [
+        'lampBright'        => '光明燈',
+        'lampPeace'         => '平安燈',
+        'lampWealth'        => '財神燈',
+        'lampWisdom'        => '文昌燈',
+        'selectLampType'    => '請選擇燈別',
+        'searchByNamePhone' => '姓名電話搜尋',
+        'searchByLampNo'    => '燈位編號搜尋',
+        'labelName'         => '姓名',
+        'placeholderName'   => '請輸入您的姓名',
+        'labelPhone'        => '電話',
+        'placeholderPhone'  => '請輸入您的電話',
+        'labelLampNo'       => '燈位編號',
+        'placeholderLampNo' => '請輸入燈位編號',
+        'search'            => '搜尋',
+    ],
+
+    'brightLampDetail' => [
+        'backBtn'          => '返回上一頁',
+        'title'            => '光明燈',
+        'pillarLabel'      => '燈柱',
+        'pillarPlaceholder'=> '請選擇燈柱',
+        'lampNoLabel'      => '燈位編號',
+        'lampNoPlaceholder'=> '請輸入燈位編號',
+        'nameLabel'        => '姓名',
+        'namePlaceholder'  => '請輸入您的姓名',
+        'phoneLabel'       => '電話',
+        'phonePlaceholder' => '請輸入您的電話',
+        'search'           => '搜尋',
+        'loading'          => '載入中...',
+        'empty'            => '查無符合條件的燈位',
+    ],
+
+    'footerBasemap' => [
+        'latestNews'  => '最新消息',
+        'events'      => '慶典活動',
+        'products'    => '商品與服務',
+        'donation'    => '捐款護持',
+        'aboutUs'     => '關於我們',
+        'album'       => '集影牆',
+        'defaultName' => '宮廟名稱',
+    ],
+
+    'pvFooter' => [
+        'defaultName' => '宮掌櫃',
+        'contactUs'   => '聯絡我們',
+        'phone'       => '電話：',
+        'address'     => '地址：',
+        'email'       => 'Email：',
+        'aboutUs'     => '關於我們',
+        'latestNews'  => '最新消息',
+        'aboutEco'    => '關於數位生態',
+        'products'    => '精選結緣品',
+        'templeMap'   => '宮廟地圖',
+        'lottery'     => '靈籤司',
+    ],
+
+    'pvServicesSection' => [
+        'title'    => '精選服務',
+        'subtitle' => '線上預約宮廟服務，虔誠祈福更便利',
+        'viewMore' => '查看更多',
+        'prev'     => '上一頁',
+        'next'     => '下一頁',
+        'noImage'  => '暫無圖片',
+        'bookBtn'  => '預約',
+        'empty'    => '目前尚無服務項目',
+    ],
+
+    'pvFirstPicture' => [
+        'lottery'    => '靈籤司',
+        'templeMap'  => '宮廟地圖',
+        'enterHome'  => '進入首頁',
+        'mainImgAlt' => '主標題圖片',
+    ],
+
+    'aboutSection' => [
+        'title'      => '關於我們',
+        'historyBtn' => '了解宮廟歷史 ›',
+        'imgAlt'     => '宮廟圖片',
+    ],
+
+];

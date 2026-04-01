@@ -1,0 +1,215 @@
+<?php
+
+return [
+
+    'general' => [
+        'backToTop' => '回到顶部',
+    ],
+
+    'navbarBasemap' => [
+        'login'         => '会员登录',
+        'loginRegister' => '登录 / 注册',
+        'openMenu'      => '打开菜单',
+        'cart'          => '🛒 购物车',
+    ],
+
+    'heroBasemap' => [
+        'placeholder1'    => '轮播图片 1',
+        'placeholder2'    => '轮播图片 2',
+        'placeholder3'    => '轮播图片 3',
+        'imagePlaceholder'=> '轮播图片',
+        'prev'            => '上一张',
+        'next'            => '下一张',
+    ],
+
+    'newsBasemap' => [
+        'title'        => '最新消息',
+        'viewAll'      => '查看所有消息 ›',
+        'empty'        => '目前暂无消息',
+        'subtitle'     => '掌握宫庙活动与文化资讯',
+        'viewAllShort' => '查看全部',
+    ],
+
+    'newsListBasemap' => [
+        'title'  => '最新消息',
+        'catAll' => '全部',
+        'empty'  => '此分类目前没有消息',
+        'prev'   => '上一页',
+        'next'   => '下一页',
+    ],
+
+    'productsBasemap' => [
+        'title'            => '祈福商品',
+        'imagePlaceholder' => '商品图片',
+        'empty'            => '目前暂无商品',
+        'viewMore'         => '查看更多商品',
+    ],
+
+    'pvProductsSection' => [
+        'title'      => '精选结缘品',
+        'subtitle'   => '严选优质结缘品，传递祝福与心意',
+        'viewMore'   => '查看更多',
+        'prev'       => '上一页',
+        'next'       => '下一页',
+        'noImage'    => '暂无图片',
+        'empty'      => '目前暂无商品',
+        'addToCart'  => '加入购物车',
+    ],
+
+    'productListBasemap' => [
+        'labelEvent'        => '庆典活动',
+        'labelType'         => '类型',
+        'labelCategory'     => '需求分类',
+        'labelSort'         => '排序方式',
+        'labelKeyword'      => '关键字搜索',
+        'all'               => '全部',
+        'allTypes'          => '所有类型',
+        'allNeeds'          => '所有需求',
+        'defaultSort'       => '默认排序',
+        'sortPriceAsc'      => '价格从低到高',
+        'sortPriceDesc'     => '价格从高到低',
+        'searchPlaceholder' => '搜索商品或服务名称',
+        'keywordPlaceholder'=> '请输入关键字',
+        'searchBtn'         => '搜索',
+        'batchSelect'       => '批量选择',
+        'sectionTitle'      => '精选推荐',
+        'featuredTitle'     => '精选推荐',
+        'imagePlaceholder'  => '商品图片',
+        'noImage'           => '暂无图片',
+        'empty'             => '找不到符合条件的商品',
+        'featuredEmpty'     => '目前暂无精选商品',
+        'addToCart'         => '加入购物车',
+        'pageTitle'         => '精选结缘品',
+    ],
+
+    'eventsBasemap' => [
+        'title'            => '庆典活动',
+        'imagePlaceholder' => '活动图片',
+        'empty'            => '目前暂无活动',
+        'viewMore'         => '查看更多活动',
+        'tagHot'           => '热门',
+        'tagRecommended'   => '推荐',
+        'tagImportant'     => '重要',
+        'tagCeremony'      => '法会',
+    ],
+
+    'eventListBasemap' => [
+        'catAll' => '全部',
+        'empty'  => '此分类目前没有活动',
+        'prev'   => '上一页',
+        'next'   => '下一页',
+    ],
+
+    'albumListBasemap' => [
+        'all'              => '全部',
+        'coverPlaceholder' => '相册封面',
+        'empty'            => '此分类目前没有相册',
+        'prev'             => '上一页',
+        'next'             => '下一页',
+    ],
+
+    'donationBasemap' => [
+        'title'      => '捐款护持',
+        'brief'      => "您的捐款将用于宫庙维护与慈善公益\n支持本宫日常运作、建设修缮及帮助弱势群体\n每一分善款都将妥善运用 功德无量",
+        'buttonText' => '前往捐款 ›',
+    ],
+
+    'donationProductBasemap' => [
+        'mainImageAlt'      => '捐款商品主图',
+        'thumbAlt'          => '缩略图',
+        'itemLabel'         => '捐款项目',
+        'receiptHint'       => '购买此规格将提供',
+        'receiptBadge'      => '电子捐款收据',
+        'amountLabel'       => '捐款金额',
+        'amountPlaceholder' => '请输入捐款金额（最低 NT$:min）',
+        'total'             => '总计',
+        'donateBtn'         => '立即捐款',
+        'defaultItem1'      => '一般捐款',
+        'defaultItem2'      => '助建基金',
+        'defaultItem3'      => '慈善专案',
+        'defaultItem4'      => '祭典活动',
+        'amountError'       => '最低捐款金额为 NT$:min',
+    ],
+
+    'brightLampBasemap' => [
+        'lampBright'        => '光明灯',
+        'lampPeace'         => '平安灯',
+        'lampWealth'        => '财神灯',
+        'lampWisdom'        => '文昌灯',
+        'selectLampType'    => '请选择灯别',
+        'searchByNamePhone' => '姓名电话搜索',
+        'searchByLampNo'    => '灯位编号搜索',
+        'labelName'         => '姓名',
+        'placeholderName'   => '请输入您的姓名',
+        'labelPhone'        => '电话',
+        'placeholderPhone'  => '请输入您的电话',
+        'labelLampNo'       => '灯位编号',
+        'placeholderLampNo' => '请输入灯位编号',
+        'search'            => '搜索',
+    ],
+
+    'brightLampDetail' => [
+        'backBtn'           => '返回上一页',
+        'title'             => '光明灯',
+        'pillarLabel'       => '灯柱',
+        'pillarPlaceholder' => '请选择灯柱',
+        'lampNoLabel'       => '灯位编号',
+        'lampNoPlaceholder' => '请输入灯位编号',
+        'nameLabel'         => '姓名',
+        'namePlaceholder'   => '请输入您的姓名',
+        'phoneLabel'        => '电话',
+        'phonePlaceholder'  => '请输入您的电话',
+        'search'            => '搜索',
+        'loading'           => '加载中...',
+        'empty'             => '未找到符合条件的灯位',
+    ],
+
+    'footerBasemap' => [
+        'latestNews'  => '最新消息',
+        'events'      => '庆典活动',
+        'products'    => '商品与服务',
+        'donation'    => '捐款护持',
+        'aboutUs'     => '关于我们',
+        'album'       => '集影墙',
+        'defaultName' => '宫庙名称',
+    ],
+
+    'pvFooter' => [
+        'defaultName' => '宫掌柜',
+        'contactUs'   => '联系我们',
+        'phone'       => '电话：',
+        'address'     => '地址：',
+        'email'       => 'Email：',
+        'aboutUs'     => '关于我们',
+        'latestNews'  => '最新消息',
+        'aboutEco'    => '关于数字生态',
+        'products'    => '精选结缘品',
+        'templeMap'   => '宫庙地图',
+        'lottery'     => '灵签司',
+    ],
+
+    'pvServicesSection' => [
+        'title'    => '精选服务',
+        'subtitle' => '在线预约宫庙服务，虔诚祈福更便利',
+        'viewMore' => '查看更多',
+        'prev'     => '上一页',
+        'next'     => '下一页',
+        'noImage'  => '暂无图片',
+        'bookBtn'  => '预约',
+        'empty'    => '目前暂无服务项目',
+    ],
+
+    'pvFirstPicture' => [
+        'lottery'    => '灵签司',
+        'templeMap'  => '宫庙地图',
+        'enterHome'  => '进入首页',
+        'mainImgAlt' => '主标题图片',
+    ],
+
+    'aboutSection' => [
+        'title'      => '关于我们',
+        'historyBtn' => '了解宫庙历史 ›',
+        'imgAlt'     => '宫庙图片',
+    ],
+
+];

@@ -8,20 +8,20 @@
     $copyright     = $copyright     ?? null;
     $columns       = $columns       ?? [
         [
-            ['name' => '最新消息', 'slug' => 'news'],
-            ['name' => '慶典活動', 'slug' => 'events'],
-            ['name' => '商品與服務', 'slug' => 'products'],
+            ['name' => __('ui.footerBasemap.latestNews'), 'slug' => 'news'],
+            ['name' => __('ui.footerBasemap.events'),     'slug' => 'events'],
+            ['name' => __('ui.footerBasemap.products'),   'slug' => 'products'],
         ],
         [
-            ['name' => '捐款護持', 'slug' => 'donate'],
-            ['name' => '關於我們', 'slug' => 'about-us'],
-            ['name' => '集影牆',   'slug' => 'gallery'],
+            ['name' => __('ui.footerBasemap.donation'),   'slug' => 'donate'],
+            ['name' => __('ui.footerBasemap.aboutUs'),    'slug' => 'about-us'],
+            ['name' => __('ui.footerBasemap.album'),      'slug' => 'gallery'],
         ],
     ];
     $device        = $device        ?? 'desktop';
     $tid           = $templeId      ?? '';
 
-    $displayName      = $tenantName ?? $brandName ?? '宮廟名稱';
+    $displayName      = $tenantName ?? $brandName ?? __('ui.footerBasemap.defaultName');
     $displayPhone     = $tenantPhone;
     $displayAddress   = $tenantAddress;
     $displayEmail     = $tenantEmail;

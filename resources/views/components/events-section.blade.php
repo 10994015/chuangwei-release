@@ -42,7 +42,7 @@
 
         {{-- 標題列 --}}
         <div class="section-header">
-            <h2 class="section-title">慶典活動</h2>
+            <h2 class="section-title">{{ __('ui.eventsBasemap.title') }}</h2>
         </div>
 
         {{-- 活動 Grid — 固定 3 筆 --}}
@@ -61,7 +61,7 @@
                                     <circle cx="28" cy="32" r="7" stroke="#bbb" stroke-width="3"/>
                                     <path d="M8 50l18-16 14 14 10-10 18 18" stroke="#bbb" stroke-width="3" stroke-linejoin="round"/>
                                 </svg>
-                                <span class="placeholder-text">活動圖片</span>
+                                <span class="placeholder-text">{{ __('ui.eventsBasemap.imagePlaceholder') }}</span>
                             </div>
                         @endif
                     </div>
@@ -110,7 +110,7 @@
                 </div>
             @empty
                 <div class="empty-state">
-                    <p>目前尚無活動</p>
+                    <p>{{ __('ui.eventsBasemap.empty') }}</p>
                 </div>
             @endforelse
         </div>
@@ -118,7 +118,7 @@
         {{-- 查看更多 --}}
         @if (!empty($displayEvents))
             <div class="view-more-wrap">
-                <a href="{{ $viewAllUrl }}" class="view-more-btn">查看更多活動</a>
+                <a href="{{ $viewAllUrl }}" class="view-more-btn">{{ __('ui.eventsBasemap.viewMore') }}</a>
             </div>
         @endif
 
