@@ -46,7 +46,7 @@ return [
     ],
 
     'pvProductsSection' => [
-        'title'      => '精选结缘品',
+        'title'      => '祈福商品',
         'subtitle'   => '严选优质结缘品，传递祝福与心意',
         'viewMore'   => '查看更多',
         'prev'       => '上一页',
@@ -189,7 +189,7 @@ return [
     ],
 
     'pvServicesSection' => [
-        'title'    => '精选服务',
+        'title'    => '精选结缘品',
         'subtitle' => '在线预约宫庙服务，虔诚祈福更便利',
         'viewMore' => '查看更多',
         'prev'     => '上一页',

@@ -66,11 +66,11 @@
             @else
               <div class="pv-ps-image-placeholder"><span>{{ __('ui.pvProductsSection.noImage') }}</span></div>
             @endif
+          </div>
+          <div class="pv-ps-product-info">
             @if($product['badge'])
               <span class="pv-ps-badge {{ $product['badgeClass'] }}">{{ $product['badge'] }}</span>
             @endif
-          </div>
-          <div class="pv-ps-product-info">
             <p class="pv-ps-product-source">{{ $product['source'] }}</p>
             <h3 class="pv-ps-product-title">{{ $product['title'] }}</h3>
             <div class="pv-ps-product-footer">
@@ -130,11 +130,12 @@
 .pv-ps-product-card:hover .pv-ps-image { transform: scale(1.03); }
 .pv-ps-image-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--frame-tag-bg,#f0f0f0); }
 .pv-ps-image-placeholder span { font-size: 13px; color: var(--frame-text-muted,#bbb); }
-.pv-ps-badge { position: absolute; bottom: 10px; right: 10px; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; color: #fff; }
+.pv-ps-badge { position: absolute; top: 14px; right: 16px; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; color: #fff; line-height: 1.4; }
 .pv-ps-badge.hot         { background: #dc3545; }
 .pv-ps-badge.recommended { background: #1a73e8; }
 .pv-ps-badge.new         { background: #2ecc71; }
-.pv-ps-product-info   { padding: 14px 16px 16px; }
+.pv-ps-badge.default     { background: #E8572A; }
+.pv-ps-product-info   { position: relative; padding: 14px 16px 16px; }
 .pv-ps-product-source { font-size: 13px; color: var(--frame-text-muted,#999); margin: 0 0 4px; }
 .pv-ps-product-title  { font-size: 18px; font-weight: 700; color: var(--frame-text-color,#222); margin: 0 0 14px; line-height: 1.3; }
 .pv-ps-product-footer { display: flex; justify-content: space-between; align-items: center; }

@@ -53,7 +53,6 @@
   align-items: flex-end;
   margin-bottom: 2rem;
   padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--frame-border-color, #e5e5e5);
 }
 .pv-header-left { display: flex; flex-direction: column; gap: 4px; }
 .pv-section-title {

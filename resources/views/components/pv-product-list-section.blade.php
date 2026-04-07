@@ -75,11 +75,11 @@
             @else
               <div class="pv-pl-image-placeholder"><span>{{ __('ui.productListBasemap.noImage') }}</span></div>
             @endif
+          </div>
+          <div class="pv-pl-product-info">
             @if($product['badge'])
               <span class="pv-pl-badge {{ $product['badgeClass'] }}">{{ $product['badge'] }}</span>
             @endif
-          </div>
-          <div class="pv-pl-product-info">
             <p class="pv-pl-product-source">{{ $product['source'] }}</p>
             <h3 class="pv-pl-product-title">{{ $product['title'] }}</h3>
             <div class="pv-pl-product-footer">
@@ -111,11 +111,11 @@
               @else
                 <div class="pv-pl-image-placeholder"><span>{{ __('ui.productListBasemap.noImage') }}</span></div>
               @endif
+            </div>
+            <div class="pv-pl-product-info">
               @if($product['badge'])
                 <span class="pv-pl-badge {{ $product['badgeClass'] }}">{{ $product['badge'] }}</span>
               @endif
-            </div>
-            <div class="pv-pl-product-info">
               <p class="pv-pl-product-source">{{ $product['source'] }}</p>
               <h3 class="pv-pl-product-title">{{ $product['title'] }}</h3>
               <div class="pv-pl-product-footer">
@@ -198,10 +198,12 @@
 .pv-pl-product-card:hover .pv-pl-image { transform: scale(1.03); }
 .pv-pl-image-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--frame-tag-bg,#f0f0f0); }
 .pv-pl-image-placeholder span { font-size: 13px; color: var(--frame-text-muted,#bbb); }
-.pv-pl-badge { position: absolute; bottom: 10px; right: 10px; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; color: #fff; }
+.pv-pl-badge { position: absolute; top: 14px; right: 16px; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; color: #fff; line-height: 1.4; }
 .pv-pl-badge.hot         { background: #dc3545; }
 .pv-pl-badge.recommended { background: #1a73e8; }
-.pv-pl-product-info   { padding: 12px 14px 14px; }
+.pv-pl-badge.new         { background: #2ecc71; }
+.pv-pl-badge.default     { background: #E8572A; }
+.pv-pl-product-info   { position: relative; padding: 12px 14px 14px; }
 .pv-pl-product-source { font-size: 12px; color: var(--frame-text-muted,#999); margin: 0 0 3px; }
 .pv-pl-product-title  { font-size: 16px; font-weight: 700; color: var(--frame-text-color,#222); margin: 0 0 10px; line-height: 1.3; }
 .pv-pl-product-footer { display: flex; justify-content: space-between; align-items: center; }

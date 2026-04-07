@@ -67,11 +67,11 @@
             @else
               <div class="pv-svc-image-placeholder"><span>{{ __('ui.pvServicesSection.noImage') }}</span></div>
             @endif
+          </div>
+          <div class="pv-svc-service-info">
             @if($item['badge'])
               <span class="pv-svc-badge {{ $item['badgeClass'] }}">{{ $item['badge'] }}</span>
             @endif
-          </div>
-          <div class="pv-svc-service-info">
             <p class="pv-svc-service-source">{{ $item['source'] }}</p>
             <h3 class="pv-svc-service-title">{{ $item['title'] }}</h3>
             <div class="pv-svc-service-footer">
@@ -133,11 +133,12 @@
 .pv-svc-service-card:hover .pv-svc-image { transform: scale(1.03); }
 .pv-svc-image-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--frame-tag-bg,#f0f0f0); }
 .pv-svc-image-placeholder span { font-size: 13px; color: var(--frame-text-muted,#bbb); }
-.pv-svc-badge { position: absolute; bottom: 10px; right: 10px; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; color: #fff; }
+.pv-svc-badge { position: absolute; top: 14px; right: 16px; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; color: #fff; line-height: 1.4; }
 .pv-svc-badge.hot         { background: #dc3545; }
 .pv-svc-badge.recommended { background: #1a73e8; }
 .pv-svc-badge.new         { background: #2ecc71; }
-.pv-svc-service-info    { padding: 14px 16px 16px; }
+.pv-svc-badge.default     { background: #E8572A; }
+.pv-svc-service-info    { position: relative; padding: 14px 16px 16px; }
 .pv-svc-service-source  { font-size: 13px; color: var(--frame-text-muted,#999); margin: 0 0 4px; }
 .pv-svc-service-title   { font-size: 18px; font-weight: 700; color: var(--frame-text-color,#222); margin: 0 0 8px; line-height: 1.3; }
 .pv-svc-service-footer  { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; margin-top: 10px; }

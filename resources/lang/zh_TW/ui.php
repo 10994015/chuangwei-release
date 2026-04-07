@@ -46,7 +46,7 @@ return [
     ],
 
     'pvProductsSection' => [
-        'title'     => '精選結緣品',
+        'title'     => '祈福商品',
         'subtitle'  => '嚴選優質結緣品，傳遞祝福與心意',
         'viewMore'  => '查看更多',
         'prev'      => '上一頁',
@@ -189,7 +189,7 @@ return [
     ],
 
     'pvServicesSection' => [
-        'title'    => '精選服務',
+        'title'    => '精選結緣品',
         'subtitle' => '線上預約宮廟服務，虔誠祈福更便利',
         'viewMore' => '查看更多',
         'prev'     => '上一頁',

@@ -46,7 +46,7 @@ return [
     ],
 
     'pvProductsSection' => [
-        'title'      => 'Featured Products',
+        'title'      => 'Prayer Goods',
         'subtitle'   => 'Curated quality products, sharing blessings and goodwill',
         'viewMore'   => 'View More',
         'prev'       => 'Previous',
@@ -79,7 +79,7 @@ return [
         'empty'             => 'No products match your search',
         'featuredEmpty'     => 'No featured products available',
         'addToCart'         => 'Add to Cart',
-        'pageTitle'         => 'Featured Products',
+        'pageTitle'         => 'Featured Blessings',
     ],
 
     'eventsBasemap' => [
@@ -189,7 +189,7 @@ return [
     ],
 
     'pvServicesSection' => [
-        'title'    => 'Featured Services',
+        'title'    => 'Featured Blessings',
         'subtitle' => 'Book temple services online for a more convenient blessing experience',
         'viewMore' => 'View More',
         'prev'     => 'Previous',
