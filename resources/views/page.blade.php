@@ -26,7 +26,7 @@
       'PV_HEADER'        => 'components.pv-navbar',
       'PV_FOOTER'        => 'components.pv-footer',
       'PV_CAROUSEL_WALL' => 'components.pv-hero',
-      'PV_FIRST_PICTURE' => 'components.pv-first-picture',
+      'PV_PORTAL_PICTURE' => 'components.pv-first-picture',
       'PV_INDEX_NEWS'    => 'components.pv-news-section',
       'PV_NEWS_LIST'     => 'components.pv-news-list-section',
       'PV_INDEX_PRODUCT' => 'components.pv-products-section',
@@ -39,7 +39,7 @@
     // 這幾種框架有自己的背景色邏輯，不套文字色主題變數
     $noThemeTypes = [
       'HEADER', 'FOOTER', 'INDEX_DONATION', 'CAROUSEL_WALL', 'FIRST_PICTURE',
-      'PV_HEADER', 'PV_FOOTER', 'PV_CAROUSEL_WALL', 'PV_FIRST_PICTURE',
+      'PV_HEADER', 'PV_FOOTER', 'PV_CAROUSEL_WALL', 'PV_PORTAL_PICTURE',
     ];
 
     // FOOTER 類型（用來傳 footerData）
