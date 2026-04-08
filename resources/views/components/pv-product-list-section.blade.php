@@ -15,16 +15,15 @@
                   ? $p['labels'][0] : null,
     'badgeClass' => (function() use ($p) {
       $l = $p['labels'][0] ?? '';
-      if (in_array($l, ['熱門', 'hot']))               return 'hot';
-      if (in_array($l, ['推薦', 'recommended']))       return 'recommended';
-      return 'hot';
+      if (in_array($l, ['熱門', 'hot']))         return 'hot';
+      if (in_array($l, ['推薦', 'recommended'])) return 'recommended';
+      return 'default'; // 修正：Vue 是 default，不是 hot
     })(),
   ];
 
   $featuredProducts = collect($featuredProduct)->map($mapProduct)->values()->toArray();
   $restProducts     = collect($rawRest)->map($mapProduct)->values()->toArray();
 
-  // 精選：每頁 3 筆，server-side 只顯示第一頁（JS 做翻頁）
   $featuredPageSize = 3;
   $restPageSize     = 5;
 
@@ -56,6 +55,10 @@
     <div class="pv-pl-featured-header">
       <h3 class="pv-pl-featured-title">{{ __('ui.productListBasemap.featuredTitle') }}</h3>
       <div class="pv-pl-featured-actions">
+        {{-- 新增：批次選擇按鈕 --}}
+        <button class="pv-pl-batch-btn" id="{{ $listId }}-batch-btn">
+          {{ __('ui.productListBasemap.batchSelect') }}
+        </button>
         <button class="pv-pl-nav-circle" id="{{ $listId }}-feat-prev" aria-label="{{ __('ui.pvProductsSection.prev') }}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
@@ -75,6 +78,12 @@
             @else
               <div class="pv-pl-image-placeholder"><span>{{ __('ui.productListBasemap.noImage') }}</span></div>
             @endif
+            {{-- 新增：批次選取 checkbox --}}
+            <div class="pv-pl-check" style="display:none">
+              <svg class="pv-pl-check-icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" style="display:none">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
           </div>
           <div class="pv-pl-product-info">
             @if($product['badge'])
@@ -111,6 +120,12 @@
               @else
                 <div class="pv-pl-image-placeholder"><span>{{ __('ui.productListBasemap.noImage') }}</span></div>
               @endif
+              {{-- 新增：批次選取 checkbox --}}
+              <div class="pv-pl-check" style="display:none">
+                <svg class="pv-pl-check-icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" style="display:none">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
             </div>
             <div class="pv-pl-product-info">
               @if($product['badge'])
@@ -173,6 +188,17 @@
 .pv-pl-featured-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
 .pv-pl-featured-title  { font-size: 20px; font-weight: 700; color: var(--frame-heading-color,#222); margin: 0; }
 .pv-pl-featured-actions { display: flex; align-items: center; gap: 8px; }
+
+/* 新增：批次選擇按鈕 */
+.pv-pl-batch-btn {
+  height: 36px; padding: 0 18px;
+  border: 1.5px solid var(--frame-border-color,#ddd); border-radius: 20px;
+  background: transparent; font-size: 14px;
+  color: var(--frame-text-color,#555); cursor: pointer; transition: all 0.2s;
+}
+.pv-pl-batch-btn:hover { border-color: #E8572A; color: #E8572A; }
+.pv-pl-batch-btn.active { border-color: #E8572A; color: #E8572A; }
+
 .pv-pl-nav-circle {
   width: 36px; height: 36px;
   border: 1.5px solid var(--frame-border-color,#ddd); border-radius: 50%;
@@ -193,16 +219,34 @@
   transition: box-shadow 0.2s, transform 0.2s;
 }
 .pv-pl-product-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.09); transform: translateY(-2px); }
+/* 新增：被選取的卡片樣式 */
+.pv-pl-product-card.is-selected { box-shadow: 0 0 0 2px #E8572A; }
+
 .pv-pl-product-image { position: relative; width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #f5f5f5; }
 .pv-pl-image { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
 .pv-pl-product-card:hover .pv-pl-image { transform: scale(1.03); }
 .pv-pl-image-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--frame-tag-bg,#f0f0f0); }
 .pv-pl-image-placeholder span { font-size: 13px; color: var(--frame-text-muted,#bbb); }
-.pv-pl-badge { position: absolute; top: 14px; right: 16px; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; color: #fff; line-height: 1.4; }
+
+/* 修正：badge 位移對齊 Vue（top:12 right:14） */
+.pv-pl-badge { position: absolute; top: 12px; right: 14px; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; color: #fff; }
 .pv-pl-badge.hot         { background: #dc3545; }
 .pv-pl-badge.recommended { background: #1a73e8; }
 .pv-pl-badge.new         { background: #2ecc71; }
 .pv-pl-badge.default     { background: #E8572A; }
+
+/* 新增：批次選取 checkbox */
+.pv-pl-check {
+  position: absolute; top: 10px; right: 10px;
+  width: 24px; height: 24px;
+  border: 2px solid #fff; border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.pv-pl-check.checked { background: #E8572A; border-color: #E8572A; }
+.pv-pl-check-icon { width: 14px; height: 14px; }
+
 .pv-pl-product-info   { position: relative; padding: 12px 14px 14px; }
 .pv-pl-product-source { font-size: 12px; color: var(--frame-text-muted,#999); margin: 0 0 3px; }
 .pv-pl-product-title  { font-size: 16px; font-weight: 700; color: var(--frame-text-color,#222); margin: 0 0 10px; line-height: 1.3; }
@@ -247,15 +291,76 @@
 
 <script>
 (function () {
-  var id          = '{{ $listId }}';
-  var featuredEl  = document.getElementById(id + '-featured');
-  var restEl      = document.getElementById(id + '-rest');
-  var pagination  = document.getElementById(id + '-pagination');
-  var btnPrev     = document.getElementById(id + '-feat-prev');
-  var btnNext     = document.getElementById(id + '-feat-next');
+  var id         = '{{ $listId }}';
+  var featuredEl = document.getElementById(id + '-featured');
+  var restEl     = document.getElementById(id + '-rest');
+  var pagination = document.getElementById(id + '-pagination');
+  var btnPrev    = document.getElementById(id + '-feat-prev');
+  var btnNext    = document.getElementById(id + '-feat-next');
+  var batchBtn   = document.getElementById(id + '-batch-btn');
 
-  var FEAT_SIZE = {{ $featuredPageSize }};
-  var REST_SIZE = {{ $restPageSize }};
+  var FEAT_SIZE  = {{ $featuredPageSize }};
+  var REST_SIZE  = {{ $restPageSize }};
+
+  // ── 批次選擇 ──
+  var batchMode   = false;
+  var selectedIds = [];
+
+  function getAllCards() {
+    var cards = [];
+    if (featuredEl) cards = cards.concat(Array.from(featuredEl.querySelectorAll('.pv-pl-product-card')));
+    if (restEl)     cards = cards.concat(Array.from(restEl.querySelectorAll('.pv-pl-product-card')));
+    return cards;
+  }
+
+  function toggleBatch() {
+    batchMode = !batchMode;
+    selectedIds = [];
+    batchBtn.classList.toggle('active', batchMode);
+
+    getAllCards().forEach(function (card) {
+      var chk = card.querySelector('.pv-pl-check');
+      if (chk) chk.style.display = batchMode ? 'flex' : 'none';
+      card.classList.remove('is-selected');
+      var icon = card.querySelector('.pv-pl-check-icon');
+      if (icon) icon.style.display = 'none';
+      var chkEl = card.querySelector('.pv-pl-check');
+      if (chkEl) chkEl.classList.remove('checked');
+    });
+  }
+
+  function handleCardClick(card) {
+    if (!batchMode) return;
+    var cardId = card.dataset.id;
+    var idx    = selectedIds.indexOf(cardId);
+    var chk    = card.querySelector('.pv-pl-check');
+    var icon   = card.querySelector('.pv-pl-check-icon');
+
+    if (idx === -1) {
+      selectedIds.push(cardId);
+      card.classList.add('is-selected');
+      if (chk)  chk.classList.add('checked');
+      if (icon) icon.style.display = 'block';
+    } else {
+      selectedIds.splice(idx, 1);
+      card.classList.remove('is-selected');
+      if (chk)  chk.classList.remove('checked');
+      if (icon) icon.style.display = 'none';
+    }
+  }
+
+  if (batchBtn) {
+    batchBtn.addEventListener('click', toggleBatch);
+  }
+
+  // 卡片點擊事件（包含 featured + rest）
+  getAllCards().forEach(function (card) {
+    card.addEventListener('click', function (e) {
+      // 購物車按鈕不觸發批次選取
+      if (e.target.closest('.pv-pl-cart-btn')) return;
+      handleCardClick(card);
+    });
+  });
 
   // ── 精選翻頁 ──
   if (featuredEl && btnPrev && btnNext) {
@@ -277,9 +382,9 @@
 
   // ── rest 分頁 ──
   if (restEl && pagination) {
-    var restCards  = Array.from(restEl.querySelectorAll('.pv-pl-product-card'));
-    var restPage   = 1;
-    var restTotal  = Math.max(1, Math.ceil(restCards.length / REST_SIZE));
+    var restCards = Array.from(restEl.querySelectorAll('.pv-pl-product-card'));
+    var restPage  = 1;
+    var restTotal = Math.max(1, Math.ceil(restCards.length / REST_SIZE));
 
     function renderRest() {
       var start = (restPage - 1) * REST_SIZE;
