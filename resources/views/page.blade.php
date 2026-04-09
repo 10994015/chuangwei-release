@@ -31,7 +31,8 @@
       'PV_NEWS_LIST'     => 'components.pv-news-list-section',
       'PV_INDEX_PRODUCT' => 'components.pv-products-section',
       'PV_PRODUCT_LIST'  => 'components.pv-product-list-section',
-      'PV_INDEX_SERVICE' => 'components.pv-services-section',
+      'PV_INDEX_SERVICE'   => 'components.pv-services-section',
+      'PV_CUSTOM_FRAME1'   => 'components.pv-custom-frame1',
     ];
 
     $systemFrameTypes = array_keys($componentMap);

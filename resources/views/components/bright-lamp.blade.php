@@ -4,7 +4,6 @@
   $bgImgSrc     = $data['bgImgSrc']     ?? '/images/bright-light/bg.png';
   $mainImgSrc   = $data['mainImgSrc']   ?? '/images/bright-light/main.jpg';
   $borderOption = $data['borderOption'] ?? 'border';
-  $pillarOption = $data['pillarOption'] ?? 'pillar';
   $lampTypes    = $data['lampTypes']    ?? [
     ['value' => 'bright', 'label' => __('ui.brightLampBasemap.lampBright')],
     ['value' => 'peace',  'label' => __('ui.brightLampBasemap.lampPeace')],
@@ -16,17 +15,12 @@
     'border' => '/images/bright-light/border.png',
     default  => '/images/bright-light/border.png',
   };
-  $pillarSrc = match($pillarOption) {
-    'pillar' => '/images/bright-light/pillar.png',
-    default  => '/images/bright-light/pillar.png',
-  };
 @endphp
 
 <div class="bright-lamp-wrapper" id="bright-lamp-root"
   data-bg="{{ $bgImgSrc }}"
   data-main="{{ $mainImgSrc }}"
   data-border="{{ $borderSrc }}"
-  data-pillar="{{ $pillarSrc }}"
 >
 
   {{-- 搜尋首頁 --}}
@@ -35,10 +29,6 @@
     {{-- 全幅場景 --}}
     <div class="bl-scene">
       <img class="bl-scene__bg" src="{{ $bgImgSrc }}" alt="" aria-hidden="true" />
-      <img class="bl-scene__pillar bl-scene__pillar--left-back"   src="{{ $pillarSrc }}" alt="" aria-hidden="true" />
-      <img class="bl-scene__pillar bl-scene__pillar--right-back"  src="{{ $pillarSrc }}" alt="" aria-hidden="true" />
-      <img class="bl-scene__pillar bl-scene__pillar--left-front"  src="{{ $pillarSrc }}" alt="" aria-hidden="true" />
-      <img class="bl-scene__pillar bl-scene__pillar--right-front" src="{{ $pillarSrc }}" alt="" aria-hidden="true" />
       <img class="bl-scene__main" src="{{ $mainImgSrc }}" alt="主神像" />
     </div>
 
@@ -144,36 +134,6 @@
   object-position: center top;
   display: block;
 }
-
-.bl-scene__pillar {
-  position: absolute;
-  top: 0;
-  width: auto;
-  object-fit: contain;
-  object-position: bottom;
-}
-
-.bl-scene__pillar--left-back,
-.bl-scene__pillar--right-back {
-  height: 88%;
-  max-width: 9%;
-  opacity: 0.75;
-  filter: brightness(0.7) blur(1px) drop-shadow(0 0 12px rgba(255, 160, 0, 0.25));
-  z-index: 1;
-}
-.bl-scene__pillar--left-back  { left: 16%; }
-.bl-scene__pillar--right-back { right: 16%; transform: scaleX(-1); }
-
-.bl-scene__pillar--left-front,
-.bl-scene__pillar--right-front {
-  height: 100%;
-  max-width: 11%;
-  opacity: 1;
-  filter: drop-shadow(0 0 28px rgba(255, 180, 0, 0.5));
-  z-index: 2;
-}
-.bl-scene__pillar--left-front  { left: 6%; }
-.bl-scene__pillar--right-front { right: 6%; transform: scaleX(-1); }
 
 .bl-scene__main {
   position: absolute;
@@ -300,16 +260,6 @@
 
 /* ==================== 平板 RWD（1024px）==================== */
 @media (max-width: 1024px) {
-  .bl-scene__pillar--left-back,
-  .bl-scene__pillar--right-back  { max-width: 7%; }
-  .bl-scene__pillar--left-back   { left: 12%; }
-  .bl-scene__pillar--right-back  { right: 12%; }
-
-  .bl-scene__pillar--left-front,
-  .bl-scene__pillar--right-front { max-width: 9%; }
-  .bl-scene__pillar--left-front  { left: 3%; }
-  .bl-scene__pillar--right-front { right: 3%; }
-
   .bl-scene__main { max-width: 42%; height: 78%; }
   .bl-panel-wrap  { max-width: 460px; }
   .bl-panel__body { padding: 20px 24px 24px; }
@@ -327,14 +277,6 @@
     height: 320px;
     flex-shrink: 0;
   }
-
-  .bl-scene__pillar--left-back,
-  .bl-scene__pillar--right-back  { display: none; }
-
-  .bl-scene__pillar--left-front,
-  .bl-scene__pillar--right-front { max-width: 14%; height: 90%; }
-  .bl-scene__pillar--left-front  { left: 0%; }
-  .bl-scene__pillar--right-front { right: 0%; }
 
   .bl-scene__main {
     height: 100%;
