@@ -36,6 +36,7 @@
   $layout     = $layoutMap[$frameType] ?? ['grid' => 'cf-grid-1-1', 'type' => 'single', 'cols' => 1];
   $gridClass  = $layout['grid'];
   $layoutType = $layout['type'];
+  $deviceKey  = FrameHelper::resolveDeviceKey();
 
   $inlineGridStyle = '';
 
@@ -72,7 +73,7 @@
 
       <div class="cf-composite-left" style="width: {{ $leftWidth }};">
         @foreach($leftIdxs as $idx)
-          @php $el = FrameHelper::resolveElementVars($elements[$idx] ?? []); @endphp
+          @php $el = FrameHelper::resolveElementVars($elements[$idx] ?? [], $deviceKey); @endphp
           <div class="cf-col" style="{{ $el['paddingStyle'] }} {{ $el['metaStyle'] }}">
             @include('frames._element', ['el' => $el])
           </div>
@@ -81,7 +82,7 @@
 
       <div class="cf-composite-right">
         @foreach($rightIdxs as $idx)
-          @php $el = FrameHelper::resolveElementVars($elements[$idx] ?? []); @endphp
+          @php $el = FrameHelper::resolveElementVars($elements[$idx] ?? [], $deviceKey); @endphp
           <div class="cf-col" style="{{ $el['paddingStyle'] }} {{ $el['metaStyle'] }}">
             @include('frames._element', ['el' => $el])
           </div>
@@ -96,7 +97,7 @@
   <div class="cf-frame-container" style="{{ $themeCssVars }}">
     <div class="custom-frame {{ $gridClass }}" style="{{ $inlineGridStyle }}">
       @foreach($elements as $element)
-        @php $el = FrameHelper::resolveElementVars($element); @endphp
+        @php $el = FrameHelper::resolveElementVars($element, $deviceKey); @endphp
         <div class="cf-col" style="{{ $el['paddingStyle'] }} {{ $el['metaStyle'] }}">
           @include('frames._element', ['el' => $el])
         </div>

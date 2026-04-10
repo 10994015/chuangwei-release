@@ -13,8 +13,9 @@
   $logoHeightStyle = $logoHeight ? "height:{$logoHeight}px;" : '';
   $logoImgStyle    = "{$logoWidthStyle}{$logoHeightStyle}object-fit:contain;";
 
-  $logoPadding = $data['logoPadding'] ?? ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0];
-  $logoPaddingStyle = "padding:{$logoPadding['top']}px {$logoPadding['right']}px {$logoPadding['bottom']}px {$logoPadding['left']}px;";
+  $deviceKey = \App\Helpers\FrameHelper::resolveDeviceKey();
+  $logoPad   = \App\Helpers\FrameHelper::resolvePadding($data['logoPadding'] ?? null, $deviceKey, 0);
+  $logoPaddingStyle = "padding:{$logoPad['top']}px {$logoPad['right']}px {$logoPad['bottom']}px {$logoPad['left']}px;";
 
   // Hero
   $heroImgSrc    = $data['heroImgSrc']    ?? null;
@@ -30,8 +31,8 @@
   $titleFontSizeStyle = $titleFontSize ? "font-size:{$titleFontSize}px;" : '';
   $titleStyle = "color:{$titleColor};{$titleFontSizeStyle}";
 
-  $heroPadding = $data['heroPadding'] ?? ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0];
-  $heroPaddingStyle = "padding:{$heroPadding['top']}px {$heroPadding['right']}px {$heroPadding['bottom']}px {$heroPadding['left']}px;";
+  $heroPad   = \App\Helpers\FrameHelper::resolvePadding($data['heroPadding'] ?? null, $deviceKey, 0);
+  $heroPaddingStyle = "padding:{$heroPad['top']}px {$heroPad['right']}px {$heroPad['bottom']}px {$heroPad['left']}px;";
 
   // Buttons
   $buttons  = $data['buttons'] ?? [];
@@ -44,8 +45,8 @@
     ];
   }
 
-  $buttonsPadding = $data['buttonsPadding'] ?? ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0];
-  $buttonsPaddingStyle = "padding:{$buttonsPadding['top']}px {$buttonsPadding['right']}px {$buttonsPadding['bottom']}px {$buttonsPadding['left']}px;";
+  $buttonsPad   = \App\Helpers\FrameHelper::resolvePadding($data['buttonsPadding'] ?? null, $deviceKey, 0);
+  $buttonsPaddingStyle = "padding:{$buttonsPad['top']}px {$buttonsPad['right']}px {$buttonsPad['bottom']}px {$buttonsPad['left']}px;";
 
   // Copyright
   $copyright = $data['copyright'] ?? ('Copyright © ' . date('Y') . ' 創蔚國際有限公司 All Rights Reserved.');

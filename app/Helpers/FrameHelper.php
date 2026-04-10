@@ -114,18 +114,58 @@ class FrameHelper
     }
 
     /**
+     * 從 request query 解析目前裝置的 padding key（pc / tablet / phone）
+     * ?device=desktop|tablet|mobile
+     */
+    public static function resolveDeviceKey(): string
+    {
+        return match(request()->query('device', 'desktop')) {
+            'tablet' => 'tablet',
+            'mobile' => 'phone',
+            default  => 'pc',
+        };
+    }
+
+    /**
+     * 從 padding 陣列解析出對應裝置的四邊數值
+     * 支援新格式 ['pc'=>[...], 'tablet'=>[...], 'phone'=>[...]]
+     * 以及舊格式 ['top'=>..., 'right'=>..., 'bottom'=>..., 'left'=>...]（向下相容）
+     */
+    public static function resolvePadding(mixed $padding, string $deviceKey = 'pc', int $default = 20): array
+    {
+        if (empty($padding)) {
+            return ['top' => $default, 'right' => $default, 'bottom' => $default, 'left' => $default];
+        }
+
+        // 新格式：有 pc / tablet / phone 子鍵
+        if (isset($padding['pc']) || isset($padding['tablet']) || isset($padding['phone'])) {
+            $p = $padding[$deviceKey] ?? $padding['pc'] ?? [];
+        } else {
+            // 舊格式：直接是 top/right/bottom/left
+            $p = $padding;
+        }
+
+        return [
+            'top'    => $p['top']    ?? $default,
+            'right'  => $p['right']  ?? $default,
+            'bottom' => $p['bottom'] ?? $default,
+            'left'   => $p['left']   ?? $default,
+        ];
+    }
+
+    /**
      * 解析單一 element 的樣式變數
      * 供 custom_frame.blade.php 使用，避免在 Blade 內宣告函式導致重複宣告錯誤
      */
-    public static function resolveElementVars(array $element): array
+    public static function resolveElementVars(array $element, string $deviceKey = 'pc'): array
     {
         $meta    = $element['metadata'] ?? [];
-        $padding = $element['padding']  ?? ['top' => 20, 'right' => 20, 'bottom' => 20, 'left' => 20];
+        $p       = self::resolvePadding($element['padding'] ?? null, $deviceKey);
 
-        $pt = $padding['top']    ?? 20;
-        $pr = $padding['right']  ?? 20;
-        $pb = $padding['bottom'] ?? 20;
-        $pl = $padding['left']   ?? 20;
+        $pt = $p['top'];
+        $pr = $p['right'];
+        $pb = $p['bottom'];
+        $pl = $p['left'];
 
         $color      = $meta['color']           ?? null;
         $fontSize   = $meta['fontSize']        ?? $meta['font_size']        ?? null;
