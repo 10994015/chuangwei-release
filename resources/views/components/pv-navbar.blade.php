@@ -9,7 +9,8 @@
   $locale      = request()->query('locale', 'ZH-TW');
   $currentSlug = $slug ?? 'home';
 
-  $navbarId = 'pv-navbar-' . uniqid();
+  $navbarId   = 'pv-navbar-' . uniqid();
+  $navModalId = 'pv-modal-' . uniqid();
 
   if (empty($locales)) {
     $locales = [
@@ -18,7 +19,24 @@
       ['locale' => 'EN-US', 'label' => 'English'],
     ];
   }
+
+  // Server-side auth check — avoid flash of unauthenticated state
+  $ssrUserName = null;
+  $token = request()->cookie('token');
+  if ($token) {
+    try {
+      $apiBase  = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+      $res = \Illuminate\Support\Facades\Http::withOptions(['cookies' => false])
+        ->withHeaders(['Cookie' => 'token=' . $token])
+        ->get($apiBase . '/api/frontend/user/');
+      if ($res->status() === 200) {
+        $ssrUserName = $res->json('data.name');
+      }
+    } catch (\Throwable $e) {}
+  }
 @endphp
+
+<x-login-modal :modalId="$navModalId" />
 
 <header class="pv-navbar" id="{{ $navbarId }}">
   <div class="pv-navbar-container">
@@ -59,7 +77,19 @@
 
     {{-- 桌機右側 --}}
     <div class="pv-nav-actions pv-desktop-only">
-      <button class="pv-login-btn">{{ __('ui.navbarBasemap.loginRegister') }}</button>
+      {{-- 未登入 --}}
+      <button class="pv-login-btn" id="{{ $navbarId }}-login-btn" style="{{ $ssrUserName ? 'display:none' : '' }}">{{ __('ui.navbarBasemap.loginRegister') }}</button>
+      {{-- 已登入 --}}
+      <div class="pv-user-wrapper" id="{{ $navbarId }}-user-wrapper" style="{{ $ssrUserName ? '' : 'display:none' }}">
+        <button class="pv-user-btn" id="{{ $navbarId }}-user-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="pv-user-name" id="{{ $navbarId }}-user-name">{{ $ssrUserName ?? '' }}</span>
+          <svg class="pv-chevron" id="{{ $navbarId }}-user-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="pv-user-dropdown" id="{{ $navbarId }}-user-dropdown">
+          <button class="pv-user-option pv-user-logout" id="{{ $navbarId }}-logout-btn">{{ __('ui.navbarBasemap.logout') }}</button>
+        </div>
+      </div>
 
       {{-- 語言切換 --}}
       <div class="pv-locale-wrapper" id="{{ $navbarId }}-locale">
@@ -120,7 +150,10 @@
       @endforeach
     </nav>
     <div class="pv-mobile-actions">
-      <button class="pv-mobile-login-btn">{{ __('ui.navbarBasemap.loginRegister') }}</button>
+      <button class="pv-mobile-login-btn" id="{{ $navbarId }}-mobile-login-btn" style="{{ $ssrUserName ? 'display:none' : '' }}">{{ __('ui.navbarBasemap.loginRegister') }}</button>
+      <button class="pv-mobile-login-btn pv-mobile-logout-btn" id="{{ $navbarId }}-mobile-logout-btn" style="{{ $ssrUserName ? '' : 'display:none' }};background:#f5f5f5;color:#444;border:1.5px solid #ddd;">
+        <span id="{{ $navbarId }}-mobile-user-name">{{ $ssrUserName ?? '' }}</span>&nbsp;·&nbsp;{{ __('ui.navbarBasemap.logout') }}
+      </button>
       <div class="pv-mobile-locale">
         @foreach($locales as $loc)
           <a
@@ -194,8 +227,6 @@
   transition: all 0.2s;
 }
 .pv-login-btn:hover { background: #E8572A; color: #fff; }
-
-/* 語言切換 */
 .pv-locale-wrapper { position: relative; }
 .pv-locale-btn {
   display: flex;
@@ -252,8 +283,6 @@
 }
 .pv-locale-option:hover  { background: #fff5f2; color: #E8572A; }
 .pv-locale-option.active { color: #E8572A; font-weight: 600; background: #fff5f2; }
-
-/* 漢堡 */
 .pv-hamburger-btn {
   display: flex;
   flex-direction: column;
@@ -282,8 +311,6 @@
   transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
   transform-origin: center;
 }
-
-/* 行動選單：用 max-height 做展開動畫 */
 .pv-mobile-menu {
   position: absolute;
   top: 64px;
@@ -356,8 +383,6 @@
 }
 .pv-mobile-locale-btn:hover  { border-color: #E8572A; color: #E8572A; }
 .pv-mobile-locale-btn.active { border-color: #E8572A; color: #E8572A; background: #fff5f2; font-weight: 600; }
-
-/* Overlay */
 .pv-menu-overlay {
   position: fixed;
   inset: 0;
@@ -369,8 +394,31 @@
   transition: opacity 0.2s;
 }
 .pv-menu-overlay.is-open { opacity: 1; pointer-events: auto; }
-
-/* RWD */
+.pv-user-wrapper { position: relative; }
+.pv-user-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border: 1.5px solid #E8572A; border-radius: 20px;
+  background: transparent; color: #E8572A; font-size: 14px; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: all 0.2s;
+}
+.pv-user-btn:hover { background: #fff5f2; }
+.pv-user-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  min-width: 120px; background: #fff;
+  border: 1px solid #e5e5e5; border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1); overflow: hidden;
+  z-index: 300; opacity: 0; transform: translateY(-6px);
+  pointer-events: none; transition: opacity 0.18s, transform 0.18s;
+}
+.pv-user-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.pv-user-option {
+  display: block; width: 100%; padding: 10px 16px;
+  background: transparent; border: none; text-align: left;
+  font-size: 13px; color: #444; cursor: pointer; transition: background 0.15s;
+}
+.pv-user-option:hover { background: #fff5f2; color: #E8572A; }
+.pv-user-logout { color: #dc2626; }
+.pv-user-logout:hover { background: #fef2f2; color: #dc2626; }
 .pv-desktop-only { display: flex; }
 .pv-mobile-only  { display: none; }
 @media (max-width: 768px) {
@@ -382,46 +430,103 @@
 
 <script>
 (function () {
-  var id        = '{{ $navbarId }}';
-  var hamburger = document.getElementById(id + '-hamburger');
-  var menu      = document.getElementById(id + '-menu');
-  var overlay   = document.getElementById(id + '-overlay');
-  var localeBtn = document.getElementById(id + '-locale-btn');
-  var localeDd  = document.getElementById(id + '-locale-dropdown');
-  var chevron   = document.getElementById(id + '-chevron');
+  var id         = '{{ $navbarId }}';
+  var MODAL_ID   = '{{ $navModalId }}';
+  var PROXY_BASE = '';
 
-  if (!hamburger || !menu) return;
+  var hamburger        = document.getElementById(id + '-hamburger');
+  var menu             = document.getElementById(id + '-menu');
+  var overlay          = document.getElementById(id + '-overlay');
+  var localeBtn        = document.getElementById(id + '-locale-btn');
+  var localeDd         = document.getElementById(id + '-locale-dropdown');
+  var chevron          = document.getElementById(id + '-chevron');
 
-  function openMenu() {
-    menu.classList.add('is-open');
-    overlay.classList.add('is-open');
-    hamburger.classList.add('is-open');
+  var loginBtn         = document.getElementById(id + '-login-btn');
+  var mobileLoginBtn   = document.getElementById(id + '-mobile-login-btn');
+  var userWrapper      = document.getElementById(id + '-user-wrapper');
+  var userBtn          = document.getElementById(id + '-user-btn');
+  var userNameEl       = document.getElementById(id + '-user-name');
+  var userDd           = document.getElementById(id + '-user-dropdown');
+  var userChevron      = document.getElementById(id + '-user-chevron');
+  var logoutBtn        = document.getElementById(id + '-logout-btn');
+  var mobileLogoutBtn  = document.getElementById(id + '-mobile-logout-btn');
+  var mobileUserNameEl = document.getElementById(id + '-mobile-user-name');
+
+  // ── Hamburger ─────────────────────────────────────────────
+  if (hamburger && menu) {
+    function openMenu() { menu.classList.add('is-open'); overlay.classList.add('is-open'); hamburger.classList.add('is-open'); }
+    function closeMenu() { menu.classList.remove('is-open'); overlay.classList.remove('is-open'); hamburger.classList.remove('is-open'); }
+    hamburger.addEventListener('click', function (e) { e.stopPropagation(); menu.classList.contains('is-open') ? closeMenu() : openMenu(); });
+    overlay.addEventListener('click', closeMenu);
   }
 
-  function closeMenu() {
-    menu.classList.remove('is-open');
-    overlay.classList.remove('is-open');
-    hamburger.classList.remove('is-open');
-  }
-
-  hamburger.addEventListener('click', function (e) {
-    e.stopPropagation();
-    menu.classList.contains('is-open') ? closeMenu() : openMenu();
-  });
-
-  overlay.addEventListener('click', closeMenu);
-
+  // ── Locale dropdown ───────────────────────────────────────
   if (localeBtn && localeDd) {
     localeBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       var open = localeDd.classList.toggle('open');
-      chevron.classList.toggle('open', open);
-    });
-
-    document.addEventListener('click', function () {
-      localeDd.classList.remove('open');
-      chevron.classList.remove('open');
+      chevron && chevron.classList.toggle('open', open);
     });
   }
+
+  // ── Login / Logout state ──────────────────────────────────
+  function setLoggedIn(name) {
+    if (loginBtn)         loginBtn.style.display        = 'none';
+    if (userWrapper)      userWrapper.style.display      = '';
+    if (userNameEl)       userNameEl.textContent         = name;
+    if (mobileLoginBtn)   mobileLoginBtn.style.display   = 'none';
+    if (mobileLogoutBtn)  mobileLogoutBtn.style.display  = '';
+    if (mobileUserNameEl) mobileUserNameEl.textContent   = name;
+  }
+
+  function setLoggedOut() {
+    if (loginBtn)        loginBtn.style.display        = '';
+    if (userWrapper)     userWrapper.style.display      = 'none';
+    if (mobileLoginBtn)  mobileLoginBtn.style.display   = '';
+    if (mobileLogoutBtn) mobileLogoutBtn.style.display  = 'none';
+  }
+
+  // 把 setLoggedIn / setLoggedOut 注入 modal
+  var api = window['loginModal_' + MODAL_ID];
+  if (api) {
+    api.setLoggedIn  = setLoggedIn;
+    api.setLoggedOut = setLoggedOut;
+  }
+
+  // 開啟彈窗
+  function openModal() {
+    if (api) api.open();
+  }
+
+  if (loginBtn)       loginBtn.addEventListener('click', openModal);
+  if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', openModal);
+
+  // ── User dropdown ─────────────────────────────────────────
+  if (userBtn && userDd) {
+    userBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = userDd.classList.toggle('open');
+      userChevron && userChevron.classList.toggle('open', open);
+    });
+  }
+
+  // ── Logout ────────────────────────────────────────────────
+  async function doLogout() {
+    try {
+      await fetch(PROXY_BASE + '/proxy/api/login/out', { method: 'POST', credentials: 'include' });
+    } catch (e) {}
+    if (api) api.clearAuth();
+    setLoggedOut();
+    if (userDd) userDd.classList.remove('open');
+  }
+
+  if (logoutBtn)       logoutBtn.addEventListener('click', doLogout);
+  if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', doLogout);
+
+  // ── Close dropdowns on outside click ─────────────────────
+  document.addEventListener('click', function () {
+    if (localeDd) { localeDd.classList.remove('open'); chevron && chevron.classList.remove('open'); }
+    if (userDd)   { userDd.classList.remove('open'); userChevron && userChevron.classList.remove('open'); }
+  });
 })();
 </script>

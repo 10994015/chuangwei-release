@@ -12,6 +12,9 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        'proxy/api/login',
+        'proxy/api/login/out',
+        'proxy/api/login/google',
+        'proxy/api/frontend/user',
     ];
 }

@@ -4,7 +4,10 @@
     $logoSrc    = $data['logoImgSrc'] ?? null;
     $tenantName = $data['tenantName'] ?? 'LOGO';
     $tabs       = $data['tabs']       ?? [];
+    $navModalId = 'navbar-modal-' . uniqid();
 @endphp
+
+<x-login-modal :modalId="$navModalId" />
 
 <header
     class="navbar"
@@ -39,7 +42,17 @@
         {{-- 右側按鈕 --}}
         <div class="nav-actions">
             <button class="cart-btn">🛒</button>
-            <button class="login-btn">{{ __('ui.navbarBasemap.login') }}</button>
+            {{-- 未登入 --}}
+            <button class="login-btn" id="{{ $navModalId }}-nav-login-btn">
+              {{ __('ui.navbarBasemap.login') }}
+            </button>
+            {{-- 已登入 --}}
+            <div class="user-wrapper" id="{{ $navModalId }}-nav-user-wrapper" style="display:none">
+              <span class="user-name" id="{{ $navModalId }}-nav-user-name"></span>
+              <button class="logout-btn" id="{{ $navModalId }}-nav-logout-btn">
+                {{ __('ui.navbarBasemap.logout') }}
+              </button>
+            </div>
         </div>
 
         {{-- 漢堡按鈕（手機） --}}
@@ -86,7 +99,14 @@
 
         <div class="mobile-actions">
             <button class="mobile-cart-btn">{{ __('ui.navbarBasemap.cart') }}</button>
-            <button class="mobile-login-btn">{{ __('ui.navbarBasemap.login') }}</button>
+            {{-- 未登入 --}}
+            <button class="mobile-login-btn" id="{{ $navModalId }}-nav-mobile-login-btn">
+              {{ __('ui.navbarBasemap.login') }}
+            </button>
+            {{-- 已登入 --}}
+            <button class="mobile-login-btn" id="{{ $navModalId }}-nav-mobile-logout-btn" style="display:none;background:#f5f5f5;color:#444;border:1.5px solid #ddd;">
+              <span id="{{ $navModalId }}-nav-mobile-user-name"></span>&nbsp;·&nbsp;{{ __('ui.navbarBasemap.logout') }}
+            </button>
         </div>
     </div>
 
@@ -104,3 +124,61 @@
         @click="mobileMenuOpen = false"
     ></div>
 </header>
+
+<script>
+(function () {
+  var MODAL_ID   = '{{ $navModalId }}';
+  var PROXY_BASE = '';
+
+  var loginBtn         = document.getElementById(MODAL_ID + '-nav-login-btn');
+  var userWrapper      = document.getElementById(MODAL_ID + '-nav-user-wrapper');
+  var userNameEl       = document.getElementById(MODAL_ID + '-nav-user-name');
+  var logoutBtn        = document.getElementById(MODAL_ID + '-nav-logout-btn');
+  var mobileLoginBtn   = document.getElementById(MODAL_ID + '-nav-mobile-login-btn');
+  var mobileLogoutBtn  = document.getElementById(MODAL_ID + '-nav-mobile-logout-btn');
+  var mobileUserNameEl = document.getElementById(MODAL_ID + '-nav-mobile-user-name');
+
+  function setLoggedIn(name) {
+    if (loginBtn)         loginBtn.style.display        = 'none';
+    if (userWrapper)      userWrapper.style.display      = '';
+    if (userNameEl)       userNameEl.textContent         = name;
+    if (mobileLoginBtn)   mobileLoginBtn.style.display   = 'none';
+    if (mobileLogoutBtn)  mobileLogoutBtn.style.display  = '';
+    if (mobileUserNameEl) mobileUserNameEl.textContent   = name;
+  }
+
+  function setLoggedOut() {
+    if (loginBtn)        loginBtn.style.display        = '';
+    if (userWrapper)     userWrapper.style.display      = 'none';
+    if (mobileLoginBtn)  mobileLoginBtn.style.display   = '';
+    if (mobileLogoutBtn) mobileLogoutBtn.style.display  = 'none';
+  }
+
+  // 把 setLoggedIn / setLoggedOut 注入 modal，讓登入成功後能更新 navbar
+  var api = window['loginModal_' + MODAL_ID];
+  if (api) {
+    api.setLoggedIn  = setLoggedIn;
+    api.setLoggedOut = setLoggedOut;
+  }
+
+  // 開啟彈窗
+  function openModal() {
+    if (api) api.open();
+  }
+
+  if (loginBtn)       loginBtn.addEventListener('click', openModal);
+  if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', openModal);
+
+  // 登出
+  async function doLogout() {
+    try {
+      await fetch(PROXY_BASE + '/proxy/api/login/out', { method: 'POST', credentials: 'include' });
+    } catch (e) {}
+    if (api) api.clearAuth();
+    setLoggedOut();
+  }
+
+  if (logoutBtn)       logoutBtn.addEventListener('click', doLogout);
+  if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', doLogout);
+})();
+</script>
