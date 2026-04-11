@@ -4,8 +4,39 @@ use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
+// ── Set-Cookie rewriter ────────────────────────────────────
+// localhost: strip Domain (cookies don't support subdomain sharing on localhost)
+// real domain: rewrite Domain to parent domain so all subdomains share the session
+$rewriteSetCookie = function (string $cookieValue): string {
+    $host    = request()->getHost(); // e.g. home.angkeinfo.com or localhost
+    $isLocal = $host === 'localhost' || str_ends_with($host, '.localhost');
+    $isHttps = str_starts_with(config('app.url', ''), 'https');
+
+    if ($isLocal) {
+        // strip Domain entirely — bind cookie to current origin only
+        $cookieValue = preg_replace('/;\s*Domain=[^;]*/i', '', $cookieValue);
+    } else {
+        // rewrite Domain to parent domain so xxx.domain.com shares with ooo.domain.com
+        $parts      = explode('.', $host);
+        $parentDomain = count($parts) >= 2
+            ? '.' . implode('.', array_slice($parts, -2))
+            : '.' . $host;
+        $cookieValue = preg_replace('/;\s*Domain=[^;]*/i', '; Domain=' . $parentDomain, $cookieValue);
+        if (false === strpos($cookieValue, 'Domain=')) {
+            $cookieValue .= '; Domain=' . $parentDomain;
+        }
+    }
+
+    if (!$isHttps) {
+        $cookieValue = preg_replace('/;\s*Secure/i', '', $cookieValue);
+        $cookieValue = preg_replace('/;\s*SameSite=None/i', '; SameSite=Lax', $cookieValue);
+    }
+
+    return $cookieValue;
+};
+
 // ── API Proxy（解決瀏覽器 CORS）────────────────────────────────
-Route::post('/proxy/api/login', function (\Illuminate\Http\Request $request) {
+Route::post('/proxy/api/login', function (\Illuminate\Http\Request $request) use ($rewriteSetCookie) {
     $apiBase  = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
     $isHttps  = str_starts_with(config('app.url', ''), 'https');
 
@@ -23,12 +54,7 @@ Route::post('/proxy/api/login', function (\Illuminate\Http\Request $request) {
         ->header('Content-Type', 'application/json');
 
     foreach ($psrRes->getHeader('set-cookie') as $cookieValue) {
-        $cookieValue = preg_replace('/;\s*Domain=[^;]*/i', '', $cookieValue);
-        if (!$isHttps) {
-            $cookieValue = preg_replace('/;\s*Secure/i', '', $cookieValue);
-            $cookieValue = preg_replace('/;\s*SameSite=None/i', '; SameSite=Lax', $cookieValue);
-        }
-        $laravelResponse->headers->set('Set-Cookie', $cookieValue, false);
+        $laravelResponse->headers->set('Set-Cookie', $rewriteSetCookie($cookieValue), false);
     }
 
     return $laravelResponse;
@@ -46,7 +72,7 @@ Route::post('/proxy/api/login/out', function (\Illuminate\Http\Request $request)
         ->header('Content-Type', 'application/json');
 });
 
-Route::post('/proxy/api/login/google', function (\Illuminate\Http\Request $request) {
+Route::post('/proxy/api/login/google', function (\Illuminate\Http\Request $request) use ($rewriteSetCookie) {
     $apiBase  = 'https://manage.angkeinfo.com';
     $isHttps  = true;
     $url      = $apiBase . '/api/login/google';
@@ -66,12 +92,7 @@ Route::post('/proxy/api/login/google', function (\Illuminate\Http\Request $reque
         ->header('Content-Type', 'application/json');
 
     foreach ($psrRes->getHeader('set-cookie') as $cookieValue) {
-        $cookieValue = preg_replace('/;\s*Domain=[^;]*/i', '', $cookieValue);
-        if (!$isHttps) {
-            $cookieValue = preg_replace('/;\s*Secure/i', '', $cookieValue);
-            $cookieValue = preg_replace('/;\s*SameSite=None/i', '; SameSite=Lax', $cookieValue);
-        }
-        $laravelResponse->headers->set('Set-Cookie', $cookieValue, false);
+        $laravelResponse->headers->set('Set-Cookie', $rewriteSetCookie($cookieValue), false);
     }
 
     return $laravelResponse;
