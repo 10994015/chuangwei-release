@@ -36,7 +36,8 @@
   $layout     = $layoutMap[$frameType] ?? ['grid' => 'cf-grid-1-1', 'type' => 'single', 'cols' => 1];
   $gridClass  = $layout['grid'];
   $layoutType = $layout['type'];
-  $deviceKey  = FrameHelper::resolveDeviceKey();
+  $deviceKey    = FrameHelper::resolveDeviceKey();
+  $responsiveCss = '';
 
   $inlineGridStyle = '';
 
@@ -73,8 +74,12 @@
 
       <div class="cf-composite-left" style="width: {{ $leftWidth }};">
         @foreach($leftIdxs as $idx)
-          @php $el = FrameHelper::resolveElementVars($elements[$idx] ?? [], $deviceKey); @endphp
-          <div class="cf-col" style="{{ $el['paddingStyle'] }} {{ $el['metaStyle'] }}">
+          @php
+            $el      = FrameHelper::resolveElementVars($elements[$idx] ?? [], $deviceKey);
+            $padClass = 'cfp-' . md5(uniqid('', true));
+            $responsiveCss .= FrameHelper::responsivePaddingCss($padClass, $el['rawPadding'], 0);
+          @endphp
+          <div class="cf-col {{ $padClass }}" style="{{ $el['metaStyle'] }}">
             @include('frames._element', ['el' => $el])
           </div>
         @endforeach
@@ -82,8 +87,12 @@
 
       <div class="cf-composite-right">
         @foreach($rightIdxs as $idx)
-          @php $el = FrameHelper::resolveElementVars($elements[$idx] ?? [], $deviceKey); @endphp
-          <div class="cf-col" style="{{ $el['paddingStyle'] }} {{ $el['metaStyle'] }}">
+          @php
+            $el      = FrameHelper::resolveElementVars($elements[$idx] ?? [], $deviceKey);
+            $padClass = 'cfp-' . md5(uniqid('', true));
+            $responsiveCss .= FrameHelper::responsivePaddingCss($padClass, $el['rawPadding'], 0);
+          @endphp
+          <div class="cf-col {{ $padClass }}" style="{{ $el['metaStyle'] }}">
             @include('frames._element', ['el' => $el])
           </div>
         @endforeach
@@ -97,8 +106,12 @@
   <div class="cf-frame-container" style="{{ $themeCssVars }}">
     <div class="custom-frame {{ $gridClass }}" style="{{ $inlineGridStyle }}">
       @foreach($elements as $element)
-        @php $el = FrameHelper::resolveElementVars($element, $deviceKey); @endphp
-        <div class="cf-col" style="{{ $el['paddingStyle'] }} {{ $el['metaStyle'] }}">
+        @php
+          $el       = FrameHelper::resolveElementVars($element, $deviceKey);
+          $padClass = 'cfp-' . md5(uniqid('', true));
+          $responsiveCss .= FrameHelper::responsivePaddingCss($padClass, $el['rawPadding'], 0);
+        @endphp
+        <div class="cf-col {{ $padClass }}" style="{{ $el['metaStyle'] }}">
           @include('frames._element', ['el' => $el])
         </div>
       @endforeach
@@ -107,6 +120,7 @@
 @endif
 
 <style>
+{!! $responsiveCss !!}
 .cf-col { box-sizing: border-box; overflow: hidden; }
 .cf-frame-container { max-width: 1200px; margin: 0 auto; width: 100%; }
 .custom-frame { display: grid; width: 100%; gap: 0; }

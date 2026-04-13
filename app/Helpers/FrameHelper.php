@@ -154,6 +154,39 @@ class FrameHelper
     }
 
     /**
+     * 回傳三個裝置的 padding，用於產生響應式 CSS
+     * 回傳 ['pc' => [...], 'tablet' => [...], 'phone' => [...]]
+     */
+    public static function resolvePaddingAll(mixed $padding, int $default = 20): array
+    {
+        $keys   = ['pc', 'tablet', 'phone'];
+        $result = [];
+        foreach ($keys as $key) {
+            $result[$key] = self::resolvePadding($padding, $key, $default);
+        }
+        return $result;
+    }
+
+    /**
+     * 將三裝置 padding 產生響應式 CSS 字串（需搭配唯一 class）
+     * 格式：.{class} { padding: ... } @media tablet { ... } @media phone { ... }
+     */
+    public static function responsivePaddingCss(string $class, mixed $padding, int $default = 20): string
+    {
+        $all = self::resolvePaddingAll($padding, $default);
+
+        $p = function (array $pad): string {
+            return "{$pad['top']}px {$pad['right']}px {$pad['bottom']}px {$pad['left']}px";
+        };
+
+        $css  = ".{$class} { padding: {$p($all['pc'])}; }\n";
+        $css .= "@media (min-width: 769px) and (max-width: 1024px) { .{$class} { padding: {$p($all['tablet'])}; } }\n";
+        $css .= "@media (max-width: 768px) { .{$class} { padding: {$p($all['phone'])}; } }\n";
+
+        return $css;
+    }
+
+    /**
      * 解析單一 element 的樣式變數
      * 供 custom_frame.blade.php 使用，避免在 Blade 內宣告函式導致重複宣告錯誤
      */
@@ -192,6 +225,7 @@ class FrameHelper
             'meta'         => $meta,
             'content'      => $element['content'] ?? [],
             'paddingStyle' => "padding: {$pt}px {$pr}px {$pb}px {$pl}px;",
+            'rawPadding'   => $element['padding'] ?? null,
             'metaStyle'    => $metaStyle,
         ];
     }

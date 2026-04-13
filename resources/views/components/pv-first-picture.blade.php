@@ -13,9 +13,11 @@
   $logoHeightStyle = $logoHeight ? "height:{$logoHeight}px;" : '';
   $logoImgStyle    = "{$logoWidthStyle}{$logoHeightStyle}object-fit:contain;";
 
-  $deviceKey = \App\Helpers\FrameHelper::resolveDeviceKey();
-  $logoPad   = \App\Helpers\FrameHelper::resolvePadding($data['logoPadding'] ?? null, $deviceKey, 0);
-  $logoPaddingStyle = "padding:{$logoPad['top']}px {$logoPad['right']}px {$logoPad['bottom']}px {$logoPad['left']}px;";
+  $fpId      = 'pv-fp-' . uniqid();
+  $logoCls   = $fpId . '-logo';
+  $heroCls   = $fpId . '-hero';
+  $btnsCls   = $fpId . '-btns';
+  $logoPadCss   = \App\Helpers\FrameHelper::responsivePaddingCss($logoCls, $data['logoPadding'] ?? null, 0);
 
   // Hero
   $heroImgSrc    = $data['heroImgSrc']    ?? null;
@@ -31,8 +33,7 @@
   $titleFontSizeStyle = $titleFontSize ? "font-size:{$titleFontSize}px;" : '';
   $titleStyle = "color:{$titleColor};{$titleFontSizeStyle}";
 
-  $heroPad   = \App\Helpers\FrameHelper::resolvePadding($data['heroPadding'] ?? null, $deviceKey, 0);
-  $heroPaddingStyle = "padding:{$heroPad['top']}px {$heroPad['right']}px {$heroPad['bottom']}px {$heroPad['left']}px;";
+  $heroPadCss  = \App\Helpers\FrameHelper::responsivePaddingCss($heroCls, $data['heroPadding'] ?? null, 0);
 
   // Buttons
   $buttons  = $data['buttons'] ?? [];
@@ -45,8 +46,7 @@
     ];
   }
 
-  $buttonsPad   = \App\Helpers\FrameHelper::resolvePadding($data['buttonsPadding'] ?? null, $deviceKey, 0);
-  $buttonsPaddingStyle = "padding:{$buttonsPad['top']}px {$buttonsPad['right']}px {$buttonsPad['bottom']}px {$buttonsPad['left']}px;";
+  $btnsPadCss  = \App\Helpers\FrameHelper::responsivePaddingCss($btnsCls, $data['buttonsPadding'] ?? null, 0);
 
   // Copyright
   $copyright = $data['copyright'] ?? ('Copyright © ' . date('Y') . ' 創蔚國際有限公司 All Rights Reserved.');
@@ -57,7 +57,7 @@
 <section class="pv-first-picture">
 
   {{-- Logo --}}
-  <div class="pv-fp-logo" style="{{ $logoPaddingStyle }}">
+  <div class="pv-fp-logo {{ $logoCls }}">
     @if($logoSrc)
       <img src="{{ $logoSrc }}" alt="Logo" class="pv-fp-logo-img" style="{{ $logoImgStyle }}" />
     @else
@@ -71,7 +71,7 @@
   </div>
 
   {{-- Hero --}}
-  <div class="pv-fp-hero" style="{{ $heroPaddingStyle }}">
+  <div class="pv-fp-hero {{ $heroCls }}">
     @if($heroImgSrc)
       <img src="{{ $heroImgSrc }}" alt="{{ __('ui.pvFirstPicture.mainImgAlt') }}" class="pv-fp-hero-img" style="{{ $heroImgStyle }}" />
     @endif
@@ -81,7 +81,7 @@
   </div>
 
   {{-- Buttons --}}
-  <div class="pv-fp-buttons" style="{{ $buttonsPaddingStyle }}">
+  <div class="pv-fp-buttons {{ $btnsCls }}">
     @foreach($buttons as $btn)
       @php
         $url          = $btn['internalSlug'] ?? ($btn['url'] ?? '#');
@@ -112,6 +112,7 @@
 </section>
 
 <style>
+{!! $logoPadCss . $heroPadCss . $btnsPadCss !!}
 .pv-first-picture {
   min-height: 100vh; width: 100%; display: flex; flex-direction: column;
   align-items: center; justify-content: center; padding: 3rem 2rem 2rem;
