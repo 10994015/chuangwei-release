@@ -39,9 +39,28 @@
     // 對應 Vue 版 getTagClass：hot=#dc3545, recommended=#1a73e8, default=#95a5a6
 
     $selectedCategory = request('category', 'all');
-    $filteredEvents   = $selectedCategory === 'all'
-        ? $eventsList
-        : array_values(array_filter($eventsList, fn($e) => in_array($selectedCategory, $e['tags'] ?? [])));
+    $keyword          = trim(request('keyword', ''));
+    $dateFrom         = request('date_from', '');
+    $dateTo           = request('date_to', '');
+
+    $filteredEvents = $eventsList;
+
+    // 分類過濾
+    if ($selectedCategory !== 'all') {
+        $filteredEvents = array_values(array_filter($filteredEvents, fn($e) => in_array($selectedCategory, $e['tags'] ?? [])));
+    }
+    // 關鍵字過濾
+    if ($keyword !== '') {
+        $filteredEvents = array_values(array_filter($filteredEvents, fn($e) => mb_stripos($e['title'], $keyword) !== false));
+    }
+    // 開始日期過濾
+    if ($dateFrom !== '') {
+        $filteredEvents = array_values(array_filter($filteredEvents, fn($e) => $e['date'] >= $dateFrom));
+    }
+    // 結束日期過濾
+    if ($dateTo !== '') {
+        $filteredEvents = array_values(array_filter($filteredEvents, fn($e) => $e['date'] <= $dateTo));
+    }
 
     $total       = count($filteredEvents);
     $totalPages  = $perPage > 0 ? (int) ceil($total / $perPage) : 1;
@@ -60,11 +79,47 @@
         $pageNumbers = [1, '...', $currentPage-1, $currentPage, $currentPage+1, '...', $totalPages];
     }
 
-    $queryBase = array_filter(request()->except(['page', 'category']));
+    $queryBase = array_filter(request()->except(['page']));
 @endphp
 
 <section class="event-list-section">
     <div class="container">
+
+        {{-- 搜尋區 --}}
+        <form class="el-search-bar" method="GET" action="">
+            <input type="hidden" name="locale" value="{{ request('locale', 'ZH-TW') }}" />
+            <div class="el-search-row">
+                <div class="el-search-field">
+                    <label class="el-search-label">{{ __('ui.eventListBasemap.labelKeyword') }}</label>
+                    <div class="el-search-input-wrap">
+                        <svg class="el-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" name="keyword" class="el-search-input" placeholder="{{ __('ui.eventListBasemap.keywordPlaceholder') }}" value="{{ $keyword }}" />
+                    </div>
+                </div>
+                <div class="el-search-field">
+                    <label class="el-search-label">{{ __('ui.eventListBasemap.labelCategory') }}</label>
+                    <select name="category" class="el-search-select">
+                        @foreach ($categories as $cat)
+                            <option value="{{ $cat['id'] }}" {{ $selectedCategory === $cat['id'] ? 'selected' : '' }}>{{ $cat['name'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="el-search-field">
+                    <label class="el-search-label">{{ __('ui.eventListBasemap.labelDateFrom') }}</label>
+                    <input type="date" name="date_from" class="el-search-input" value="{{ $dateFrom }}" />
+                </div>
+                <div class="el-search-field">
+                    <label class="el-search-label">{{ __('ui.eventListBasemap.labelDateTo') }}</label>
+                    <input type="date" name="date_to" class="el-search-input" value="{{ $dateTo }}" />
+                </div>
+            </div>
+            <div class="el-search-actions">
+                <button type="submit" class="el-search-btn">{{ __('ui.eventListBasemap.searchBtn') }}</button>
+                <a href="{{ url()->current() }}?locale={{ request('locale', 'ZH-TW') }}" class="el-reset-btn">{{ __('ui.eventListBasemap.resetBtn') }}</a>
+            </div>
+        </form>
+
+        <hr class="divider" />
 
         {{-- 分類 Tab --}}
         <div class="filter-bar">
@@ -74,6 +129,7 @@
                     class="filter-btn {{ $selectedCategory === $cat['id'] ? 'active' : '' }}"
                 >{{ $cat['name'] }}</a>
             @endforeach
+
         </div>
 
         <hr class="divider" />
@@ -177,3 +233,43 @@
 
     </div>
 </section>
+
+<style>
+.el-search-bar { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 20px 24px 16px; margin-bottom: 24px; }
+.el-search-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 14px; }
+.el-search-field { display: flex; flex-direction: column; gap: 6px; }
+.el-search-label { font-size: 13px; font-weight: 500; color: #374151; }
+.el-search-input-wrap { position: relative; }
+.el-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: #9ca3af; pointer-events: none; }
+.el-search-input-wrap .el-search-input { padding-left: 32px; }
+.el-search-input {
+    width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px;
+    font-size: 14px; color: #374151; box-sizing: border-box; outline: none;
+    transition: border-color 0.2s; background: #fff;
+}
+.el-search-input:focus { border-color: #E8572A; box-shadow: 0 0 0 3px rgba(232,87,42,0.1); }
+.el-search-select {
+    width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px;
+    font-size: 14px; color: #374151; box-sizing: border-box; outline: none;
+    background: #fff; cursor: pointer; transition: border-color 0.2s;
+}
+.el-search-select:focus { border-color: #E8572A; }
+.el-search-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.el-search-btn {
+    padding: 9px 24px; background: #E8572A; color: #fff; border: none;
+    border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s;
+}
+.el-search-btn:hover { background: #d14a1f; }
+.el-reset-btn {
+    padding: 9px 20px; background: #f5f5f5; color: #555; border: 1px solid #ddd;
+    border-radius: 8px; font-size: 14px; text-decoration: none; transition: background 0.2s;
+}
+.el-reset-btn:hover { background: #eee; }
+@media (max-width: 1024px) {
+    .el-search-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+    .el-search-row { grid-template-columns: 1fr; }
+    .el-search-bar { padding: 16px; }
+}
+</style>

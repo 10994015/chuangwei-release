@@ -167,14 +167,17 @@
 
   <div class="pv-menu-overlay" id="{{ $navbarId }}-overlay"></div>
 </header>
+<div style="height:64px"></div>
 
 <style>
 .pv-navbar {
   background: #fff;
   border-bottom: 1px solid #eee;
   padding: 0 2rem;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 200;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
@@ -493,13 +496,14 @@
     api.setLoggedOut = setLoggedOut;
   }
 
-  // 開啟彈窗
-  function openModal() {
-    if (api) api.open();
+  // 前往登入頁
+  var LOCALE = '{{ $locale }}';
+  function goToLogin() {
+    window.location.href = '/login?locale=' + LOCALE + '&redirect=' + encodeURIComponent(window.location.href);
   }
 
-  if (loginBtn)       loginBtn.addEventListener('click', openModal);
-  if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', openModal);
+  if (loginBtn)       loginBtn.addEventListener('click', goToLogin);
+  if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', goToLogin);
 
   // ── User dropdown ─────────────────────────────────────────
   if (userBtn && userDd) {

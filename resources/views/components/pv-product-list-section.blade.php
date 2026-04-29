@@ -2,31 +2,86 @@
 @php
   $data            = $frame['data'] ?? [];
   $featuredProduct = $data['featuredProduct'] ?? [];
-  $productList     = $data['productList']     ?? [];
-  $rawRest         = $productList['data']     ?? $productList ?? [];
 
-  $mapProduct = fn($p) => [
-    'id'     => $p['id']     ?? null,
-    'title'  => $p['name']   ?? '',
-    'source' => $p['source'] ?? ($p['tenantName'] ?? ($p['temple'] ?? '')),
+  // ── 篩選參數（來自 GET query）──────────────────────────────
+  $apiPage      = max(1, (int) request('page', 1));
+  $apiName      = trim(request('name', ''));
+  $apiType      = request('type', '');
+  $apiSortCombo = request('sort', '');           // e.g. "publishAt|DESC"
+  $apiPageSize  = 10;
+
+  [$apiSortBy, $apiSortOrder] = array_pad(explode('|', $apiSortCombo, 2), 2, '');
+
+  // ── 呼叫 /api/product/all ────────────────────────────────
+  $restProducts = [];
+  $totalPages   = 1;
+  $total        = 0;
+
+  try {
+    $apiBase = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+    $query   = array_filter([
+      'page'       => $apiPage,
+      'pageSize'   => $apiPageSize,
+      'name'       => $apiName      ?: null,
+      'type'       => $apiType      ?: null,
+      'sortBy'     => $apiSortBy    ?: null,
+      'sortOrder'  => $apiSortOrder ?: null,
+    ], fn($v) => $v !== null);
+
+    $res = \Illuminate\Support\Facades\Http::withOptions(['cookies' => false])
+      ->withHeaders(['Cookie' => request()->header('Cookie', '')])
+      ->get($apiBase . '/api/product/all', $query);
+
+    if ($res->status() === 200) {
+      $resData      = $res->json('data') ?? [];
+      $rawProducts  = $resData['data']       ?? [];
+      $totalPages   = (int)($resData['totalPages'] ?? 1);
+      $total        = (int)($resData['total']      ?? 0);
+
+      $restProducts = array_map(fn($p) => [
+        'id'         => $p['id']         ?? null,
+        'title'      => $p['nameZhTw']   ?? ($p['name'] ?? ''),
+        'source'     => $p['tenantName'] ?? '',
+        'price'      => isset($p['price']) ? 'NT$ ' . number_format((float)$p['price']) : '',
+        'image'      => !empty($p['imgs']) ? ($p['imgs'][0]['url'] ?? null) : null,
+        'badge'      => null,
+        'badgeClass' => 'default',
+      ], $rawProducts);
+    }
+  } catch (\Throwable $e) {}
+
+  // ── 精選（仍從 frame data）──────────────────────────────
+  $mapFeatured = fn($p) => [
+    'id'     => $p['id']   ?? null,
+    'title'  => $p['name'] ?? '',
+    'source' => $p['source'] ?? ($p['tenantName'] ?? ''),
     'price'  => isset($p['price']) ? 'NT$ ' . number_format((float)$p['price']) : '',
     'image'  => $p['imgSrc'] ?? null,
-    'badge'  => (isset($p['labels']) && is_array($p['labels']) && count($p['labels']))
-                  ? $p['labels'][0] : null,
+    'badge'  => (isset($p['labels']) && is_array($p['labels']) && count($p['labels'])) ? $p['labels'][0] : null,
     'badgeClass' => (function() use ($p) {
       $l = $p['labels'][0] ?? '';
       if (in_array($l, ['熱門', 'hot']))         return 'hot';
       if (in_array($l, ['推薦', 'recommended'])) return 'recommended';
-      return 'default'; // 修正：Vue 是 default，不是 hot
+      return 'default';
     })(),
   ];
+  $featuredProducts = collect($featuredProduct)->map($mapFeatured)->values()->toArray();
 
-  $featuredProducts = collect($featuredProduct)->map($mapProduct)->values()->toArray();
-  $restProducts     = collect($rawRest)->map($mapProduct)->values()->toArray();
+  // ── 分頁頁碼 ─────────────────────────────────────────────
+  $currentPage = $apiPage;
+  if ($totalPages <= 7) {
+    $pageNumbers = range(1, $totalPages);
+  } elseif ($currentPage <= 4) {
+    $pageNumbers = [1, 2, 3, 4, 5, '...', $totalPages];
+  } elseif ($currentPage >= $totalPages - 3) {
+    $pageNumbers = [1, '...', $totalPages-4, $totalPages-3, $totalPages-2, $totalPages-1, $totalPages];
+  } else {
+    $pageNumbers = [1, '...', $currentPage-1, $currentPage, $currentPage+1, '...', $totalPages];
+  }
+
+  $queryBase = request()->except(['page']);
 
   $featuredPageSize = 3;
-  $restPageSize     = 5;
-
   $listId = 'pv-pl-' . uniqid();
 @endphp
 
@@ -36,26 +91,41 @@
     <h2 class="pv-pl-page-title">{{ __('ui.productListBasemap.pageTitle') }}</h2>
 
     {{-- 篩選欄 --}}
-    <div class="pv-pl-filter-bar">
-      <select class="pv-pl-filter-select"><option>{{ __('ui.productListBasemap.allTypes') }}</option></select>
-      <select class="pv-pl-filter-select"><option>{{ __('ui.productListBasemap.allNeeds') }}</option></select>
-      <select class="pv-pl-filter-select"><option>{{ __('ui.productListBasemap.defaultSort') }}</option></select>
+    <form class="pv-pl-filter-bar" method="GET" action="">
+      <input type="hidden" name="locale" value="{{ request('locale', 'ZH-TW') }}" />
+
+      <select name="type" class="pv-pl-filter-select" onchange="this.form.submit()">
+        <option value="" {{ $apiType === '' ? 'selected' : '' }}>{{ __('ui.productListBasemap.allTypes') }}</option>
+        <option value="PRODUCT_AND_SERVICE" {{ $apiType === 'PRODUCT_AND_SERVICE' ? 'selected' : '' }}>{{ __('ui.productListBasemap.typeProductService') }}</option>
+        <option value="LAMP" {{ $apiType === 'LAMP' ? 'selected' : '' }}>{{ __('ui.productListBasemap.typeLamp') }}</option>
+      </select>
+
+      <select name="sort" class="pv-pl-filter-select" onchange="this.form.submit()">
+        <option value="" {{ $apiSortCombo === '' ? 'selected' : '' }}>{{ __('ui.productListBasemap.defaultSort') }}</option>
+        <option value="publishAt|DESC" {{ $apiSortCombo === 'publishAt|DESC' ? 'selected' : '' }}>{{ __('ui.productListBasemap.sortNewest') }}</option>
+        <option value="price|ASC"     {{ $apiSortCombo === 'price|ASC'     ? 'selected' : '' }}>{{ __('ui.productListBasemap.sortPriceAsc') }}</option>
+        <option value="price|DESC"    {{ $apiSortCombo === 'price|DESC'    ? 'selected' : '' }}>{{ __('ui.productListBasemap.sortPriceDesc') }}</option>
+      </select>
+
       <div class="pv-pl-search-box">
-        <input type="text" placeholder="{{ __('ui.productListBasemap.keywordPlaceholder') }}" class="pv-pl-search-input" id="{{ $listId }}-search" />
-        <button class="pv-pl-search-btn" id="{{ $listId }}-search-btn">
+        <input type="text" name="name" value="{{ $apiName }}" placeholder="{{ __('ui.productListBasemap.keywordPlaceholder') }}" class="pv-pl-search-input" />
+        <button type="submit" class="pv-pl-search-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           {{ __('ui.productListBasemap.searchBtn') }}
         </button>
+        @if($apiName || $apiType || $apiSortCombo)
+          <a href="{{ url()->current() }}?locale={{ request('locale','ZH-TW') }}" class="pv-pl-reset-btn">{{ __('ui.eventListBasemap.resetBtn') }}</a>
+        @endif
       </div>
-    </div>
+    </form>
 
-    {{-- 精選推薦 --}}
+    {{-- 精選推薦（有資料才顯示）--}}
+    @if(!empty($featuredProducts))
     <div class="pv-pl-featured-header">
       <h3 class="pv-pl-featured-title">{{ __('ui.productListBasemap.featuredTitle') }}</h3>
       <div class="pv-pl-featured-actions">
-        {{-- 新增：批次選擇按鈕 --}}
         <button class="pv-pl-batch-btn" id="{{ $listId }}-batch-btn">
           {{ __('ui.productListBasemap.batchSelect') }}
         </button>
@@ -70,7 +140,8 @@
 
     <div class="pv-pl-products-grid pv-pl-products-grid--featured" id="{{ $listId }}-featured">
       @foreach($featuredProducts as $product)
-        <div class="pv-pl-product-card" data-id="{{ $product['id'] }}">
+        <a class="pv-pl-product-card" data-id="{{ $product['id'] }}"
+           href="/product/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ $currentSlug ?? 'home' }}">
           <div class="pv-pl-product-image">
             @if($product['image'])
               <img src="{{ $product['image'] }}" alt="{{ $product['title'] }}" class="pv-pl-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
@@ -78,7 +149,6 @@
             @else
               <div class="pv-pl-image-placeholder"><span>{{ __('ui.productListBasemap.noImage') }}</span></div>
             @endif
-            {{-- 新增：批次選取 checkbox --}}
             <div class="pv-pl-check" style="display:none">
               <svg class="pv-pl-check-icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" style="display:none">
                 <polyline points="20 6 9 17 4 12"/>
@@ -93,26 +163,25 @@
             <h3 class="pv-pl-product-title">{{ $product['title'] }}</h3>
             <div class="pv-pl-product-footer">
               <span class="pv-pl-product-price">{{ $product['price'] }}</span>
-              <button class="pv-pl-cart-btn" aria-label="{{ __('ui.productListBasemap.addToCart') }}">
+              <span class="pv-pl-cart-btn" aria-label="{{ __('ui.productListBasemap.addToCart') }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
                   <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
                 </svg>
-              </button>
+              </span>
             </div>
           </div>
-        </div>
+        </a>
       @endforeach
-      @if(empty($featuredProducts))
-        <div class="pv-pl-empty" style="grid-column:1/-1">{{ __('ui.productListBasemap.featuredEmpty') }}</div>
-      @endif
     </div>
+    @endif
 
     {{-- 其餘商品 --}}
     @if(count($restProducts) > 0)
       <div class="pv-pl-products-grid pv-pl-products-grid--rest" id="{{ $listId }}-rest">
         @foreach($restProducts as $product)
-          <div class="pv-pl-product-card" data-id="{{ $product['id'] }}">
+          <a class="pv-pl-product-card" data-id="{{ $product['id'] }}"
+             href="/product/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ $currentSlug ?? 'home' }}">
             <div class="pv-pl-product-image">
               @if($product['image'])
                 <img src="{{ $product['image'] }}" alt="{{ $product['title'] }}" class="pv-pl-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
@@ -120,7 +189,6 @@
               @else
                 <div class="pv-pl-image-placeholder"><span>{{ __('ui.productListBasemap.noImage') }}</span></div>
               @endif
-              {{-- 新增：批次選取 checkbox --}}
               <div class="pv-pl-check" style="display:none">
                 <svg class="pv-pl-check-icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" style="display:none">
                   <polyline points="20 6 9 17 4 12"/>
@@ -135,20 +203,54 @@
               <h3 class="pv-pl-product-title">{{ $product['title'] }}</h3>
               <div class="pv-pl-product-footer">
                 <span class="pv-pl-product-price">{{ $product['price'] }}</span>
-                <button class="pv-pl-cart-btn" aria-label="{{ __('ui.productListBasemap.addToCart') }}">
+                <span class="pv-pl-cart-btn" aria-label="{{ __('ui.productListBasemap.addToCart') }}">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
                   </svg>
-                </button>
+                </span>
               </div>
             </div>
-          </div>
+          </a>
         @endforeach
       </div>
 
-      {{-- 分頁 --}}
-      <div class="pv-pl-pagination" id="{{ $listId }}-pagination"></div>
+      {{-- 分頁（server-side）--}}
+      @if($totalPages > 1)
+        <div class="pv-pl-pagination">
+          @if($currentPage <= 1)
+            <span class="pv-pl-page-circle disabled">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </span>
+          @else
+            <a href="{{ url()->current() . '?' . http_build_query(array_merge($queryBase, ['page' => $currentPage - 1])) }}" class="pv-pl-page-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </a>
+          @endif
+
+          @foreach($pageNumbers as $pn)
+            @if($pn === '...')
+              <span class="pv-pl-page-ellipsis">...</span>
+            @else
+              <a href="{{ url()->current() . '?' . http_build_query(array_merge($queryBase, ['page' => $pn])) }}"
+                 class="pv-pl-page-circle {{ $currentPage == $pn ? 'active' : '' }}">{{ $pn }}</a>
+            @endif
+          @endforeach
+
+          @if($currentPage >= $totalPages)
+            <span class="pv-pl-page-circle disabled">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
+          @else
+            <a href="{{ url()->current() . '?' . http_build_query(array_merge($queryBase, ['page' => $currentPage + 1])) }}" class="pv-pl-page-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          @endif
+        </div>
+      @endif
+
+    @else
+      <div class="pv-pl-empty">{{ __('ui.productListBasemap.empty') }}</div>
     @endif
 
   </div>
@@ -184,6 +286,14 @@
   transition: all 0.2s;
 }
 .pv-pl-search-btn:hover { background: #E8572A; color: #fff; }
+.pv-pl-reset-btn {
+  height: 40px; padding: 0 16px;
+  border: 1.5px solid #ddd; border-radius: 20px;
+  background: transparent; color: #666;
+  font-size: 14px; text-decoration: none; white-space: nowrap;
+  display: inline-flex; align-items: center; transition: all 0.2s;
+}
+.pv-pl-reset-btn:hover { border-color: #E8572A; color: #E8572A; }
 
 .pv-pl-featured-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
 .pv-pl-featured-title  { font-size: 20px; font-weight: 700; color: var(--frame-heading-color,#222); margin: 0; }
@@ -217,6 +327,7 @@
   border: 1px solid var(--frame-border-color,#eee);
   border-radius: 12px; overflow: hidden; cursor: pointer;
   transition: box-shadow 0.2s, transform 0.2s;
+  text-decoration: none; display: block; color: inherit;
 }
 .pv-pl-product-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.09); transform: translateY(-2px); }
 /* 新增：被選取的卡片樣式 */
@@ -294,13 +405,11 @@
   var id         = '{{ $listId }}';
   var featuredEl = document.getElementById(id + '-featured');
   var restEl     = document.getElementById(id + '-rest');
-  var pagination = document.getElementById(id + '-pagination');
   var btnPrev    = document.getElementById(id + '-feat-prev');
   var btnNext    = document.getElementById(id + '-feat-next');
   var batchBtn   = document.getElementById(id + '-batch-btn');
 
-  var FEAT_SIZE  = {{ $featuredPageSize }};
-  var REST_SIZE  = {{ $restPageSize }};
+  var FEAT_SIZE = {{ $featuredPageSize }};
 
   // ── 批次選擇 ──
   var batchMode   = false;
@@ -317,15 +426,13 @@
     batchMode = !batchMode;
     selectedIds = [];
     batchBtn.classList.toggle('active', batchMode);
-
     getAllCards().forEach(function (card) {
       var chk = card.querySelector('.pv-pl-check');
       if (chk) chk.style.display = batchMode ? 'flex' : 'none';
       card.classList.remove('is-selected');
       var icon = card.querySelector('.pv-pl-check-icon');
       if (icon) icon.style.display = 'none';
-      var chkEl = card.querySelector('.pv-pl-check');
-      if (chkEl) chkEl.classList.remove('checked');
+      if (chk) chk.classList.remove('checked');
     });
   }
 
@@ -335,7 +442,6 @@
     var idx    = selectedIds.indexOf(cardId);
     var chk    = card.querySelector('.pv-pl-check');
     var icon   = card.querySelector('.pv-pl-check-icon');
-
     if (idx === -1) {
       selectedIds.push(cardId);
       card.classList.add('is-selected');
@@ -349,14 +455,10 @@
     }
   }
 
-  if (batchBtn) {
-    batchBtn.addEventListener('click', toggleBatch);
-  }
+  if (batchBtn) batchBtn.addEventListener('click', toggleBatch);
 
-  // 卡片點擊事件（包含 featured + rest）
   getAllCards().forEach(function (card) {
     card.addEventListener('click', function (e) {
-      // 購物車按鈕不觸發批次選取
       if (e.target.closest('.pv-pl-cart-btn')) return;
       handleCardClick(card);
     });
@@ -378,67 +480,6 @@
     btnPrev.addEventListener('click', function () { if (featPage > 0) { featPage--; renderFeatured(); } });
     btnNext.addEventListener('click', function () { if (featPage < featTotal - 1) { featPage++; renderFeatured(); } });
     renderFeatured();
-  }
-
-  // ── rest 分頁 ──
-  if (restEl && pagination) {
-    var restCards = Array.from(restEl.querySelectorAll('.pv-pl-product-card'));
-    var restPage  = 1;
-    var restTotal = Math.max(1, Math.ceil(restCards.length / REST_SIZE));
-
-    function renderRest() {
-      var start = (restPage - 1) * REST_SIZE;
-      restCards.forEach(function (c, i) {
-        c.style.display = (i >= start && i < start + REST_SIZE) ? '' : 'none';
-      });
-      renderPagination();
-    }
-
-    function renderPagination() {
-      pagination.innerHTML = '';
-      if (restTotal <= 1) return;
-
-      var pages = buildPages(restPage, restTotal);
-
-      appendCircle(pagination, prevSvg(), restPage === 1, function () { if (restPage > 1) { restPage--; renderRest(); } });
-
-      pages.forEach(function (p) {
-        if (p === '...') {
-          var ell = document.createElement('span');
-          ell.className = 'pv-pl-page-ellipsis';
-          ell.textContent = '...';
-          pagination.appendChild(ell);
-        } else {
-          appendCircle(pagination, p, false, function () { restPage = p; renderRest(); }, p === restPage);
-        }
-      });
-
-      appendCircle(pagination, nextSvg(), restPage === restTotal, function () { if (restPage < restTotal) { restPage++; renderRest(); } });
-    }
-
-    function appendCircle(parent, content, disabled, onClick, active) {
-      var btn = document.createElement('button');
-      btn.className = 'pv-pl-page-circle' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
-      if (typeof content === 'string' && content.startsWith('<')) {
-        btn.innerHTML = content;
-      } else {
-        btn.textContent = content;
-      }
-      btn.addEventListener('click', onClick);
-      parent.appendChild(btn);
-    }
-
-    function prevSvg() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>'; }
-    function nextSvg() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'; }
-
-    function buildPages(cur, total) {
-      if (total <= 7) return Array.from({ length: total }, function (_, i) { return i + 1; });
-      if (cur <= 4)          return [1, 2, 3, 4, 5, '...', total];
-      if (cur >= total - 3)  return [1, '...', total-4, total-3, total-2, total-1, total];
-      return [1, '...', cur-1, cur, cur+1, '...', total];
-    }
-
-    renderRest();
   }
 })();
 </script>

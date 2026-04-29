@@ -110,6 +110,47 @@ Route::get('/proxy/api/frontend/user', function (\Illuminate\Http\Request $reque
         ->header('Content-Type', 'application/json');
 });
 
+// ── Auth pages ────────────────────────────────────────────────
+Route::get('/login',            fn() => view('auth.login'));
+Route::get('/register',         fn() => view('auth.register'));
+Route::get('/forgot-password',  fn() => view('auth.forgot-password'));
+
+// ── Forgot password proxy ─────────────────────────────────────
+Route::post('/proxy/api/user/change-password', function (\Illuminate\Http\Request $request) {
+    $apiBase = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+    $guzzle  = new \GuzzleHttp\Client(['cookies' => false]);
+    $psrRes  = $guzzle->post($apiBase . '/api/user/change-password', [
+        'headers'     => ['Content-Type' => 'application/json', 'Accept' => 'application/json'],
+        'json'        => $request->all(),
+        'http_errors' => false,
+    ]);
+
+    return response((string) $psrRes->getBody(), $psrRes->getStatusCode())
+        ->header('Content-Type', 'application/json');
+});
+
+// ── Register proxy ────────────────────────────────────────────
+Route::post('/proxy/api/register', function (\Illuminate\Http\Request $request) {
+    $apiBase = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+    $guzzle  = new \GuzzleHttp\Client(['cookies' => false]);
+    $psrRes  = $guzzle->post($apiBase . '/api/register', [
+        'headers'     => ['Content-Type' => 'application/json', 'Accept' => 'application/json'],
+        'json'        => $request->all(),
+        'http_errors' => false,
+    ]);
+
+    return response((string) $psrRes->getBody(), $psrRes->getStatusCode())
+        ->header('Content-Type', 'application/json');
+});
+
+// 宮廟商品詳情頁（/api/product/temple/{id}）— 需在 /product/{id} 之前
+Route::get('/product/temple/{id}', [PageController::class, 'templeProductDetail'])
+    ->where('id', '[0-9a-fA-F\-]+');
+
+// 商品詳情頁（/api/product/all/{id}）
+Route::get('/product/{id}', [PageController::class, 'productDetail'])
+    ->where('id', '[0-9a-fA-F\-]+');
+
 // 根目錄 → 由 controller 決定第一個 slug
 Route::get('/', [PageController::class, 'home']);
 Route::get('/test-route', function () {

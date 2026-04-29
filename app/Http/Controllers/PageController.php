@@ -182,6 +182,116 @@ class PageController extends Controller
         return $this->renderPage($slug);
     }
 
+    public function productDetail(string $id)
+    {
+        $locale   = request()->query('locale', 'ZH-TW');
+        $settings = $this->getWebsiteSettings();
+        $locales  = $this->getLocales();
+        $apiBase  = $this->buildBaseUrl();
+
+        // 商品詳情
+        $productRes = Http::withOptions(['cookies' => false])
+            ->withHeaders(['Cookie' => request()->header('Cookie', '')])
+            ->get($apiBase . "/api/product/all/{$id}");
+
+        if ($productRes->failed() || $productRes->json('statusCode') !== 200) {
+            abort(404);
+        }
+
+        $product = $productRes->json('data');
+
+        // 推薦商品（同類型，排除自己，取 5 筆）
+        $recRes = Http::withOptions(['cookies' => false])
+            ->get($apiBase . '/api/product/all', [
+                'pageSize' => 6,
+                'page'     => 1,
+            ]);
+
+        $recRaw = ($recRes->ok() ? $recRes->json('data.data') : []) ?? [];
+        $recommended = array_values(
+            array_filter($recRaw, fn($p) => ($p['id'] ?? '') !== $id)
+        );
+        $recommended = array_slice($recommended, 0, 5);
+
+        // 取得 Header / Footer frame（從 home 頁）
+        $homeData    = $this->getPageContent('home', $locale);
+        $basemaps    = $homeData['contentJson'] ?? [];
+        $headerFrame = null;
+        $footerFrame = null;
+
+        foreach ($basemaps as $section) {
+            $bgType = $section['bgType'] ?? '';
+            if (in_array($bgType, ['HEADER', 'PV_HEADER']) && $headerFrame === null) {
+                $headerFrame = ['type' => $bgType, 'data' => $section['frames'][0]['data'] ?? []];
+            }
+            if (in_array($bgType, ['FOOTER', 'PV_FOOTER']) && $footerFrame === null) {
+                $footerFrame = ['type' => $bgType, 'data' => $section['frames'][0]['data'] ?? []];
+            }
+        }
+
+        $slug     = request()->query('from', 'home');
+        $pageMeta = ['seoTitle' => ($product['nameZhTw'] ?? '') . ' - ' . ($settings['seoTitle'] ?? '')];
+
+        return view('product.show', compact(
+            'product', 'recommended', 'headerFrame', 'footerFrame',
+            'settings', 'locales', 'locale', 'slug', 'pageMeta'
+        ));
+    }
+
+    public function templeProductDetail(string $id)
+    {
+        $locale   = request()->query('locale', 'ZH-TW');
+        $settings = $this->getWebsiteSettings();
+        $locales  = $this->getLocales();
+        $apiBase  = $this->buildBaseUrl();
+
+        // 商品詳情
+        $productRes = Http::withOptions(['cookies' => false])
+            ->withHeaders(['Cookie' => request()->header('Cookie', '')])
+            ->get($apiBase . "/api/product/temple/{$id}");
+
+        if ($productRes->failed() || $productRes->json('statusCode') !== 200) {
+            abort(404);
+        }
+
+        $product = $productRes->json('data');
+
+        // 推薦商品（同頁列表，排除自己，取 5 筆）
+        $recRes = Http::withOptions(['cookies' => false])
+            ->withHeaders(['Cookie' => request()->header('Cookie', '')])
+            ->get($apiBase . '/api/product/temple', ['pageSize' => 6, 'page' => 1]);
+
+        $recRaw      = ($recRes->ok() ? $recRes->json('data.data') : []) ?? [];
+        $recommended = array_slice(
+            array_values(array_filter($recRaw, fn($p) => ($p['id'] ?? '') !== $id)),
+            0, 5
+        );
+
+        // Header / Footer（從 home 頁）
+        $homeData    = $this->getPageContent('home', $locale);
+        $basemaps    = $homeData['contentJson'] ?? [];
+        $headerFrame = null;
+        $footerFrame = null;
+
+        foreach ($basemaps as $section) {
+            $bgType = $section['bgType'] ?? '';
+            if (in_array($bgType, ['HEADER', 'PV_HEADER']) && $headerFrame === null) {
+                $headerFrame = ['type' => $bgType, 'data' => $section['frames'][0]['data'] ?? []];
+            }
+            if (in_array($bgType, ['FOOTER', 'PV_FOOTER']) && $footerFrame === null) {
+                $footerFrame = ['type' => $bgType, 'data' => $section['frames'][0]['data'] ?? []];
+            }
+        }
+
+        $slug     = request()->query('from', 'home');
+        $pageMeta = ['seoTitle' => ($product['nameZhTw'] ?? '') . ' - ' . ($settings['seoTitle'] ?? '')];
+
+        return view('product.show', compact(
+            'product', 'recommended', 'headerFrame', 'footerFrame',
+            'settings', 'locales', 'locale', 'slug', 'pageMeta'
+        ));
+    }
+
     public function clearCache()
     {
         return response()->json(['ok' => true]);

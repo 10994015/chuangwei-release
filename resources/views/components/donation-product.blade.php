@@ -13,6 +13,43 @@
 ])
 
 @php
+    // ── 呼叫 /api/product/temple/donation ────────────────────
+    $donationApiData = [];
+    try {
+        $apiBase     = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+        $donationRes = \Illuminate\Support\Facades\Http::withOptions(['cookies' => false])
+            ->withHeaders(['Cookie' => request()->header('Cookie', '')])
+            ->get($apiBase . '/api/product/temple/donation', [
+                'page'     => 1,
+                'pageSize' => 20,
+            ]);
+
+        dd([
+            'status' => $donationRes->status(),
+            'body'   => $donationRes->json(),
+        ]);
+
+        if ($donationRes->status() === 200) {
+            $donationApiData = $donationRes->json('data.data') ?? [];
+        }
+    } catch (\Throwable $e) {
+        \Illuminate\Support\Facades\Log::error('[donation-product] API error: ' . $e->getMessage());
+    }
+    // ─────────────────────────────────────────────────────────
+
+    // 從 API 建立捐款項目下拉
+    if (!empty($donationApiData)) {
+        $items = array_map(fn($d) => [
+            'label' => $d['nameZhTw'] ?? '',
+            'value' => $d['id']       ?? '',
+        ], $donationApiData);
+
+        // 圖片取第一筆商品的 imgs
+        $firstItem = $donationApiData[0];
+        $images = array_map(fn($img) => $img['url'] ?? null, $firstItem['imgs'] ?? []);
+        $images = array_values(array_filter($images));
+    }
+
     // 確保 images 最多取 3 張縮圖用
     $imageList = array_values((array) $images);
 @endphp

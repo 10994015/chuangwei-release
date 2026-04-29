@@ -16,5 +16,7 @@ class VerifyCsrfToken extends Middleware
         'proxy/api/login/out',
         'proxy/api/login/google',
         'proxy/api/frontend/user',
+        'proxy/api/register',
+        'proxy/api/user/change-password',
     ];
 }
