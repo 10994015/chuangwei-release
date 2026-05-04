@@ -4,6 +4,12 @@ use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
+// ── manage.主網域 API base（登入/註冊用）────────────────────
+$manageApiBase = function (): string {
+    $baseDomain = config('api.base_domain', env('API_BASE_DOMAIN', 'angkeinfo.com'));
+    return 'https://manage.' . $baseDomain;
+};
+
 // ── Set-Cookie rewriter ────────────────────────────────────
 // localhost: strip Domain (cookies don't support subdomain sharing on localhost)
 // real domain: rewrite Domain to parent domain so all subdomains share the session
@@ -36,9 +42,8 @@ $rewriteSetCookie = function (string $cookieValue): string {
 };
 
 // ── API Proxy（解決瀏覽器 CORS）────────────────────────────────
-Route::post('/proxy/api/login', function (\Illuminate\Http\Request $request) use ($rewriteSetCookie) {
-    $apiBase  = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
-    $isHttps  = str_starts_with(config('app.url', ''), 'https');
+Route::post('/proxy/api/login', function (\Illuminate\Http\Request $request) use ($rewriteSetCookie, $manageApiBase) {
+    $apiBase  = $manageApiBase();
 
     $guzzle = new \GuzzleHttp\Client(['cookies' => false]);
     $psrRes = $guzzle->post($apiBase . '/api/login', [
@@ -60,8 +65,8 @@ Route::post('/proxy/api/login', function (\Illuminate\Http\Request $request) use
     return $laravelResponse;
 });
 
-Route::post('/proxy/api/login/out', function (\Illuminate\Http\Request $request) {
-    $apiBase = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+Route::post('/proxy/api/login/out', function (\Illuminate\Http\Request $request) use ($manageApiBase) {
+    $apiBase = $manageApiBase();
     $guzzle  = new \GuzzleHttp\Client(['cookies' => false]);
     $psrRes  = $guzzle->post($apiBase . '/api/login/out', [
         'headers'     => ['Content-Type' => 'application/json', 'Cookie' => $request->header('Cookie', '')],
@@ -72,13 +77,10 @@ Route::post('/proxy/api/login/out', function (\Illuminate\Http\Request $request)
         ->header('Content-Type', 'application/json');
 });
 
-Route::post('/proxy/api/login/google', function (\Illuminate\Http\Request $request) use ($rewriteSetCookie) {
-    $apiBase  = 'https://manage.angkeinfo.com';
-    $isHttps  = true;
-    $url      = $apiBase . '/api/login/google';
+Route::post('/proxy/api/login/google', function (\Illuminate\Http\Request $request) use ($rewriteSetCookie, $manageApiBase) {
+    $url = $manageApiBase() . '/api/login/google';
 
     \Illuminate\Support\Facades\Log::debug('[proxy/google] calling: ' . $url);
-
     $guzzle = new \GuzzleHttp\Client(['cookies' => false]);
     $psrRes = $guzzle->post($url, [
         'headers'     => ['Content-Type' => 'application/json', 'Accept' => 'application/json'],
@@ -98,8 +100,8 @@ Route::post('/proxy/api/login/google', function (\Illuminate\Http\Request $reque
     return $laravelResponse;
 });
 
-Route::get('/proxy/api/frontend/user', function (\Illuminate\Http\Request $request) {
-    $apiBase  = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+Route::get('/proxy/api/frontend/user', function (\Illuminate\Http\Request $request) use ($manageApiBase) {
+    $apiBase  = $manageApiBase();
     $response = Http::withOptions(['cookies' => false])
         ->withHeaders([
             'Content-Type' => 'application/json',
@@ -116,8 +118,8 @@ Route::get('/register',         fn() => view('auth.register'));
 Route::get('/forgot-password',  fn() => view('auth.forgot-password'));
 
 // ── Forgot password proxy ─────────────────────────────────────
-Route::post('/proxy/api/user/change-password', function (\Illuminate\Http\Request $request) {
-    $apiBase = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+Route::post('/proxy/api/user/change-password', function (\Illuminate\Http\Request $request) use ($manageApiBase) {
+    $apiBase = $manageApiBase();
     $guzzle  = new \GuzzleHttp\Client(['cookies' => false]);
     $psrRes  = $guzzle->post($apiBase . '/api/user/change-password', [
         'headers'     => ['Content-Type' => 'application/json', 'Accept' => 'application/json'],
@@ -130,8 +132,8 @@ Route::post('/proxy/api/user/change-password', function (\Illuminate\Http\Reques
 });
 
 // ── Register proxy ────────────────────────────────────────────
-Route::post('/proxy/api/register', function (\Illuminate\Http\Request $request) {
-    $apiBase = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+Route::post('/proxy/api/register', function (\Illuminate\Http\Request $request) use ($manageApiBase) {
+    $apiBase = $manageApiBase();
     $guzzle  = new \GuzzleHttp\Client(['cookies' => false]);
     $psrRes  = $guzzle->post($apiBase . '/api/register', [
         'headers'     => ['Content-Type' => 'application/json', 'Accept' => 'application/json'],

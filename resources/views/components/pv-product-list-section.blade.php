@@ -18,7 +18,7 @@
   $total        = 0;
 
   try {
-    $apiBase = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+    $apiBase = rtrim(config('api.base_url', env('API_BASE_URL', '')), '/');
     $query   = array_filter([
       'page'       => $apiPage,
       'pageSize'   => $apiPageSize,

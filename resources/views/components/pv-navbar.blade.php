@@ -25,7 +25,7 @@
   $token = request()->cookie('token');
   if ($token) {
     try {
-      $apiBase  = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+      $apiBase = rtrim(config('api.base_url', env('API_BASE_URL', '')), '/');
       $res = \Illuminate\Support\Facades\Http::withOptions(['cookies' => false])
         ->withHeaders(['Cookie' => 'token=' . $token])
         ->get($apiBase . '/api/frontend/user/');
@@ -496,14 +496,27 @@
     api.setLoggedOut = setLoggedOut;
   }
 
-  // 前往登入頁
+  // 前往登入頁（子網域換成 manage）
   var LOCALE = '{{ $locale }}';
   function goToLogin() {
-    window.location.href = '/login?locale=' + LOCALE + '&redirect=' + encodeURIComponent(window.location.href);
+    var host   = window.location.hostname;
+    var parts  = host.split('.');
+    var parent;
+    if (parts.length >= 3) {
+      parent = parts.slice(1).join('.');
+    } else if (parts.length === 2 && parts[1] === 'localhost') {
+      parent = 'localhost';
+    } else {
+      parent = host;
+    }
+    var port     = window.location.port ? ':' + window.location.port : '';
+    var protocol = window.location.protocol;
+    var loginUrl = protocol + '//manage.' + parent + port + '/login?locale=' + LOCALE + '&redirect=' + encodeURIComponent(window.location.href);
+    window.location.href = loginUrl;
   }
 
-  if (loginBtn)       loginBtn.addEventListener('click', goToLogin);
-  if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', goToLogin);
+  // if (loginBtn)       loginBtn.addEventListener('click', goToLogin);
+  // if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', goToLogin);
 
   // ── User dropdown ─────────────────────────────────────────
   if (userBtn && userDd) {

@@ -161,13 +161,29 @@
     api.setLoggedOut = setLoggedOut;
   }
 
-  // 開啟彈窗
-  function openModal() {
-    if (api) api.open();
+  // 跳到登入頁（manage.父網域）
+  function goToLogin() {
+    var locale   = new URLSearchParams(window.location.search).get('locale') || 'ZH-TW';
+    var host     = window.location.hostname; // e.g. abc.angkeinfo.com / angkeinfo.com
+    var parts    = host.split('.');
+    // 有子網域（parts >= 3，或 2 段且第二段是 localhost）→ 取父網域
+    var parent;
+    if (parts.length >= 3) {
+      parent = parts.slice(1).join('.');        // abc.angkeinfo.com → angkeinfo.com
+    } else if (parts.length === 2 && parts[1] === 'localhost') {
+      parent = 'localhost';                     // abc.localhost → localhost
+    } else {
+      parent = host;                            // angkeinfo.com → angkeinfo.com
+    }
+    var port       = window.location.port ? ':' + window.location.port : '';
+    var manageHost = 'manage.' + parent + port;
+    var protocol   = window.location.protocol;
+    var loginUrl   = protocol + '//' + manageHost + '/login?locale=' + locale + '&redirect=' + encodeURIComponent(window.location.href);
+    window.location.href = loginUrl;
   }
 
-  if (loginBtn)       loginBtn.addEventListener('click', openModal);
-  if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', openModal);
+  // if (loginBtn)       loginBtn.addEventListener('click', goToLogin);
+  // if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', goToLogin);
 
   // 登出
   async function doLogout() {

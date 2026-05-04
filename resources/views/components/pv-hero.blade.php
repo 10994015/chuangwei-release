@@ -7,16 +7,30 @@
   $autoPlay        = $data['carouselWallAutoPlay'] ?? true;
   $interval        = $data['carouselWallInterval'] ?? 5000;
 
-  // 取出圖片 src 陣列
-  $imageUrls = collect($imgs)->map(fn($img) => is_array($img) ? ($img['src'] ?? null) : $img)->filter()->values()->toArray();
+  // 取出三裝置圖片，套用 fallback：tablet→desktop，mobile→tablet→desktop
+  $imageUrls = [];
+  foreach ($imgs as $img) {
+    if (!is_array($img)) {
+      $imageUrls[] = ['desktop' => $img, 'tablet' => $img, 'mobile' => $img];
+      continue;
+    }
+    $desktop = $img['srcDesktop'] ?? $img['src'] ?? null;
+    $tablet  = $img['srcTablet']  ?? $desktop;
+    $mobile  = $img['srcMobile']  ?? $tablet;
+    if ($desktop || $tablet || $mobile) {
+      $imageUrls[] = ['desktop' => $desktop, 'tablet' => $tablet, 'mobile' => $mobile];
+    }
+  }
 
   // fallback
   if (empty($imageUrls)) {
-    $imageUrls = [
+    foreach ([
       'https://images.unsplash.com/photo-1548013146-72479768bada?w=1200&h=700&fit=crop',
       'https://images.unsplash.com/photo-1528127269322-539801943592?w=1200&h=700&fit=crop',
       'https://images.unsplash.com/photo-1604881991720-f91add269bed?w=1200&h=700&fit=crop',
-    ];
+    ] as $src) {
+      $imageUrls[] = ['desktop' => $src, 'tablet' => $src, 'mobile' => $src];
+    }
   }
 
   $carouselId = 'pv-carousel-' . uniqid();
@@ -33,21 +47,35 @@
     <div class="pv-track">
       {{-- 尾部 clone --}}
       @if(count($imageUrls) > 1)
+        @php $last = $imageUrls[count($imageUrls) - 1]; @endphp
         <div class="pv-slide" data-clone="true">
-          <img src="{{ $imageUrls[count($imageUrls) - 1] }}" alt="輪播圖片" class="pv-img" />
+          <picture>
+            @if($last['desktop'])<source media="(min-width: 1024px)" srcset="{{ $last['desktop'] }}">@endif
+            @if($last['tablet'])<source media="(min-width: 768px)" srcset="{{ $last['tablet'] }}">@endif
+            <img src="{{ $last['mobile'] }}" alt="輪播圖片" class="pv-img" />
+          </picture>
         </div>
       @endif
 
-      @foreach($imageUrls as $i => $src)
+      @foreach($imageUrls as $i => $img)
         <div class="pv-slide{{ $i === 0 ? ' is-active' : '' }}">
-          <img src="{{ $src }}" alt="輪播圖片 {{ $i + 1 }}" class="pv-img" loading="{{ $i === 0 ? 'eager' : 'lazy' }}" />
+          <picture>
+            @if($img['desktop'])<source media="(min-width: 1024px)" srcset="{{ $img['desktop'] }}">@endif
+            @if($img['tablet'])<source media="(min-width: 768px)" srcset="{{ $img['tablet'] }}">@endif
+            <img src="{{ $img['mobile'] }}" alt="輪播圖片 {{ $i + 1 }}" class="pv-img" loading="{{ $i === 0 ? 'eager' : 'lazy' }}" />
+          </picture>
         </div>
       @endforeach
 
       {{-- 頭部 clone --}}
       @if(count($imageUrls) > 1)
+        @php $first = $imageUrls[0]; @endphp
         <div class="pv-slide" data-clone="true">
-          <img src="{{ $imageUrls[0] }}" alt="輪播圖片" class="pv-img" />
+          <picture>
+            @if($first['desktop'])<source media="(min-width: 1024px)" srcset="{{ $first['desktop'] }}">@endif
+            @if($first['tablet'])<source media="(min-width: 768px)" srcset="{{ $first['tablet'] }}">@endif
+            <img src="{{ $first['mobile'] }}" alt="輪播圖片" class="pv-img" />
+          </picture>
         </div>
       @endif
     </div>
@@ -65,7 +93,7 @@
       </button>
 
       <div class="pv-indicators">
-        @foreach($imageUrls as $i => $src)
+        @foreach($imageUrls as $i => $img)
           <button class="pv-dot{{ $i === 0 ? ' active' : '' }}" aria-label="第 {{ $i + 1 }} 張"></button>
         @endforeach
       </div>

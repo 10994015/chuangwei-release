@@ -1,27 +1,22 @@
 {{-- resources/views/frames/elements/button_element.blade.php --}}
 @php
-  $value     = $element['value'] ?? [];
-  $meta      = $element['metadata'] ?? [];
+  $meta      = $meta ?? [];
 
-  $text      = $value['text']               ?? '按鈕文字';
-  $link      = $value['url']                ?? $value['link'] ?? '#';
-  $align     = $value['align']              ?? 'center';
+  $link      = $internalSlug ? '/' . $internalSlug : ($url ?? '#');
+  $align     = $meta['align']               ?? 'center';
   $textColor = $meta['color']               ?? '#fff';
   $bgColor   = $meta['backgroundColor']     ?? '#E8572A';
 
-  $ensureUnit = function($value, $default) {
-      if (!$value) return $default;
-      if (is_numeric($value)) return $value . 'px';
-      if (preg_match('/^\d+$/', (string)$value)) return $value . 'px';
-      return $value;
+  $ensureUnit = function($v, $default) {
+      if (!$v) return $default;
+      if (is_numeric($v)) return $v . 'px';
+      return $v;
   };
 
   $fontSize = $ensureUnit($meta['fontSize'] ?? null, '16px');
-  $padding  = $ensureUnit($value['padding'] ?? null, '12px 32px');
+  $padding  = $ensureUnit($meta['padding']  ?? null, '12px 32px');
 
-  $internalSlug = $value['internalSlug'] ?? null;
-  $link = $internalSlug ? '/' . $internalSlug : $link;
-  $isDisabled = (empty($link) || $link === '#') && empty($internalSlug);
+  $isDisabled = (empty($link) || $link === '#');
 @endphp
 
 <div class="button-element" style="text-align: {{ $align }};">

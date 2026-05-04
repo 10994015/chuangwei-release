@@ -11,7 +11,15 @@
     $total        = 0;
 
     try {
-        $apiBase     = rtrim(config('app.api_base_url', env('API_BASE_URL', '')), '/');
+        $host      = request()->getHost();
+        $parts     = explode('.', $host);
+        $isLocal   = $host === 'localhost' || str_ends_with($host, '.localhost');
+        $subdomain = (count($parts) >= 3) ? $parts[0]
+                   : ((count($parts) === 2 && $parts[1] === 'localhost') ? $parts[0] : '');
+        if ($isLocal && $subdomain) $subdomain = env('API_SUBDOMAIN', $subdomain);
+        $apiBase   = $subdomain
+            ? rtrim('https://' . $subdomain . '.' . config('api.base_domain'), '/')
+            : rtrim(config('api.base_url', env('API_BASE_URL', '')), '/');
         $donationRes = \Illuminate\Support\Facades\Http::withOptions(['cookies' => false])
             ->withHeaders(['Cookie' => request()->header('Cookie', '')])
             ->get($apiBase . '/api/product/temple', array_filter([

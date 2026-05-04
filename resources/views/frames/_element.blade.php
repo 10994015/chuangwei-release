@@ -12,7 +12,7 @@
 @elseif($elType === 'TEXT')
   @include('elements.text_element', ['text' => $elValue['text'] ?? '', 'meta' => $elMeta])
 @elseif($elType === 'BUTTON')
-  @include('elements.button_element', ['text' => $elValue['text'] ?? '', 'url' => $elValue['url'] ?? '#', 'meta' => $elMeta])
+  @include('elements.button_element', ['text' => $elValue['text'] ?? '', 'url' => $elValue['url'] ?? '#', 'internalSlug' => $elValue['internalSlug'] ?? null, 'meta' => $elMeta])
 @elseif($elType === 'HORIZON_LINE')
   @include('elements.hline_element', ['meta' => $elMeta])
 @elseif($elType === 'VERTICAL_LINE')

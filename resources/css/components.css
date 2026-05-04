@@ -1295,7 +1295,45 @@
     display: block;
 }
 
+.donation-product-basemap .thumbnail-row-wrapper {
+    position: relative;
+}
+
+.donation-product-basemap .thumb-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--frame-border-color, #ddd);
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    transition: all 0.2s;
+    z-index: 1;
+}
+
+.donation-product-basemap .thumb-nav-btn.thumb-prev { left: -16px; }
+.donation-product-basemap .thumb-nav-btn.thumb-next { right: -16px; }
+
+.donation-product-basemap .thumb-nav-btn:hover:not(:disabled) {
+    border-color: var(--frame-link-color, #b5a48a);
+    color: var(--frame-link-color, #b5a48a);
+}
+
+.donation-product-basemap .thumb-nav-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+}
+
 .donation-product-basemap .thumbnail-row {
+    flex: 1;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;

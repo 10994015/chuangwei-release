@@ -13,17 +13,25 @@
     ];
 
     if (!empty($caroiselWallImgs)) {
-        $displaySlides = array_map(fn($item) => [
-            'image'           => $item['src']             ?? $item['image'] ?? '',
-            'title'           => $item['title']           ?? '',
-            'subtitle'        => $item['subtitle']        ?? '',
-            'overlayOpacity'  => $item['overlayOpacity']  ?? 40,
-            'overlayColor'    => $item['overlayColor']    ?? '#000000',
-            'titleColor'      => $item['titleColor']      ?? '#ffffff',
-            'titleFontSize'   => $item['titleFontSize']   ?? 48,
-            'subtitleColor'   => $item['subtitleColor']   ?? '#eeeeee',
-            'subtitleFontSize'=> $item['subtitleFontSize'] ?? 20,
-        ], $caroiselWallImgs);
+        $displaySlides = array_map(function($item) {
+            $desktop = $item['srcDesktop'] ?? $item['src'] ?? $item['image'] ?? '';
+            $tablet  = $item['srcTablet']  ?? $desktop;
+            $mobile  = $item['srcMobile']  ?? $tablet;
+            return [
+                'image'           => $desktop,
+                'desktop'         => $desktop,
+                'tablet'          => $tablet,
+                'mobile'          => $mobile,
+                'title'           => $item['title']            ?? '',
+                'subtitle'        => $item['subtitle']         ?? '',
+                'overlayOpacity'  => $item['overlayOpacity']   ?? 40,
+                'overlayColor'    => $item['overlayColor']     ?? '#000000',
+                'titleColor'      => $item['titleColor']       ?? '#ffffff',
+                'titleFontSize'   => $item['titleFontSize']    ?? 48,
+                'subtitleColor'   => $item['subtitleColor']    ?? '#eeeeee',
+                'subtitleFontSize'=> $item['subtitleFontSize'] ?? 20,
+            ];
+        }, $caroiselWallImgs);
     } else {
         $displaySlides = $placeholderSlides;
     }
@@ -86,7 +94,11 @@
         <div class="swiper-wrapper">
             <template x-for="(slide, index) in slides" :key="index">
                 <div class="swiper-slide" :class="{ active: current === index }">
-                    <img :src="slide.image" :alt="slide.title || '輪播圖片'" class="slide-image" />
+                    <picture>
+                        <source media="(min-width: 1024px)" :srcset="slide.desktop">
+                        <source media="(min-width: 768px)" :srcset="slide.tablet">
+                        <img :src="slide.mobile" :alt="slide.title || '輪播圖片'" class="slide-image" />
+                    </picture>
 
                     {{-- 每張圖片獨立遮罩 --}}
                     <div class="slide-overlay" :style="getOverlayStyle(slide)"></div>
