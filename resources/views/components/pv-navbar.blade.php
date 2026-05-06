@@ -585,8 +585,8 @@
     window.location.href = loginUrl;
   }
 
-  if (loginBtn)       loginBtn.addEventListener('click', goToLogin);
-  if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', goToLogin);
+  // if (loginBtn)       loginBtn.addEventListener('click', goToLogin);
+  // if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', goToLogin);
 
   // ── 管理後台 dropdown ──────────────────────────────────────
   var permissionsFetched = false;
