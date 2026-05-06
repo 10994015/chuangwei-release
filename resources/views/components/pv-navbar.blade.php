@@ -461,33 +461,50 @@
 }
 .pv-manage-btn:hover { background: #d14a1f; }
 .pv-manage-dropdown {
-  position: absolute; top: calc(100% + 8px); right: 0;
-  min-width: 220px; background: #fff;
-  border: 1px solid #e5e7eb; border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12); overflow: hidden;
-  z-index: 300; opacity: 0; transform: translateY(-6px);
+  position: absolute !important; top: calc(100% + 8px) !important; right: 0 !important;
+  min-width: 220px !important; background: #ffffff !important;
+  border: 1px solid #e5e7eb !important; border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important; overflow: hidden !important;
+  z-index: 300 !important; opacity: 0; transform: translateY(-6px);
   pointer-events: none; transition: opacity 0.18s, transform 0.18s;
-  padding: 6px 0;
+  padding: 6px 0 !important; list-style: none !important;
 }
-.pv-manage-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
-.pv-manage-option {
-  display: flex; align-items: center; gap: 10px;
-  width: 100%; padding: 10px 16px;
-  background: transparent; border: none; text-align: left;
-  font-size: 14px; color: #374151; cursor: pointer;
-  transition: background 0.15s; text-decoration: none;
-  box-sizing: border-box; font-family: inherit;
+.pv-manage-dropdown.open { opacity: 1 !important; transform: translateY(0) !important; pointer-events: auto !important; }
+.pv-manage-dropdown a.pv-manage-option,
+.pv-manage-dropdown button.pv-manage-option,
+.pv-manage-dropdown span.pv-manage-option {
+  display: block !important;
+  width: 100% !important;
+  padding: 10px 16px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  text-align: left !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: #374151 !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+  list-style: none !important;
 }
-.pv-manage-option:hover { background: #f9fafb; color: #374151; }
-.pv-manage-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: currentColor; flex-shrink: 0; opacity: 0.5;
+.pv-manage-dropdown a.pv-manage-option:hover,
+.pv-manage-dropdown button.pv-manage-option:hover {
+  background-color: #f9fafb !important;
+  color: #374151 !important;
+  text-decoration: none !important;
 }
-.pv-manage-empty { color: #9ca3af; font-size: 13px; cursor: default; pointer-events: none; }
-.pv-manage-separator { border-top: 1px solid #f3f4f6; margin: 4px 0; }
+.pv-manage-empty { color: #9ca3af !important; cursor: default !important; pointer-events: none !important; }
+.pv-manage-separator { border: none !important; border-top: 1px solid #f3f4f6 !important; margin: 4px 0 !important; }
 .pv-manage-section-label {
-  padding: 8px 16px 4px; font-size: 11px; font-weight: 700;
-  color: #9ca3af; letter-spacing: 0.5px; cursor: default; text-transform: uppercase;
+  display: block !important; padding: 8px 16px 4px !important;
+  font-size: 11px !important; font-weight: 700 !important;
+  color: #9ca3af !important; letter-spacing: 0.5px !important;
+  cursor: default !important; text-transform: uppercase !important;
 }
 .pv-mobile-manage-btn {
   display: block; width: 100%; padding: 10px 16px;
@@ -627,12 +644,7 @@
       a.href = href;
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
-      var dot = document.createElement('span');
-      dot.className = 'pv-manage-dot';
-      var label = document.createElement('span');
-      label.textContent = text;
-      a.appendChild(dot);
-      a.appendChild(label);
+      a.textContent = text;
       a.addEventListener('click', function () {
         manageDd.classList.remove('open');
         manageChevron && manageChevron.classList.remove('open');
@@ -660,12 +672,7 @@
         a.href = getManageBase();
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
-        var dot = document.createElement('span');
-        dot.className = 'pv-manage-dot';
-        var label = document.createElement('span');
-        label.textContent = role.tenantName || role.tenantId;
-        a.appendChild(dot);
-        a.appendChild(label);
+        a.textContent = role.tenantName || role.tenantId;
         a.addEventListener('click', function () {
           manageDd.classList.remove('open');
           manageChevron && manageChevron.classList.remove('open');
