@@ -477,6 +477,8 @@
 }
 .pv-manage-option:hover { background: #fff5f2; color: #E8572A; }
 .pv-manage-empty { color: #999; font-size: 13px; cursor: default; pointer-events: none; }
+.pv-manage-separator { border-top: 1px solid #f0f0f0; margin: 4px 0; }
+.pv-manage-section-label { padding: 8px 16px 4px; font-size: 11px; font-weight: 700; color: #E8572A; letter-spacing: 0.3px; cursor: default; }
 .pv-mobile-manage-btn {
   display: block; width: 100%; padding: 10px 16px;
   background: #E8572A; border: none; border-radius: 8px;
@@ -602,29 +604,60 @@
     return window.location.protocol + '//manage.' + parent + port;
   }
 
-  function renderManageDropdown(tenantRoles) {
+  function renderManageDropdown(data) {
     if (!manageDd) return;
     manageDd.innerHTML = '';
-    if (!tenantRoles || tenantRoles.length === 0) {
-      var empty = document.createElement('span');
-      empty.className = 'pv-manage-option pv-manage-empty';
-      empty.textContent = '無可管理的宮廟';
-      manageDd.appendChild(empty);
-      return;
-    }
-    tenantRoles.forEach(function (role) {
+
+    var systemPerms = (data && data.systemPermissions) ? data.systemPermissions : [];
+    var tenantRoles = (data && data.tenantRoles)       ? data.tenantRoles       : [];
+
+    function addLink(text, href) {
       var a = document.createElement('a');
       a.className = 'pv-manage-option';
-      a.href = '#';
-      a.textContent = role.tenantName || role.tenantId;
-      a.addEventListener('click', function (e) {
-        e.preventDefault();
-        window.open(getManageBase(), '_blank');
+      a.href = href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = text;
+      a.addEventListener('click', function () {
         manageDd.classList.remove('open');
         manageChevron && manageChevron.classList.remove('open');
       });
       manageDd.appendChild(a);
-    });
+    }
+
+    // 維運後台（只有 systemPermissions 有東西才顯示）
+    if (systemPerms.length > 0) {
+      addLink('維運後台', getManageBase() + '/operations/user-management');
+    }
+
+    // 香客帳號管理（寫死）
+    addLink('香客帳號管理', getManageBase() + '/customer-account');
+
+    // 宮掌櫃維運平台 + 租戶列表
+    if (tenantRoles.length > 0) {
+      var sep = document.createElement('div');
+      sep.className = 'pv-manage-separator';
+      manageDd.appendChild(sep);
+
+      var label = document.createElement('div');
+      label.className = 'pv-manage-section-label';
+      label.textContent = '宮掌櫃維運平台';
+      manageDd.appendChild(label);
+
+      tenantRoles.forEach(function (role) {
+        var a = document.createElement('a');
+        a.className = 'pv-manage-option';
+        a.href = getManageBase();
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = role.tenantName || role.tenantId;
+        a.addEventListener('click', function () {
+          manageDd.classList.remove('open');
+          manageChevron && manageChevron.classList.remove('open');
+        });
+        manageDd.appendChild(a);
+      });
+    }
   }
 
   async function fetchPermissions() {
@@ -634,7 +667,7 @@
       var res  = await fetch(PROXY_BASE + '/proxy/api/frontend/user/permission', { credentials: 'include' });
       var json = await res.json();
       if (json.statusCode === 200 && json.data) {
-        renderManageDropdown(json.data.tenantRoles || []);
+        renderManageDropdown(json.data);
       }
     } catch (e) {}
   }

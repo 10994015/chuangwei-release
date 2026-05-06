@@ -3,17 +3,31 @@
 
 @section('content')
 @php
-  $name        = $product['nameZhTw']  ?? ($product['name'] ?? '');
+  $locale     = request()->query('locale', 'ZH-TW');
+  $localeUpper = strtoupper($locale);
+
+  // 語系對應欄位 suffix
+  $nameSuffix = match($localeUpper) {
+    'ZH-CN'       => 'ZhCn',
+    'EN-US', 'EN' => 'EnUs',
+    default       => 'ZhTw',
+  };
+
+  $name        = $product['name' . $nameSuffix] ?? ($product['nameZhTw'] ?? ($product['name'] ?? ''));
   $tenantName  = $product['tenantName'] ?? '';
   $price       = isset($product['price']) ? (float)$product['price'] : 0;
   $priceStr    = 'NT$ ' . number_format($price);
-  $description = $product['descriptionZhTw'] ?? ($product['description'] ?? '');
+  $description = $product['depiction' . $nameSuffix] ?? ($product['depictionZhTw'] ?? ($product['description'] ?? ''));
   $imgs        = $product['imgs'] ?? [];
   $mainImg     = !empty($imgs) ? $imgs[0]['url'] : null;
-  $specs       = $product['specs'] ?? ($product['specialSlotNumberJson'] ?? []);
+  $skus        = $product['skus'] ?? [];
   $productId   = $product['id'] ?? '';
-  $locale      = request()->query('locale', 'ZH-TW');
   $backUrl     = '/' . request()->query('from', 'home') . '?locale=' . $locale;
+
+  // 將 skus 整理成 JS 用的陣列（id → price）
+  $skuPricesJson = json_encode(
+    collect($skus)->mapWithKeys(fn($s) => [$s['id'] => (float)($s['price'] ?? $price)])->toArray()
+  );
 @endphp
 
 {{-- Navbar --}}
@@ -85,12 +99,15 @@
         <hr class="pd-divider" />
 
         {{-- 規格 --}}
-        @if(!empty($specs))
+        @if(!empty($skus))
           <div class="pd-field">
             <label class="pd-label">選擇規格</label>
-            <select class="pd-select" id="pd-spec">
-              @foreach($specs as $spec)
-                <option value="{{ $spec }}">{{ $spec }}</option>
+            <select class="pd-select" id="pd-spec" onchange="pdOnSkuChange(this.value)">
+              @foreach($skus as $sku)
+                @php
+                  $skuName = $sku['name' . $nameSuffix] ?? ($sku['nameZhTw'] ?? ($sku['name'] ?? ''));
+                @endphp
+                <option value="{{ $sku['id'] }}">{{ $skuName }}</option>
               @endforeach
             </select>
           </div>
@@ -137,7 +154,7 @@
         <div class="pd-rec-grid">
           @foreach($recommended as $rec)
             @php
-              $recImg   = !empty($rec['imgs']) ? $rec['imgs'][0]['url'] : null;
+              $recImg   = $rec['coverImg'] ?? (!empty($rec['imgs']) ? $rec['imgs'][0]['url'] : null);
               $recPrice = isset($rec['price']) ? 'NT$ ' . number_format((float)$rec['price']) : '';
               $recName  = $rec['nameZhTw'] ?? ($rec['name'] ?? '');
               $recId    = $rec['id'] ?? '';
@@ -285,8 +302,17 @@
 </style>
 
 <script>
-var PD_UNIT_PRICE = {{ $price }};
+var PD_SKU_PRICES  = {!! $skuPricesJson !!};
+var PD_UNIT_PRICE  = {{ $price }};
 var pdQty = 1;
+
+function pdOnSkuChange(skuId) {
+  if (PD_SKU_PRICES[skuId] !== undefined) {
+    PD_UNIT_PRICE = PD_SKU_PRICES[skuId];
+  }
+  document.getElementById('pd-price').textContent = 'NT$ ' + PD_UNIT_PRICE.toLocaleString();
+  document.getElementById('pd-total').textContent  = 'NT$ ' + (PD_UNIT_PRICE * pdQty).toLocaleString();
+}
 
 function pdSetImg(btn) {
   var src = btn.dataset.src;

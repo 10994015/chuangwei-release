@@ -43,7 +43,7 @@
         'title'      => $p['nameZhTw']   ?? ($p['name'] ?? ''),
         'source'     => $p['tenantName'] ?? '',
         'price'      => isset($p['price']) ? 'NT$ ' . number_format((float)$p['price']) : '',
-        'image'      => !empty($p['imgs']) ? ($p['imgs'][0]['url'] ?? null) : null,
+        'image'      => $p['coverImg'] ?? (!empty($p['imgs']) ? ($p['imgs'][0]['url'] ?? null) : null),
         'badge'      => null,
         'badgeClass' => 'default',
       ], $rawProducts);
@@ -56,7 +56,7 @@
     'title'  => $p['name'] ?? '',
     'source' => $p['source'] ?? ($p['tenantName'] ?? ''),
     'price'  => isset($p['price']) ? 'NT$ ' . number_format((float)$p['price']) : '',
-    'image'  => $p['imgSrc'] ?? null,
+    'image'  => $p['coverImg'] ?? ($p['imgSrc'] ?? null),
     'badge'  => (isset($p['labels']) && is_array($p['labels']) && count($p['labels'])) ? $p['labels'][0] : null,
     'badgeClass' => (function() use ($p) {
       $l = $p['labels'][0] ?? '';
