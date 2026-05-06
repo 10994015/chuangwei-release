@@ -2,6 +2,7 @@
 @extends('layouts.site')
 
 @section('content')
+{{ dd($product) }}
 @php
   $locale     = request()->query('locale', 'ZH-TW');
   $localeUpper = strtoupper($locale);

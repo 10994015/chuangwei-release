@@ -639,11 +639,6 @@
       sep.className = 'pv-manage-separator';
       manageDd.appendChild(sep);
 
-      var label = document.createElement('div');
-      label.className = 'pv-manage-section-label';
-      label.textContent = '宮掌櫃維運平台';
-      manageDd.appendChild(label);
-
       tenantRoles.forEach(function (role) {
         var a = document.createElement('a');
         a.className = 'pv-manage-option';
