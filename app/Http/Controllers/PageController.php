@@ -89,6 +89,29 @@ class PageController extends Controller
     }
 
     /**
+     * 掃描 tabs，找出包含商品列表頁面的 slug
+     */
+    private function findProductListTabSlug(array $tabs, string $locale): ?string
+    {
+        $productFrameTypes = ['PRODUCT_LIST', 'PV_PRODUCT_LIST'];
+        foreach ($tabs as $tab) {
+            $tabSlug = $tab['slug'] ?? '';
+            if (!$tabSlug || $tabSlug === 'portal') continue;
+            try {
+                $pageData = $this->getPageContent($tabSlug, $locale);
+                foreach ($pageData['contentJson'] ?? [] as $section) {
+                    foreach ($section['frames'] ?? [] as $frame) {
+                        if (in_array($frame['type'] ?? '', $productFrameTypes)) {
+                            return $tabSlug;
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+        return null;
+    }
+
+    /**
      * 取得所有頁面清單，回傳第一個 slug
      */
     private function getFirstSlug(string $locale): string
@@ -230,15 +253,26 @@ class PageController extends Controller
 
         foreach ($basemaps as $section) {
             $bgType = $section['bgType'] ?? '';
-            if (in_array($bgType, ['HEADER', 'PV_HEADER']) && $headerFrame === null) {
-                $headerFrame = ['type' => $bgType, 'data' => $section['frames'][0]['data'] ?? []];
-            }
-            if (in_array($bgType, ['FOOTER', 'PV_FOOTER']) && $footerFrame === null) {
-                $footerFrame = ['type' => $bgType, 'data' => $section['frames'][0]['data'] ?? []];
+            foreach ($section['frames'] ?? [] as $frame) {
+                $frameType    = $frame['type'] ?? '';
+                $resolvedType = in_array($frameType, ['HEADER', 'PV_HEADER', 'FOOTER', 'PV_FOOTER'])
+                    ? $frameType : $bgType;
+
+                if (in_array($resolvedType, ['HEADER', 'PV_HEADER']) && $headerFrame === null) {
+                    $headerFrame = ['type' => $resolvedType, 'data' => $frame['data'] ?? []];
+                }
+                if (in_array($resolvedType, ['FOOTER', 'PV_FOOTER']) && $footerFrame === null) {
+                    $footerFrame = ['type' => $resolvedType, 'data' => $frame['data'] ?? []];
+                }
             }
         }
 
-        $slug     = request()->query('from', 'home');
+        $fromSlug = request()->query('from', 'home');
+        $tabs     = $headerFrame['data']['tabs'] ?? [];
+        if ($fromSlug === 'home' && !empty($tabs)) {
+            $fromSlug = $this->findProductListTabSlug($tabs, $locale) ?? $fromSlug;
+        }
+        $slug     = $fromSlug;
         $pageMeta = ['seoTitle' => ($product['nameZhTw'] ?? '') . ' - ' . ($settings['seoTitle'] ?? '')];
 
         return view('product.show', compact(
@@ -284,15 +318,26 @@ class PageController extends Controller
 
         foreach ($basemaps as $section) {
             $bgType = $section['bgType'] ?? '';
-            if (in_array($bgType, ['HEADER', 'PV_HEADER']) && $headerFrame === null) {
-                $headerFrame = ['type' => $bgType, 'data' => $section['frames'][0]['data'] ?? []];
-            }
-            if (in_array($bgType, ['FOOTER', 'PV_FOOTER']) && $footerFrame === null) {
-                $footerFrame = ['type' => $bgType, 'data' => $section['frames'][0]['data'] ?? []];
+            foreach ($section['frames'] ?? [] as $frame) {
+                $frameType    = $frame['type'] ?? '';
+                $resolvedType = in_array($frameType, ['HEADER', 'PV_HEADER', 'FOOTER', 'PV_FOOTER'])
+                    ? $frameType : $bgType;
+
+                if (in_array($resolvedType, ['HEADER', 'PV_HEADER']) && $headerFrame === null) {
+                    $headerFrame = ['type' => $resolvedType, 'data' => $frame['data'] ?? []];
+                }
+                if (in_array($resolvedType, ['FOOTER', 'PV_FOOTER']) && $footerFrame === null) {
+                    $footerFrame = ['type' => $resolvedType, 'data' => $frame['data'] ?? []];
+                }
             }
         }
 
-        $slug     = request()->query('from', 'home');
+        $fromSlug = request()->query('from', 'home');
+        $tabs     = $headerFrame['data']['tabs'] ?? [];
+        if ($fromSlug === 'home' && !empty($tabs)) {
+            $fromSlug = $this->findProductListTabSlug($tabs, $locale) ?? $fromSlug;
+        }
+        $slug     = $fromSlug;
         $pageMeta = ['seoTitle' => ($product['nameZhTw'] ?? '') . ' - ' . ($settings['seoTitle'] ?? '')];
 
         return view('product.show', compact(
