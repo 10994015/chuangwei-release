@@ -462,23 +462,33 @@
 .pv-manage-btn:hover { background: #d14a1f; }
 .pv-manage-dropdown {
   position: absolute; top: calc(100% + 8px); right: 0;
-  min-width: 130px; background: #fff;
-  border: 1px solid #e5e5e5; border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1); overflow: hidden;
+  min-width: 220px; background: #fff;
+  border: 1px solid #e5e7eb; border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12); overflow: hidden;
   z-index: 300; opacity: 0; transform: translateY(-6px);
   pointer-events: none; transition: opacity 0.18s, transform 0.18s;
+  padding: 6px 0;
 }
 .pv-manage-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .pv-manage-option {
-  display: block; width: 100%; padding: 10px 16px;
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 16px;
   background: transparent; border: none; text-align: left;
-  font-size: 13px; color: #444; cursor: pointer; transition: background 0.15s;
-  text-decoration: none;
+  font-size: 14px; color: #374151; cursor: pointer;
+  transition: background 0.15s; text-decoration: none;
+  box-sizing: border-box; font-family: inherit;
 }
-.pv-manage-option:hover { background: #fff5f2; color: #E8572A; }
-.pv-manage-empty { color: #999; font-size: 13px; cursor: default; pointer-events: none; }
-.pv-manage-separator { border-top: 1px solid #f0f0f0; margin: 4px 0; }
-.pv-manage-section-label { padding: 8px 16px 4px; font-size: 11px; font-weight: 700; color: #E8572A; letter-spacing: 0.3px; cursor: default; }
+.pv-manage-option:hover { background: #f9fafb; color: #374151; }
+.pv-manage-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; flex-shrink: 0; opacity: 0.5;
+}
+.pv-manage-empty { color: #9ca3af; font-size: 13px; cursor: default; pointer-events: none; }
+.pv-manage-separator { border-top: 1px solid #f3f4f6; margin: 4px 0; }
+.pv-manage-section-label {
+  padding: 8px 16px 4px; font-size: 11px; font-weight: 700;
+  color: #9ca3af; letter-spacing: 0.5px; cursor: default; text-transform: uppercase;
+}
 .pv-mobile-manage-btn {
   display: block; width: 100%; padding: 10px 16px;
   background: #E8572A; border: none; border-radius: 8px;
@@ -617,7 +627,12 @@
       a.href = href;
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
-      a.textContent = text;
+      var dot = document.createElement('span');
+      dot.className = 'pv-manage-dot';
+      var label = document.createElement('span');
+      label.textContent = text;
+      a.appendChild(dot);
+      a.appendChild(label);
       a.addEventListener('click', function () {
         manageDd.classList.remove('open');
         manageChevron && manageChevron.classList.remove('open');
@@ -645,7 +660,12 @@
         a.href = getManageBase();
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
-        a.textContent = role.tenantName || role.tenantId;
+        var dot = document.createElement('span');
+        dot.className = 'pv-manage-dot';
+        var label = document.createElement('span');
+        label.textContent = role.tenantName || role.tenantId;
+        a.appendChild(dot);
+        a.appendChild(label);
         a.addEventListener('click', function () {
           manageDd.classList.remove('open');
           manageChevron && manageChevron.classList.remove('open');
