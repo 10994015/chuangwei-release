@@ -4,10 +4,10 @@
   $items = $data['items'] ?? [];
 
   $DEFAULT_ITEMS = [
-    ['title' => '宮廟地圖',     'description' => '整合全台宮廟資訊，提供地理搜尋、神明分類、活動查詢等多元曝光管道。', 'image' => null],
-    ['title' => '靈籤司',       'description' => '解籤後智能推薦宮廟，將線上求籤信眾精準導流至實地參拜。',              'image' => null],
-    ['title' => '主平台服務',   'description' => '匯聚宮廟完整資訊，成為信眾探索文化、查詢活動的一站式入口。',          'image' => null],
-    ['title' => '宮廟網站建置', 'description' => '協助建置專屬數位門戶，提供客製化功能與獨立經營數位社群能力。',        'image' => null],
+    ['title' => '宮廟地圖',     'description' => '整合全台宮廟資訊，提供地理搜尋、神明分類、活動查詢等多元曝光管道。', 'imgSrc' => null],
+    ['title' => '靈籤司',       'description' => '解籤後智能推薦宮廟，將線上求籤信眾精準導流至實地參拜。',              'imgSrc' => null],
+    ['title' => '主平台服務',   'description' => '匯聚宮廟完整資訊，成為信眾探索文化、查詢活動的一站式入口。',          'imgSrc' => null],
+    ['title' => '宮廟網站建置', 'description' => '協助建置專屬數位門戶，提供客製化功能與獨立經營數位社群能力。',        'imgSrc' => null],
   ];
 
   $getItem = function(int $idx) use ($items, $DEFAULT_ITEMS): array {
@@ -63,8 +63,8 @@
             <div class="pv-cf1-desc">{!! $item0['description'] !!}</div>
           </div>
           <div class="pv-cf1-hero-img" style="{{ $imgStyle($item0) }}">
-            @if(!empty($item0['image']))
-              <img src="{{ $item0['image'] }}" alt="{{ $item0['title'] }}" class="pv-cf1-img" />
+            @if(!empty($item0['imgSrc']))
+              <img src="{{ $item0['imgSrc'] }}" alt="{{ $item0['title'] }}" class="pv-cf1-img" />
             @else
               <div class="pv-cf1-img-placeholder"><span></span></div>
             @endif
@@ -92,8 +92,8 @@
           <div class="pv-cf1-desc">{!! $item1['description'] !!}</div>
         </div>
         <div class="pv-cf1-side-img" style="{{ $imgStyle($item1) }}">
-          @if(!empty($item1['image']))
-            <img src="{{ $item1['image'] }}" alt="{{ $item1['title'] }}" class="pv-cf1-img" />
+          @if(!empty($item1['imgSrc']))
+            <img src="{{ $item1['imgSrc'] }}" alt="{{ $item1['title'] }}" class="pv-cf1-img" />
           @else
             <div class="pv-cf1-img-placeholder pv-cf1-img-placeholder--side"><span></span></div>
           @endif
