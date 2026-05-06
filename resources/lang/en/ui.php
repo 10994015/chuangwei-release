@@ -25,6 +25,8 @@ return [
         'noAccount'           => 'No account yet?',
         'registerNow'         => 'Register now',
         'logout'              => 'Logout',
+        'manage'              => 'Admin Panel',
+        'gotoManage'          => 'Go to Admin',
         'errNoAccount'        => 'Please enter your account',
         'errNoPassword'       => 'Please enter your password',
     ],

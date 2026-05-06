@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { margin: 0 !important; padding: 0 !important; width: 100%; }
+  </style>
 
     {{-- ==================== SEO ==================== --}}
     @php

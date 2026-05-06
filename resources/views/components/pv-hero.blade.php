@@ -14,9 +14,9 @@
       $imageUrls[] = ['desktop' => $img, 'tablet' => $img, 'mobile' => $img];
       continue;
     }
-    $desktop = $img['srcDesktop'] ?? $img['src'] ?? null;
-    $tablet  = $img['srcTablet']  ?? $desktop;
-    $mobile  = $img['srcMobile']  ?? $tablet;
+    $desktop = ($img['desktopSrc'] ?? '') ?: ($img['srcDesktop'] ?? $img['src'] ?? null);
+    $tablet  = ($img['tabletSrc']  ?? '') ?: ($img['srcTablet']  ?? $desktop);
+    $mobile  = ($img['mobileSrc']  ?? '') ?: ($img['srcMobile']  ?? $tablet);
     if ($desktop || $tablet || $mobile) {
       $imageUrls[] = ['desktop' => $desktop, 'tablet' => $tablet, 'mobile' => $mobile];
     }
@@ -34,6 +34,7 @@
   }
 
   $carouselId = 'pv-carousel-' . uniqid();
+  $isSingle   = count($imageUrls) === 1;
 @endphp
 
 <div
@@ -43,7 +44,7 @@
   data-autoplay="{{ $autoPlay ? 'true' : 'false' }}"
   data-interval="{{ $interval }}"
 >
-  <div class="pv-viewport">
+  <div class="pv-viewport{{ $isSingle ? ' is-single' : '' }}">
     <div class="pv-track">
       {{-- 尾部 clone --}}
       @if(count($imageUrls) > 1)
@@ -58,7 +59,7 @@
       @endif
 
       @foreach($imageUrls as $i => $img)
-        <div class="pv-slide{{ $i === 0 ? ' is-active' : '' }}">
+        <div class="pv-slide{{ $i === 0 ? ' is-active' : '' }}{{ $isSingle ? ' is-single' : '' }}">
           <picture>
             @if($img['desktop'])<source media="(min-width: 1024px)" srcset="{{ $img['desktop'] }}">@endif
             @if($img['tablet'])<source media="(min-width: 768px)" srcset="{{ $img['tablet'] }}">@endif
@@ -131,6 +132,9 @@
   transition: opacity 0.45s ease;
 }
 .pv-slide.is-active { opacity: 1; }
+.pv-viewport.is-single { padding: 0; }
+.pv-slide.is-single { padding: 0; opacity: 1; }
+.pv-slide.is-single .pv-img { border-radius: 0; }
 .pv-img {
   width: 100%;
   height: 100%;
@@ -213,8 +217,6 @@
   var timer     = null;
   var jumping   = false;
 
-  if (total <= 1) return;
-
   function getSlideWidth() {
     return viewport.offsetWidth - parseFloat(getComputedStyle(viewport).paddingLeft) * 2;
   }
@@ -222,7 +224,14 @@
   function setWidth() {
     var w = getSlideWidth();
     slides.forEach(function (s) { s.style.width = w + 'px'; });
-    moveTo(current + 1, false);
+    if (total > 1) moveTo(current + 1, false);
+  }
+
+  // 單張：只設寬度，不做輪播邏輯
+  if (total <= 1) {
+    setWidth();
+    window.addEventListener('resize', setWidth);
+    return;
   }
 
   function moveTo(index, animate) {

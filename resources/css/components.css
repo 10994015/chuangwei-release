@@ -1984,6 +1984,17 @@
     gap: 0.8rem;
 }
 
+.footer .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.footer .footer-logo-img {
+    max-width: 120px;
+    max-height: 48px;
+    object-fit: contain;
+}
+
 .footer .footer-title {
     font-size: 20px;
     font-weight: 600;

@@ -1,16 +1,23 @@
 {{-- resources/views/components/pv-footer.blade.php --}}
 @php
-  $data = $frame['data'] ?? [];
+  $data       = $frame['data'] ?? [];
+  $footerData = $footerData    ?? [];
 
-  $logoSrc      = $data['logoImgSrc'] ?? null;
-  $tenantName   = $data['tenantName'] ?? null;
-  $brandName    = $data['brandName']  ?? null;
-  $displayName  = $tenantName ?? $brandName ?? __('ui.pvFooter.defaultName');
-  $copyright    = $data['copyright'] ?? ('Copyright © ' . date('Y') . ' ' . $displayName . ' All Rights Reserved.');
+  $logoSrc     = $data['logoImgSrc'] ?? null;
 
-  $displayPhone   = $data['tenantPhone']   ?? null;
-  $displayAddress = $data['tenantAddress'] ?? null;
-  $displayEmail   = $data['tenantEmail']   ?? null;
+  // 名稱：優先 frame data，再從 controller 的 footerData 取；無資料就 null
+  $displayName = $data['tenantName']
+              ?? $data['brandName']
+              ?? $footerData['tenantName']
+              ?? null;
+
+  $copyright = $data['copyright']
+            ?? ('Copyright © ' . date('Y') . ($displayName ? ' ' . $displayName : '') . ' All Rights Reserved.');
+
+  // 聯絡資訊：優先 frame data，再 footerData
+  $displayPhone   = $data['tenantPhone']   ?? $footerData['tenantPhone']   ?? null;
+  $displayAddress = $data['tenantAddress'] ?? $footerData['tenantAddress'] ?? null;
+  $displayEmail   = $data['tenantEmail']   ?? $footerData['tenantEmail']   ?? null;
 
   $columns = $footerData['columns'] ?? [];
   if (empty($columns)) {
@@ -21,7 +28,7 @@
   }
 
   $footerBgColor   = $data['footerBgColor']   ?? null;
-  $footerTextColor = $data['footerTextColor'] ?? null;
+  $footerTextColor = $data['footerTextColor']  ?? null;
 
   $footerStyle = '';
   if ($footerBgColor)   $footerStyle .= "background:{$footerBgColor};";
@@ -48,7 +55,9 @@
               </svg>
             </span>
           @endif
-          <span class="pv-logo-name">{{ $displayName }}</span>
+          @if($displayName)
+            <span class="pv-logo-name">{{ $displayName }}</span>
+          @endif
         </div>
       </div>
 
@@ -103,7 +112,7 @@
 .pv-footer-content { display: grid; grid-template-columns: 2fr 3fr 2fr; gap: 4rem; padding-bottom: 2.5rem; align-items: start; }
 .pv-footer-brand { display: flex; flex-direction: column; }
 .pv-footer-logo  { display: flex; align-items: center; gap: 10px; }
-.pv-logo-img { max-width: 120px; max-height: 40px; object-fit: contain; filter: brightness(0) invert(1); }
+.pv-logo-img { max-width: 120px; max-height: 40px; object-fit: contain; }
 .pv-logo-icon { display: flex; align-items: center; flex-shrink: 0; }
 .pv-logo-name { font-size: 20px; font-weight: 700; color: var(--pv-footer-text,#fff); white-space: nowrap; letter-spacing: 1px; }
 .pv-footer-links-wrapper { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem 2rem; }

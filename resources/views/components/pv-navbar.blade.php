@@ -25,10 +25,12 @@
   $token = request()->cookie('token');
   if ($token) {
     try {
-      $apiBase = rtrim(config('api.base_url', env('API_BASE_URL', '')), '/');
+      $baseDomain    = config('api.base_domain', env('API_BASE_DOMAIN', 'angkeinfo.com'));
+      $manageApiBase = 'https://manage.' . $baseDomain;
       $res = \Illuminate\Support\Facades\Http::withOptions(['cookies' => false])
         ->withHeaders(['Cookie' => 'token=' . $token])
-        ->get($apiBase . '/api/frontend/user/');
+        ->timeout(5)
+        ->get($manageApiBase . '/api/frontend/user/');
       if ($res->status() === 200) {
         $ssrUserName = $res->json('data.name');
       }
@@ -79,15 +81,30 @@
     <div class="pv-nav-actions pv-desktop-only">
       {{-- 未登入 --}}
       <button class="pv-login-btn" id="{{ $navbarId }}-login-btn" style="{{ $ssrUserName ? 'display:none' : '' }}">{{ __('ui.navbarBasemap.loginRegister') }}</button>
-      {{-- 已登入 --}}
-      <div class="pv-user-wrapper" id="{{ $navbarId }}-user-wrapper" style="{{ $ssrUserName ? '' : 'display:none' }}">
-        <button class="pv-user-btn" id="{{ $navbarId }}-user-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span class="pv-user-name" id="{{ $navbarId }}-user-name">{{ $ssrUserName ?? '' }}</span>
-          <svg class="pv-chevron" id="{{ $navbarId }}-user-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+
+      {{-- 已登入：登出 + 管理後台 --}}
+      <div class="pv-logged-in-actions" id="{{ $navbarId }}-logged-in-actions" style="{{ $ssrUserName ? '' : 'display:none' }}">
+        {{-- 登出 --}}
+        <button class="pv-logout-btn" id="{{ $navbarId }}-logout-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          {{ __('ui.navbarBasemap.logout') }}
         </button>
-        <div class="pv-user-dropdown" id="{{ $navbarId }}-user-dropdown">
-          <button class="pv-user-option pv-user-logout" id="{{ $navbarId }}-logout-btn">{{ __('ui.navbarBasemap.logout') }}</button>
+
+        {{-- 管理後台 --}}
+        <div class="pv-manage-wrapper" id="{{ $navbarId }}-manage-wrapper">
+          <button class="pv-manage-btn" id="{{ $navbarId }}-manage-btn">
+            {{ __('ui.navbarBasemap.manage') }}
+            <svg class="pv-chevron" id="{{ $navbarId }}-manage-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="pv-manage-dropdown" id="{{ $navbarId }}-manage-dropdown">
+            <span class="pv-manage-option pv-manage-empty">載入中...</span>
+          </div>
         </div>
       </div>
 
@@ -150,10 +167,15 @@
       @endforeach
     </nav>
     <div class="pv-mobile-actions">
+      {{-- 未登入 --}}
       <button class="pv-mobile-login-btn" id="{{ $navbarId }}-mobile-login-btn" style="{{ $ssrUserName ? 'display:none' : '' }}">{{ __('ui.navbarBasemap.loginRegister') }}</button>
-      <button class="pv-mobile-login-btn pv-mobile-logout-btn" id="{{ $navbarId }}-mobile-logout-btn" style="{{ $ssrUserName ? '' : 'display:none' }};background:#f5f5f5;color:#444;border:1.5px solid #ddd;">
-        <span id="{{ $navbarId }}-mobile-user-name">{{ $ssrUserName ?? '' }}</span>&nbsp;·&nbsp;{{ __('ui.navbarBasemap.logout') }}
-      </button>
+      {{-- 已登入 --}}
+      <div class="pv-mobile-logged-in" id="{{ $navbarId }}-mobile-logged-in" style="{{ $ssrUserName ? '' : 'display:none' }}">
+        <a class="pv-mobile-manage-btn" id="{{ $navbarId }}-mobile-goto-manage" href="#">{{ __('ui.navbarBasemap.gotoManage') }}</a>
+        <button class="pv-mobile-logout-btn" id="{{ $navbarId }}-mobile-logout-btn">
+          {{ __('ui.navbarBasemap.logout') }}
+        </button>
+      </div>
       <div class="pv-mobile-locale">
         @foreach($locales as $loc)
           <a
@@ -422,6 +444,55 @@
 .pv-user-option:hover { background: #fff5f2; color: #E8572A; }
 .pv-user-logout { color: #dc2626; }
 .pv-user-logout:hover { background: #fef2f2; color: #dc2626; }
+.pv-logged-in-actions { display: flex; align-items: center; gap: 10px; }
+.pv-logout-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border: 1.5px solid #ddd; border-radius: 20px;
+  background: transparent; color: #555; font-size: 14px; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: all 0.2s;
+}
+.pv-logout-btn:hover { border-color: #dc2626; color: #dc2626; }
+.pv-manage-wrapper { position: relative; }
+.pv-manage-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border: none; border-radius: 20px;
+  background: #E8572A; color: #fff; font-size: 14px; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background 0.2s;
+}
+.pv-manage-btn:hover { background: #d14a1f; }
+.pv-manage-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  min-width: 130px; background: #fff;
+  border: 1px solid #e5e5e5; border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1); overflow: hidden;
+  z-index: 300; opacity: 0; transform: translateY(-6px);
+  pointer-events: none; transition: opacity 0.18s, transform 0.18s;
+}
+.pv-manage-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.pv-manage-option {
+  display: block; width: 100%; padding: 10px 16px;
+  background: transparent; border: none; text-align: left;
+  font-size: 13px; color: #444; cursor: pointer; transition: background 0.15s;
+  text-decoration: none;
+}
+.pv-manage-option:hover { background: #fff5f2; color: #E8572A; }
+.pv-manage-empty { color: #999; font-size: 13px; cursor: default; pointer-events: none; }
+.pv-mobile-manage-btn {
+  display: block; width: 100%; padding: 10px 16px;
+  background: #E8572A; border: none; border-radius: 8px;
+  color: #fff; font-size: 14px; font-weight: 500;
+  cursor: pointer; text-align: center; text-decoration: none;
+  transition: background 0.2s; box-sizing: border-box;
+}
+.pv-mobile-manage-btn:hover { background: #d14a1f; }
+.pv-mobile-logout-btn {
+  width: 100%; padding: 10px 16px; margin-top: 8px;
+  background: #f5f5f5; border: 1.5px solid #ddd; border-radius: 8px;
+  color: #444; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.pv-mobile-logout-btn:hover { border-color: #dc2626; color: #dc2626; background: #fef2f2; }
+.pv-mobile-logged-in { display: flex; flex-direction: column; width: 100%; }
 .pv-desktop-only { display: flex; }
 .pv-mobile-only  { display: none; }
 @media (max-width: 768px) {
@@ -444,16 +515,17 @@
   var localeDd         = document.getElementById(id + '-locale-dropdown');
   var chevron          = document.getElementById(id + '-chevron');
 
-  var loginBtn         = document.getElementById(id + '-login-btn');
-  var mobileLoginBtn   = document.getElementById(id + '-mobile-login-btn');
-  var userWrapper      = document.getElementById(id + '-user-wrapper');
-  var userBtn          = document.getElementById(id + '-user-btn');
-  var userNameEl       = document.getElementById(id + '-user-name');
-  var userDd           = document.getElementById(id + '-user-dropdown');
-  var userChevron      = document.getElementById(id + '-user-chevron');
-  var logoutBtn        = document.getElementById(id + '-logout-btn');
-  var mobileLogoutBtn  = document.getElementById(id + '-mobile-logout-btn');
-  var mobileUserNameEl = document.getElementById(id + '-mobile-user-name');
+  var loginBtn           = document.getElementById(id + '-login-btn');
+  var mobileLoginBtn     = document.getElementById(id + '-mobile-login-btn');
+  var loggedInActions    = document.getElementById(id + '-logged-in-actions');
+  var mobileLoggedIn     = document.getElementById(id + '-mobile-logged-in');
+  var logoutBtn          = document.getElementById(id + '-logout-btn');
+  var mobileLogoutBtn    = document.getElementById(id + '-mobile-logout-btn');
+  var manageBtn          = document.getElementById(id + '-manage-btn');
+  var manageDd           = document.getElementById(id + '-manage-dropdown');
+  var manageChevron      = document.getElementById(id + '-manage-chevron');
+  var gotoManageBtn      = document.getElementById(id + '-goto-manage');
+  var mobileGotoManage   = document.getElementById(id + '-mobile-goto-manage');
 
   // ── Hamburger ─────────────────────────────────────────────
   if (hamburger && menu) {
@@ -474,19 +546,17 @@
 
   // ── Login / Logout state ──────────────────────────────────
   function setLoggedIn(name) {
-    if (loginBtn)         loginBtn.style.display        = 'none';
-    if (userWrapper)      userWrapper.style.display      = '';
-    if (userNameEl)       userNameEl.textContent         = name;
-    if (mobileLoginBtn)   mobileLoginBtn.style.display   = 'none';
-    if (mobileLogoutBtn)  mobileLogoutBtn.style.display  = '';
-    if (mobileUserNameEl) mobileUserNameEl.textContent   = name;
+    if (loginBtn)        loginBtn.style.display     = 'none';
+    if (loggedInActions) loggedInActions.style.display = '';
+    if (mobileLoginBtn)  mobileLoginBtn.style.display  = 'none';
+    if (mobileLoggedIn)  mobileLoggedIn.style.display  = '';
   }
 
   function setLoggedOut() {
-    if (loginBtn)        loginBtn.style.display        = '';
-    if (userWrapper)     userWrapper.style.display      = 'none';
-    if (mobileLoginBtn)  mobileLoginBtn.style.display   = '';
-    if (mobileLogoutBtn) mobileLogoutBtn.style.display  = 'none';
+    if (loginBtn)        loginBtn.style.display     = '';
+    if (loggedInActions) loggedInActions.style.display = 'none';
+    if (mobileLoginBtn)  mobileLoginBtn.style.display  = '';
+    if (mobileLoggedIn)  mobileLoggedIn.style.display  = 'none';
   }
 
   // 把 setLoggedIn / setLoggedOut 注入 modal
@@ -515,17 +585,70 @@
     window.location.href = loginUrl;
   }
 
-  // if (loginBtn)       loginBtn.addEventListener('click', goToLogin);
-  // if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', goToLogin);
+  if (loginBtn)       loginBtn.addEventListener('click', goToLogin);
+  if (mobileLoginBtn) mobileLoginBtn.addEventListener('click', goToLogin);
 
-  // ── User dropdown ─────────────────────────────────────────
-  if (userBtn && userDd) {
-    userBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      var open = userDd.classList.toggle('open');
-      userChevron && userChevron.classList.toggle('open', open);
+  // ── 管理後台 dropdown ──────────────────────────────────────
+  var permissionsFetched = false;
+
+  function getManageBase() {
+    var host  = window.location.hostname;
+    var parts = host.split('.');
+    var parent;
+    if (parts.length >= 3)                                   parent = parts.slice(1).join('.');
+    else if (parts.length === 2 && parts[1] === 'localhost') parent = 'localhost';
+    else                                                     parent = host;
+    var port = window.location.port ? ':' + window.location.port : '';
+    return window.location.protocol + '//manage.' + parent + port;
+  }
+
+  function renderManageDropdown(tenantRoles) {
+    if (!manageDd) return;
+    manageDd.innerHTML = '';
+    if (!tenantRoles || tenantRoles.length === 0) {
+      var empty = document.createElement('span');
+      empty.className = 'pv-manage-option pv-manage-empty';
+      empty.textContent = '無可管理的宮廟';
+      manageDd.appendChild(empty);
+      return;
+    }
+    tenantRoles.forEach(function (role) {
+      var a = document.createElement('a');
+      a.className = 'pv-manage-option';
+      a.href = '#';
+      a.textContent = role.tenantName || role.tenantId;
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.open(getManageBase(), '_blank');
+        manageDd.classList.remove('open');
+        manageChevron && manageChevron.classList.remove('open');
+      });
+      manageDd.appendChild(a);
     });
   }
+
+  async function fetchPermissions() {
+    if (permissionsFetched) return;
+    permissionsFetched = true;
+    try {
+      var res  = await fetch(PROXY_BASE + '/proxy/api/frontend/user/permission', { credentials: 'include' });
+      var json = await res.json();
+      if (json.statusCode === 200 && json.data) {
+        renderManageDropdown(json.data.tenantRoles || []);
+      }
+    } catch (e) {}
+  }
+
+  if (manageBtn && manageDd) {
+    manageBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      fetchPermissions();
+      var open = manageDd.classList.toggle('open');
+      manageChevron && manageChevron.classList.toggle('open', open);
+    });
+  }
+
+  if (mobileGotoManage) mobileGotoManage.addEventListener('click', function(e) { e.preventDefault(); window.open(getManageBase(), '_blank'); });
 
   // ── Logout ────────────────────────────────────────────────
   async function doLogout() {
@@ -534,7 +657,7 @@
     } catch (e) {}
     if (api) api.clearAuth();
     setLoggedOut();
-    if (userDd) userDd.classList.remove('open');
+    if (manageDd) manageDd.classList.remove('open');
   }
 
   if (logoutBtn)       logoutBtn.addEventListener('click', doLogout);
@@ -542,8 +665,8 @@
 
   // ── Close dropdowns on outside click ─────────────────────
   document.addEventListener('click', function () {
-    if (localeDd) { localeDd.classList.remove('open'); chevron && chevron.classList.remove('open'); }
-    if (userDd)   { userDd.classList.remove('open'); userChevron && userChevron.classList.remove('open'); }
+    if (localeDd)  { localeDd.classList.remove('open'); chevron && chevron.classList.remove('open'); }
+    if (manageDd)  { manageDd.classList.remove('open'); manageChevron && manageChevron.classList.remove('open'); }
   });
 })();
 </script>

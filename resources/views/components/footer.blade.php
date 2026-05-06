@@ -21,16 +21,22 @@
     $device        = $device        ?? 'desktop';
     $tid           = $templeId      ?? '';
 
-    $displayName      = $tenantName ?? $brandName ?? __('ui.footerBasemap.defaultName');
+    $displayName      = $tenantName ?? $brandName ?? null;
     $displayPhone     = $tenantPhone;
     $displayAddress   = $tenantAddress;
     $displayEmail     = $tenantEmail;
-    $displayCopyright = $copyright ?? ('Copyright © ' . date('Y') . ' ' . $displayName . ' | 宮廟');
+    $displayCopyright = $copyright ?? ('Copyright © ' . date('Y') . ($displayName ? ' ' . $displayName : '') . ' | 宮廟');
 
-    // 對應 Vue 的 footerStyle：
-    // 優先用直接傳入的 $footerBgColor / $footerTextColor，
-    // 其次從 $frame['data'] 讀（跟 page.blade.php 邏輯一致）
     $frameData       = $frame['data'] ?? [];
+
+    // 聯絡資訊補 frameData fallback
+    $displayPhone   = $displayPhone   ?? $frameData['tenantPhone']   ?? null;
+    $displayAddress = $displayAddress ?? $frameData['tenantAddress'] ?? null;
+    $displayEmail   = $displayEmail   ?? $frameData['tenantEmail']   ?? null;
+
+    // Logo
+    $logoSrc = $logoImgSrc ?? $frameData['logoImgSrc'] ?? null;
+
     $footerBgColor   = $footerBgColor   ?? $frameData['footerBgColor']   ?? null;
     $footerTextColor = $footerTextColor ?? $frameData['footerTextColor'] ?? null;
 
@@ -47,9 +53,16 @@
     <div class="footer-container">
         <div class="footer-content">
 
-            {{-- 品牌名稱 --}}
+            {{-- 品牌名稱 / Logo --}}
             <div class="footer-column brand-column">
-                <h3 class="footer-title">{{ $displayName }}</h3>
+                <div class="footer-logo">
+                    @if($logoSrc)
+                        <img src="{{ $logoSrc }}" alt="Logo" class="footer-logo-img" />
+                    @endif
+                    @if($displayName)
+                        <h3 class="footer-title">{{ $displayName }}</h3>
+                    @endif
+                </div>
             </div>
 
             {{-- 連結欄 --}}

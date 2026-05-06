@@ -25,6 +25,8 @@ return [
         'noAccount'           => '还没有账号？',
         'registerNow'         => '立即注册',
         'logout'              => '退出登录',
+        'manage'              => '管理后台',
+        'gotoManage'          => '前往后台',
         'errNoAccount'        => '请输入账号',
         'errNoPassword'       => '请输入密码',
     ],

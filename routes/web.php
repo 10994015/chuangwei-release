@@ -112,6 +112,18 @@ Route::get('/proxy/api/frontend/user', function (\Illuminate\Http\Request $reque
         ->header('Content-Type', 'application/json');
 });
 
+Route::get('/proxy/api/frontend/user/permission', function (\Illuminate\Http\Request $request) use ($manageApiBase) {
+    $apiBase  = $manageApiBase();
+    $response = Http::withOptions(['cookies' => false])
+        ->withHeaders([
+            'Content-Type' => 'application/json',
+            'Cookie'        => $request->header('Cookie', ''),
+        ])->get($apiBase . '/api/frontend/user/permission');
+
+    return response($response->body(), $response->status())
+        ->header('Content-Type', 'application/json');
+});
+
 // ── Auth pages ────────────────────────────────────────────────
 Route::get('/login',            fn() => view('auth.login'));
 Route::get('/register',         fn() => view('auth.register'));

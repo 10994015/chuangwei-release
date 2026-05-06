@@ -14,9 +14,9 @@
 
     if (!empty($caroiselWallImgs)) {
         $displaySlides = array_map(function($item) {
-            $desktop = $item['srcDesktop'] ?? $item['src'] ?? $item['image'] ?? '';
-            $tablet  = $item['srcTablet']  ?? $desktop;
-            $mobile  = $item['srcMobile']  ?? $tablet;
+            $desktop = ($item['desktopSrc'] ?? '') ?: ($item['srcDesktop'] ?? $item['src'] ?? $item['image'] ?? '');
+            $tablet  = ($item['tabletSrc']  ?? '') ?: ($item['srcTablet']  ?? $desktop);
+            $mobile  = ($item['mobileSrc']  ?? '') ?: ($item['srcMobile']  ?? $tablet);
             return [
                 'image'           => $desktop,
                 'desktop'         => $desktop,
