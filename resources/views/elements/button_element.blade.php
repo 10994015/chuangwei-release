@@ -13,8 +13,9 @@
       return $v;
   };
 
-  $fontSize = $ensureUnit($meta['fontSize'] ?? null, '16px');
-  $padding  = $ensureUnit($meta['padding']  ?? null, '12px 32px');
+  $fontSize     = $ensureUnit($meta['fontSize']     ?? null, '16px');
+  $padding      = $ensureUnit($meta['padding']      ?? null, '12px 32px');
+  $borderRadius = $ensureUnit($meta['borderRadius'] ?? null, '6px');
 
   $isDisabled = (empty($link) || $link === '#');
 @endphp
@@ -24,7 +25,7 @@
     href="{{ $isDisabled ? 'javascript:void(0);' : $link }}"
     class="element-button"
     rel="noopener noreferrer"
-    style="display: inline-block; color: {{ $textColor }}; background-color: {{ $bgColor }}; font-size: {{ $fontSize }}; padding: {{ $padding }};"
+    style="display: inline-block; color: {{ $textColor }}; background-color: {{ $bgColor }}; font-size: {{ $fontSize }}; padding: {{ $padding }}; border-radius: {{ $borderRadius }};"
     @if($isDisabled) onclick="return false;" @endif
   >
     {{ $text }}
