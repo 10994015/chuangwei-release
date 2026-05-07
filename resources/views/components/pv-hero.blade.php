@@ -115,7 +115,7 @@
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
-  padding: 0 4%;
+  padding: 0 10%;
 }
 .pv-track {
   display: flex;
@@ -161,8 +161,8 @@
   box-shadow: 0 2px 12px rgba(0,0,0,0.2);
 }
 .pv-arrow svg { width: 18px; height: 18px; }
-.pv-arrow--left  { left: 13%; }
-.pv-arrow--right { right: 13%; }
+.pv-arrow--left  { left: 5%; }
+.pv-arrow--right { right: 5%; }
 .pv-arrow:hover  { background: #fff; transform: translateY(-50%) scale(1.08); }
 .pv-indicators {
   position: absolute;
@@ -189,9 +189,9 @@
 @media (max-width: 768px) {
   .pv-arrow { width: 34px; height: 34px; }
   .pv-arrow svg { width: 15px; height: 15px; }
-  .pv-arrow--left  { left: 10%; }
-  .pv-arrow--right { right: 10%; }
-  .pv-viewport { padding: 0 8%; }
+  .pv-arrow--left  { left: 7%; }
+  .pv-arrow--right { right: 7%; }
+  .pv-viewport { padding: 0 14%; }
 }
 </style>
 

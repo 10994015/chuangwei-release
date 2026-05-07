@@ -28,14 +28,6 @@ class PageController extends Controller
     {
         $subdomain = $this->resolveSubdomain();
 
-        // localhost 環境：subdomain 是本地假值，改用 .env 的 API_SUBDOMAIN
-        $host    = request()->getHost();
-        $isLocal = $host === 'localhost' || str_ends_with($host, '.localhost');
-
-        if ($isLocal && $subdomain) {
-            $subdomain = env('API_SUBDOMAIN', $subdomain);
-        }
-
         return $subdomain
             ? "https://{$subdomain}." . config('api.base_domain')
             : config('api.base_url');

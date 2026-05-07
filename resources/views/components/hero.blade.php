@@ -1,29 +1,40 @@
 {{-- resources/views/components/hero.blade.php --}}
 @php
-    $data                  = $frame['data'] ?? [];
-    $caroiselWallImgs      = $data['caroiselWallImgs']     ?? $data['carouselWallImgs'] ?? [];
-    $carouselWallHeight    = $data['carouselWallHeight']   ?? 600;
-    $carouselWallAutoPlay  = $data['carouselWallAutoPlay'] ?? true;
-    $carouselWallInterval  = $data['carouselWallInterval'] ?? 5000;
+    $data                 = $frame['data'] ?? [];
+    $caroiselWallImgs     = $data['caroiselWallImgs']     ?? $data['carouselWallImgs'] ?? [];
+    $carouselWallHeight   = $data['carouselWallHeight']   ?? 600;
+    $carouselWallAutoPlay = $data['carouselWallAutoPlay'] ?? true;
+    $carouselWallInterval = $data['carouselWallInterval'] ?? 5000;
 
-    $placeholderSlides = [
-        ['image' => 'https://images.unsplash.com/photo-1548013146-72479768bada?w=1280&h=600&fit=crop', 'title' => '輪播圖片 1', 'subtitle' => '', 'overlayOpacity' => 40, 'overlayColor' => '#000000', 'titleColor' => '#ffffff', 'titleFontSize' => 48, 'subtitleColor' => '#eeeeee', 'subtitleFontSize' => 20],
-        ['image' => 'https://images.unsplash.com/photo-1528127269322-539801943592?w=1280&h=600&fit=crop', 'title' => '輪播圖片 2', 'subtitle' => '', 'overlayOpacity' => 40, 'overlayColor' => '#000000', 'titleColor' => '#ffffff', 'titleFontSize' => 48, 'subtitleColor' => '#eeeeee', 'subtitleFontSize' => 20],
-        ['image' => 'https://images.unsplash.com/photo-1604881991720-f91add269bed?w=1280&h=600&fit=crop', 'title' => '輪播圖片 3', 'subtitle' => '', 'overlayOpacity' => 40, 'overlayColor' => '#000000', 'titleColor' => '#ffffff', 'titleFontSize' => 48, 'subtitleColor' => '#eeeeee', 'subtitleFontSize' => 20],
-    ];
-
-    if (!empty($caroiselWallImgs)) {
-        $displaySlides = array_map(function($item) {
-            $desktop = ($item['desktopSrc'] ?? '') ?: ($item['srcDesktop'] ?? $item['src'] ?? $item['image'] ?? '');
-            $tablet  = ($item['tabletSrc']  ?? '') ?: ($item['srcTablet']  ?? $desktop);
-            $mobile  = ($item['mobileSrc']  ?? '') ?: ($item['srcMobile']  ?? $tablet);
-            return [
-                'image'           => $desktop,
+    // ── 整理圖片清單 ───────────────────────────────────────────────────
+    $slides = [];
+    foreach ($caroiselWallImgs as $item) {
+        if (!is_array($item)) {
+            $slides[] = [
+                'desktop'         => $item,
+                'tablet'          => $item,
+                'mobile'          => $item,
+                'title'           => '',
+                'subtitle'        => '',
+                'overlayOpacity'  => 40,
+                'overlayColor'    => '#000000',
+                'titleColor'      => '#ffffff',
+                'titleFontSize'   => 48,
+                'subtitleColor'   => '#eeeeee',
+                'subtitleFontSize'=> 20,
+            ];
+            continue;
+        }
+        $desktop = ($item['desktopSrc'] ?? '') ?: ($item['srcDesktop'] ?? $item['src'] ?? $item['image'] ?? '');
+        $tablet  = ($item['tabletSrc']  ?? '') ?: ($item['srcTablet']  ?? $desktop);
+        $mobile  = ($item['mobileSrc']  ?? '') ?: ($item['srcMobile']  ?? $tablet);
+        if ($desktop || $tablet || $mobile) {
+            $slides[] = [
                 'desktop'         => $desktop,
                 'tablet'          => $tablet,
                 'mobile'          => $mobile,
-                'title'           => $item['title']            ?? '',
-                'subtitle'        => $item['subtitle']         ?? '',
+                'title'           => $item['title']             ?? '',
+                'subtitle'        => $item['subtitle']          ?? '',
                 'overlayOpacity'  => $item['overlayOpacity']   ?? 40,
                 'overlayColor'    => $item['overlayColor']     ?? '#000000',
                 'titleColor'      => $item['titleColor']       ?? '#ffffff',
@@ -31,113 +42,218 @@
                 'subtitleColor'   => $item['subtitleColor']    ?? '#eeeeee',
                 'subtitleFontSize'=> $item['subtitleFontSize'] ?? 20,
             ];
-        }, $caroiselWallImgs);
-    } else {
-        $displaySlides = $placeholderSlides;
+        }
+    }
+
+    // ── Fallback placeholder ───────────────────────────────────────────
+    if (empty($slides)) {
+        foreach ([
+            'https://images.unsplash.com/photo-1548013146-72479768bada?w=1280&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1528127269322-539801943592?w=1280&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1604881991720-f91add269bed?w=1280&h=600&fit=crop',
+        ] as $src) {
+            $slides[] = [
+                'desktop' => $src, 'tablet' => $src, 'mobile' => $src,
+                'title' => '', 'subtitle' => '',
+                'overlayOpacity' => 40, 'overlayColor' => '#000000',
+                'titleColor' => '#ffffff', 'titleFontSize' => 48,
+                'subtitleColor' => '#eeeeee', 'subtitleFontSize' => 20,
+            ];
+        }
     }
 
     $heightVal      = is_numeric($carouselWallHeight) ? $carouselWallHeight . 'px' : $carouselWallHeight;
     $autoPlay       = $carouselWallAutoPlay ? 'true' : 'false';
     $interval       = (int) $carouselWallInterval;
-    $slidesJson     = json_encode(array_values($displaySlides));
-    $multipleSlides = count($displaySlides) > 1;
+    $isSingle       = count($slides) === 1;
+    $heroId         = 'hero-' . uniqid();
 @endphp
 
 <section
     class="hero"
+    id="{{ $heroId }}"
     style="height: {{ $heightVal }}"
-    x-data="{
-        slides: {{ $slidesJson }},
-        current: 0,
-        autoPlay: {{ $autoPlay }},
-        interval: {{ $interval }},
-        timer: null,
-
-        next() { this.current = (this.current + 1) % this.slides.length },
-        prev() { this.current = this.current === 0 ? this.slides.length - 1 : this.current - 1 },
-        goTo(index) { this.current = index },
-
-        getOverlayStyle(slide) {
-            return {
-                backgroundColor: slide.overlayColor || '#000000',
-                opacity: (slide.overlayOpacity ?? 40) / 100
-            }
-        },
-        getTitleStyle(slide) {
-            return {
-                color: slide.titleColor || '#ffffff',
-                fontSize: (slide.titleFontSize ?? 48) + 'px'
-            }
-        },
-        getSubtitleStyle(slide) {
-            return {
-                color: slide.subtitleColor || '#eeeeee',
-                fontSize: (slide.subtitleFontSize ?? 20) + 'px'
-            }
-        },
-
-        startAutoPlay() {
-            this.stopAutoPlay()
-            if (this.autoPlay && this.slides.length > 1) {
-                this.timer = setInterval(() => this.next(), this.interval)
-            }
-        },
-        stopAutoPlay() {
-            if (this.timer) { clearInterval(this.timer); this.timer = null }
-        }
-    }"
-    x-init="startAutoPlay()"
-    @mouseover="stopAutoPlay()"
-    @mouseleave="startAutoPlay()"
+    data-autoplay="{{ $autoPlay }}"
+    data-interval="{{ $interval }}"
 >
     <div class="hero-swiper">
         <div class="swiper-wrapper">
-            <template x-for="(slide, index) in slides" :key="index">
-                <div class="swiper-slide" :class="{ active: current === index }">
+            {{-- 尾部 clone（無縫輪播用）--}}
+            @if(!$isSingle)
+                @php $last = $slides[count($slides) - 1]; @endphp
+                <div class="swiper-slide clone">
                     <picture>
-                        <source media="(min-width: 1024px)" :srcset="slide.desktop">
-                        <source media="(min-width: 768px)" :srcset="slide.tablet">
-                        <img :src="slide.mobile" :alt="slide.title || '輪播圖片'" class="slide-image" />
+                        @if($last['desktop'])<source media="(min-width: 1024px)" srcset="{{ $last['desktop'] }}">@endif
+                        @if($last['tablet'])<source media="(min-width: 768px)"  srcset="{{ $last['tablet'] }}">@endif
+                        <img src="{{ $last['mobile'] ?: $last['desktop'] }}" alt="輪播圖片" class="slide-image" />
+                    </picture>
+                </div>
+            @endif
+
+            @foreach($slides as $i => $slide)
+                <div class="swiper-slide{{ $i === 0 ? ' active' : '' }}">
+                    <picture>
+                        @if($slide['desktop'])<source media="(min-width: 1024px)" srcset="{{ $slide['desktop'] }}">@endif
+                        @if($slide['tablet'])<source media="(min-width: 768px)"  srcset="{{ $slide['tablet'] }}">@endif
+                        <img
+                            src="{{ $slide['mobile'] ?: $slide['desktop'] }}"
+                            alt="{{ $slide['title'] ?: '輪播圖片 ' . ($i + 1) }}"
+                            class="slide-image"
+                            loading="{{ $i === 0 ? 'eager' : 'lazy' }}"
+                        />
                     </picture>
 
-                    {{-- 每張圖片獨立遮罩 --}}
-                    <div class="slide-overlay" :style="getOverlayStyle(slide)"></div>
-
-                    {{-- 每張圖片獨立文字 --}}
-                    <div
-                        class="slide-text-content"
-                        x-show="slide.title || slide.subtitle"
-                    >
-                        <h2
-                            class="slide-title"
-                            x-show="slide.title"
-                            x-text="slide.title"
-                            :style="getTitleStyle(slide)"
-                        ></h2>
-                        <p
-                            class="slide-subtitle"
-                            x-show="slide.subtitle"
-                            x-text="slide.subtitle"
-                            :style="getSubtitleStyle(slide)"
-                        ></p>
-                    </div>
+                    {{-- 文字 --}}
+                    @if($slide['title'] || $slide['subtitle'])
+                        <div class="slide-text-content">
+                            @if($slide['title'])
+                                <h2 class="slide-title" style="color:{{ $slide['titleColor'] }};font-size:{{ $slide['titleFontSize'] }}px">
+                                    {{ $slide['title'] }}
+                                </h2>
+                            @endif
+                            @if($slide['subtitle'])
+                                <p class="slide-subtitle" style="color:{{ $slide['subtitleColor'] }};font-size:{{ $slide['subtitleFontSize'] }}px">
+                                    {{ $slide['subtitle'] }}
+                                </p>
+                            @endif
+                        </div>
+                    @endif
                 </div>
-            </template>
+            @endforeach
+
+            {{-- 頭部 clone --}}
+            @if(!$isSingle)
+                @php $first = $slides[0]; @endphp
+                <div class="swiper-slide clone">
+                    <picture>
+                        @if($first['desktop'])<source media="(min-width: 1024px)" srcset="{{ $first['desktop'] }}">@endif
+                        @if($first['tablet'])<source media="(min-width: 768px)"  srcset="{{ $first['tablet'] }}">@endif
+                        <img src="{{ $first['mobile'] ?: $first['desktop'] }}" alt="輪播圖片" class="slide-image" />
+                    </picture>
+                </div>
+            @endif
         </div>
 
-        @if ($multipleSlides)
-            <button class="hero-btn prev" @click="prev()">‹</button>
-            <button class="hero-btn next" @click="next()">›</button>
+        @if(!$isSingle)
+            <button class="hero-btn prev" aria-label="上一張">‹</button>
+            <button class="hero-btn next" aria-label="下一張">›</button>
 
             <div class="hero-pagination">
-                <template x-for="(slide, index) in slides" :key="index">
-                    <button
-                        class="pagination-dot"
-                        :class="{ active: current === index }"
-                        @click="goTo(index)"
-                    ></button>
-                </template>
+                @foreach($slides as $i => $slide)
+                    <button class="pagination-dot{{ $i === 0 ? ' active' : '' }}" aria-label="第 {{ $i + 1 }} 張"></button>
+                @endforeach
             </div>
         @endif
     </div>
 </section>
+
+<script>
+(function () {
+    var hero = document.getElementById('{{ $heroId }}');
+    if (!hero) return;
+
+    var wrapper  = hero.querySelector('.swiper-wrapper');
+    var allSlides = Array.from(hero.querySelectorAll('.swiper-slide'));
+    var dots      = Array.from(hero.querySelectorAll('.pagination-dot'));
+    var btnPrev   = hero.querySelector('.hero-btn.prev');
+    var btnNext   = hero.querySelector('.hero-btn.next');
+
+    var autoPlay  = hero.dataset.autoplay === 'true';
+    var interval  = parseInt(hero.dataset.interval) || 5000;
+
+    var clones = hero.querySelectorAll('.swiper-slide.clone');
+    var total  = allSlides.length - clones.length;
+
+    if (total <= 1) return;
+
+    var current  = 0;
+    var timer    = null;
+    var jumping  = false;
+
+    function getW() { return hero.offsetWidth; }
+
+    function setWidths() {
+        var w = getW();
+        allSlides.forEach(function (s) { s.style.width = w + 'px'; });
+        moveTo(current + 1, false);
+    }
+
+    function moveTo(idx, animate) {
+        wrapper.style.transition = animate ? 'transform 0.65s cubic-bezier(0.4,0,0.2,1)' : 'none';
+        wrapper.style.transform  = 'translateX(-' + (idx * getW()) + 'px)';
+    }
+
+    function updateUI() {
+        allSlides.forEach(function (s, i) {
+            s.classList.toggle('active', i === current + 1);
+        });
+        dots.forEach(function (d, i) {
+            d.classList.toggle('active', i === current);
+        });
+    }
+
+    function next() {
+        if (jumping) return;
+        current++;
+        moveTo(current + 1, true);
+        updateUI();
+        if (current >= total) {
+            jumping = true;
+            setTimeout(function () {
+                current = 0;
+                moveTo(current + 1, false);
+                setTimeout(function () { jumping = false; }, 20);
+                updateUI();
+            }, 670);
+        }
+    }
+
+    function prev() {
+        if (jumping) return;
+        current--;
+        moveTo(current + 1, true);
+        updateUI();
+        if (current < 0) {
+            jumping = true;
+            setTimeout(function () {
+                current = total - 1;
+                moveTo(current + 1, false);
+                setTimeout(function () { jumping = false; }, 20);
+                updateUI();
+            }, 670);
+        }
+    }
+
+    function startTimer() {
+        if (!autoPlay) return;
+        stopTimer();
+        timer = setInterval(next, interval);
+    }
+
+    function stopTimer() {
+        if (timer) { clearInterval(timer); timer = null; }
+    }
+
+    setWidths();
+    updateUI();
+
+    if (btnPrev) btnPrev.addEventListener('click', function () { prev(); startTimer(); });
+    if (btnNext) btnNext.addEventListener('click', function () { next(); startTimer(); });
+
+    dots.forEach(function (d, i) {
+        d.addEventListener('click', function () {
+            current = i;
+            moveTo(current + 1, true);
+            updateUI();
+            startTimer();
+        });
+    });
+
+    hero.addEventListener('mouseenter', stopTimer);
+    hero.addEventListener('mouseleave', startTimer);
+
+    window.addEventListener('resize', setWidths);
+
+    startTimer();
+})();
+</script>

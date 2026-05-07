@@ -133,6 +133,7 @@
   object-fit: cover;
   object-position: center top;
   display: block;
+  z-index: 1;
 }
 
 .bl-scene__main {
@@ -146,7 +147,7 @@
   object-fit: contain;
   object-position: top center;
   display: block;
-  z-index: 1;
+  z-index: 0;
 }
 
 /* ==================== 搜尋面板 ==================== */

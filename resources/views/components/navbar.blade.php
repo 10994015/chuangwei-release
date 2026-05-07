@@ -47,11 +47,29 @@
               {{ __('ui.navbarBasemap.login') }}
             </button>
             {{-- 已登入 --}}
-            <div class="user-wrapper" id="{{ $navModalId }}-nav-user-wrapper" style="display:none">
-              <span class="user-name" id="{{ $navModalId }}-nav-user-name"></span>
-              <button class="logout-btn" id="{{ $navModalId }}-nav-logout-btn">
-                {{ __('ui.navbarBasemap.logout') }}
+            <div class="nav-user-wrapper" id="{{ $navModalId }}-nav-user-wrapper" style="display:none">
+              <button class="nav-user-btn" id="{{ $navModalId }}-user-menu-btn">
+                <span class="nav-user-name" id="{{ $navModalId }}-nav-user-name"></span>
+                <svg class="nav-user-chevron" id="{{ $navModalId }}-user-chevron"
+                     width="14" height="14" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
               </button>
+              <div class="nav-user-dropdown" id="{{ $navModalId }}-user-dropdown">
+                <div class="nav-user-dropdown-header">
+                  <div class="nav-user-dropdown-name" id="{{ $navModalId }}-dropdown-name">王小明</div>
+                </div>
+                <button class="nav-user-dropdown-item nav-user-dropdown-danger" id="{{ $navModalId }}-nav-logout-btn">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  {{ __('ui.navbarBasemap.logout') }}
+                </button>
+              </div>
             </div>
         </div>
 
@@ -125,6 +143,62 @@
     ></div>
 </header>
 
+<style>
+/* ── 已登入 user widget ────────────────────────────── */
+.nav-user-wrapper { position: relative; }
+
+.nav-user-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: transparent; border: none; cursor: pointer;
+  padding: 5px 10px; border-radius: 8px;
+  transition: background 0.18s;
+}
+.nav-user-btn:hover { background: #f5f5f5; }
+
+.nav-user-name {
+  font-size: 14px; font-weight: 500; color: #333;
+  max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.nav-user-chevron {
+  color: #888; transition: transform 0.2s; flex-shrink: 0;
+}
+.nav-user-chevron.open { transform: rotate(180deg); }
+
+/* dropdown */
+.nav-user-dropdown {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  min-width: 180px; background: #fff;
+  border: 1px solid #e5e7eb; border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  overflow: hidden; z-index: 300;
+  opacity: 0; transform: translateY(-6px); pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.nav-user-dropdown.open {
+  opacity: 1; transform: translateY(0); pointer-events: auto;
+}
+
+.nav-user-dropdown-header {
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.nav-user-dropdown-name {
+  font-size: 14px; font-weight: 600; color: #111;
+  max-width: 148px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.nav-user-dropdown-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 16px;
+  background: transparent; border: none; cursor: pointer;
+  font-size: 14px; color: #374151; text-align: left;
+  transition: background 0.12s; text-decoration: none;
+}
+.nav-user-dropdown-item:hover { background: #f9fafb; }
+.nav-user-dropdown-danger:hover { background: #fef2f2 !important; color: #dc2626 !important; }
+</style>
+
 <script>
 (function () {
   var MODAL_ID   = '{{ $navModalId }}';
@@ -133,25 +207,43 @@
   var loginBtn         = document.getElementById(MODAL_ID + '-nav-login-btn');
   var userWrapper      = document.getElementById(MODAL_ID + '-nav-user-wrapper');
   var userNameEl       = document.getElementById(MODAL_ID + '-nav-user-name');
+  var userMenuBtn      = document.getElementById(MODAL_ID + '-user-menu-btn');
+  var userDropdown     = document.getElementById(MODAL_ID + '-user-dropdown');
+  var userChevron      = document.getElementById(MODAL_ID + '-user-chevron');
+  var dropdownName     = document.getElementById(MODAL_ID + '-dropdown-name');
   var logoutBtn        = document.getElementById(MODAL_ID + '-nav-logout-btn');
   var mobileLoginBtn   = document.getElementById(MODAL_ID + '-nav-mobile-login-btn');
   var mobileLogoutBtn  = document.getElementById(MODAL_ID + '-nav-mobile-logout-btn');
   var mobileUserNameEl = document.getElementById(MODAL_ID + '-nav-mobile-user-name');
 
+  // ── dropdown toggle ──────────────────────────────────────────
+  if (userMenuBtn && userDropdown) {
+    userMenuBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = userDropdown.classList.toggle('open');
+      userChevron && userChevron.classList.toggle('open', open);
+    });
+    document.addEventListener('click', function () {
+      userDropdown.classList.remove('open');
+      userChevron && userChevron.classList.remove('open');
+    });
+  }
+
   function setLoggedIn(name) {
-    if (loginBtn)         loginBtn.style.display        = 'none';
-    if (userWrapper)      userWrapper.style.display      = '';
-    if (userNameEl)       userNameEl.textContent         = name;
-    if (mobileLoginBtn)   mobileLoginBtn.style.display   = 'none';
-    if (mobileLogoutBtn)  mobileLogoutBtn.style.display  = '';
-    if (mobileUserNameEl) mobileUserNameEl.textContent   = name;
+    if (loginBtn)         loginBtn.style.display    = 'none';
+    if (userWrapper)      userWrapper.style.display  = '';
+    if (userNameEl)       userNameEl.textContent     = name;
+    if (dropdownName)     dropdownName.textContent   = name;
+    if (mobileLoginBtn)   mobileLoginBtn.style.display  = 'none';
+    if (mobileLogoutBtn)  mobileLogoutBtn.style.display = '';
+    if (mobileUserNameEl) mobileUserNameEl.textContent  = name;
   }
 
   function setLoggedOut() {
-    if (loginBtn)        loginBtn.style.display        = '';
-    if (userWrapper)     userWrapper.style.display      = 'none';
-    if (mobileLoginBtn)  mobileLoginBtn.style.display   = '';
-    if (mobileLogoutBtn) mobileLogoutBtn.style.display  = 'none';
+    if (loginBtn)        loginBtn.style.display    = '';
+    if (userWrapper)     userWrapper.style.display  = 'none';
+    if (mobileLoginBtn)  mobileLoginBtn.style.display  = '';
+    if (mobileLogoutBtn) mobileLogoutBtn.style.display = 'none';
   }
 
   // 把 setLoggedIn / setLoggedOut 注入 modal，讓登入成功後能更新 navbar

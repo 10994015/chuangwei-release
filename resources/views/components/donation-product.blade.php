@@ -21,7 +21,6 @@
         $isLocal   = $host === 'localhost' || str_ends_with($host, '.localhost');
         $subdomain = (count($parts) >= 3) ? $parts[0]
                    : ((count($parts) === 2 && $parts[1] === 'localhost') ? $parts[0] : '');
-        if ($isLocal && $subdomain) $subdomain = env('API_SUBDOMAIN', $subdomain);
         $apiBase   = $subdomain
             ? rtrim('https://' . $subdomain . '.' . config('api.base_domain'), '/')
             : rtrim(config('api.base_url', env('API_BASE_URL', '')), '/');
@@ -83,8 +82,58 @@
 
     // 確保 images 最多取 3 張縮圖用
     $imageList = array_values((array) $images);
+    $hasData   = !empty($donationApiData);
 @endphp
 
+<style>
+.donation-empty-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+    background: #fafafa;
+    border: 1.5px dashed #e5e7eb;
+    border-radius: 16px;
+}
+.donation-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 48px 32px;
+    text-align: center;
+}
+.donation-empty svg {
+    opacity: 0.55;
+}
+.donation-empty-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #6b7280;
+    margin: 0;
+}
+.donation-empty-sub {
+    font-size: 13px;
+    color: #9ca3af;
+    margin: 0;
+}
+</style>
+
+@if(!$hasData)
+<div class="donation-product-basemap donation-empty-wrap">
+    <div class="donation-empty">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 12V22H4V12"/>
+            <path d="M22 7H2v5h20V7z"/>
+            <path d="M12 22V7"/>
+            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+        </svg>
+        <p class="donation-empty-title">目前尚無捐款項目</p>
+        <p class="donation-empty-sub">相關項目將於近期上線，敬請期待</p>
+    </div>
+</div>
+@else
 <div
     class="donation-product-basemap"
     x-data="{
@@ -222,3 +271,4 @@
         </div>
     </div>
 </div>
+@endif

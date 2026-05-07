@@ -100,6 +100,10 @@
         <option value="LAMP" {{ $apiType === 'LAMP' ? 'selected' : '' }}>{{ __('ui.productListBasemap.typeLamp') }}</option>
       </select>
 
+      <select class="pv-pl-filter-select">
+        <option value="">{{ __('ui.productListBasemap.allNeeds') }}</option>
+      </select>
+
       <select name="sort" class="pv-pl-filter-select" onchange="this.form.submit()">
         <option value="" {{ $apiSortCombo === '' ? 'selected' : '' }}>{{ __('ui.productListBasemap.defaultSort') }}</option>
         <option value="publishAt|DESC" {{ $apiSortCombo === 'publishAt|DESC' ? 'selected' : '' }}>{{ __('ui.productListBasemap.sortNewest') }}</option>
@@ -121,23 +125,35 @@
       </div>
     </form>
 
-    {{-- 精選推薦（有資料才顯示）--}}
-    @if(!empty($featuredProducts))
+    {{-- 精選推薦標題列（永遠顯示，批次按鈕需要）--}}
     <div class="pv-pl-featured-header">
       <h3 class="pv-pl-featured-title">{{ __('ui.productListBasemap.featuredTitle') }}</h3>
       <div class="pv-pl-featured-actions">
-        <button class="pv-pl-batch-btn" id="{{ $listId }}-batch-btn">
-          {{ __('ui.productListBasemap.batchSelect') }}
-        </button>
-        <button class="pv-pl-nav-circle" id="{{ $listId }}-feat-prev" aria-label="{{ __('ui.pvProductsSection.prev') }}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <button class="pv-pl-nav-circle" id="{{ $listId }}-feat-next" aria-label="{{ __('ui.pvProductsSection.next') }}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
+        {{-- 正常模式 --}}
+        <div class="pv-pl-normal-actions" id="{{ $listId }}-normal-actions">
+          <button class="pv-pl-batch-btn" id="{{ $listId }}-batch-btn">
+            {{ __('ui.productListBasemap.batchSelect') }}
+          </button>
+        </div>
+        {{-- 批次模式 --}}
+        <div class="pv-pl-batch-controls" id="{{ $listId }}-batch-controls" style="display:none">
+          <button class="pv-pl-cancel-btn" id="{{ $listId }}-cancel-btn">✕ 取消批次</button>
+          <button class="pv-pl-select-all-btn" id="{{ $listId }}-select-all-btn">✓ 全選</button>
+        </div>
+        {{-- 左右導覽（永遠顯示）--}}
+        <div class="pv-pl-nav-buttons">
+          <button class="pv-pl-nav-circle" id="{{ $listId }}-feat-prev" aria-label="{{ __('ui.pvProductsSection.prev') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="pv-pl-nav-circle" id="{{ $listId }}-feat-next" aria-label="{{ __('ui.pvProductsSection.next') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
+    {{-- 精選商品格（有資料才顯示）--}}
+    @if(!empty($featuredProducts))
     <div class="pv-pl-products-grid pv-pl-products-grid--featured" id="{{ $listId }}-featured">
       @foreach($featuredProducts as $product)
         <a class="pv-pl-product-card" data-id="{{ $product['id'] }}"
@@ -256,6 +272,12 @@
   </div>
 </section>
 
+{{-- 批次操作底欄（fixed，批次模式才顯示）--}}
+<div class="pv-pl-batch-bar" id="{{ $listId }}-batch-bar">
+  <span class="pv-pl-batch-count" id="{{ $listId }}-batch-count">已選 0 個項目</span>
+  <button class="pv-pl-batch-cart-btn" id="{{ $listId }}-batch-cart-btn">批次加入購物車</button>
+</div>
+
 <style>
 .pv-product-list-section { padding: 2.5rem 0 5rem; background: transparent; min-height: 60vh; }
 .pv-pl-container { max-width: 1400px; margin: 0 auto; padding: 0 3rem; }
@@ -267,6 +289,7 @@
   border: 1.5px solid var(--frame-border-color,#ddd);
   border-radius: 20px; font-size: 14px;
   color: var(--frame-text-color,#444); background: #fff; cursor: pointer;
+  appearance: auto; transition: border-color 0.2s;
 }
 .pv-pl-filter-select:focus { outline: none; border-color: #E8572A; }
 .pv-pl-search-box { display: flex; align-items: center; gap: 8px; flex: 1; max-width: 400px; }
@@ -297,9 +320,11 @@
 
 .pv-pl-featured-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
 .pv-pl-featured-title  { font-size: 20px; font-weight: 700; color: var(--frame-heading-color,#222); margin: 0; }
-.pv-pl-featured-actions { display: flex; align-items: center; gap: 8px; }
+.pv-pl-featured-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.pv-pl-nav-buttons { display: flex; align-items: center; gap: 8px; }
 
-/* 新增：批次選擇按鈕 */
+/* 批次選擇按鈕（正常模式）*/
+.pv-pl-normal-actions { display: flex; align-items: center; }
 .pv-pl-batch-btn {
   height: 36px; padding: 0 18px;
   border: 1.5px solid var(--frame-border-color,#ddd); border-radius: 20px;
@@ -307,7 +332,42 @@
   color: var(--frame-text-color,#555); cursor: pointer; transition: all 0.2s;
 }
 .pv-pl-batch-btn:hover { border-color: #E8572A; color: #E8572A; }
-.pv-pl-batch-btn.active { border-color: #E8572A; color: #E8572A; }
+
+/* 批次模式控制按鈕 */
+.pv-pl-batch-controls { display: flex; align-items: center; gap: 8px; }
+.pv-pl-cancel-btn {
+  height: 36px; padding: 0 16px;
+  border: 1.5px solid #ddd; border-radius: 20px;
+  background: transparent; font-size: 14px; color: #555;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.pv-pl-cancel-btn:hover { border-color: #dc3545; color: #dc3545; }
+.pv-pl-select-all-btn {
+  height: 36px; padding: 0 16px;
+  border: 1.5px solid #E8572A; border-radius: 20px;
+  background: transparent; font-size: 14px; color: #E8572A;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.pv-pl-select-all-btn:hover,
+.pv-pl-select-all-btn.all-selected { background: #E8572A; color: #fff; }
+
+/* 底部批次操作欄 */
+.pv-pl-batch-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+  display: none; align-items: center; justify-content: space-between;
+  padding: 14px 3rem;
+  background: #1a1a1a; color: #fff;
+  box-shadow: 0 -2px 16px rgba(0,0,0,0.15);
+}
+.pv-pl-batch-bar.is-open { display: flex; }
+.pv-pl-batch-count { font-size: 14px; font-weight: 500; }
+.pv-pl-batch-cart-btn {
+  height: 40px; padding: 0 28px;
+  background: #E8572A; border: none; border-radius: 20px;
+  color: #fff; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+}
+.pv-pl-batch-cart-btn:hover { background: #d14a1f; }
 
 .pv-pl-nav-circle {
   width: 36px; height: 36px;
@@ -407,7 +467,14 @@
   var restEl     = document.getElementById(id + '-rest');
   var btnPrev    = document.getElementById(id + '-feat-prev');
   var btnNext    = document.getElementById(id + '-feat-next');
-  var batchBtn   = document.getElementById(id + '-batch-btn');
+  var batchBtn      = document.getElementById(id + '-batch-btn');
+  var normalActions = document.getElementById(id + '-normal-actions');
+  var batchControls = document.getElementById(id + '-batch-controls');
+  var cancelBtn     = document.getElementById(id + '-cancel-btn');
+  var selectAllBtn  = document.getElementById(id + '-select-all-btn');
+  var batchBar      = document.getElementById(id + '-batch-bar');
+  var batchCount    = document.getElementById(id + '-batch-count');
+  var batchCartBtn  = document.getElementById(id + '-batch-cart-btn');
 
   var FEAT_SIZE = {{ $featuredPageSize }};
 
@@ -422,18 +489,66 @@
     return cards;
   }
 
-  function toggleBatch() {
-    batchMode = !batchMode;
+  function updateBatchUI() {
+    if (batchCount) batchCount.textContent = '已選 ' + selectedIds.length + ' 個項目';
+    var allCards = getAllCards();
+    var isAll = allCards.length > 0 && selectedIds.length === allCards.length;
+    if (selectAllBtn) {
+      selectAllBtn.textContent = isAll ? '✕ 取消全選' : '✓ 全選';
+      selectAllBtn.classList.toggle('all-selected', isAll);
+    }
+  }
+
+  function enterBatch() {
+    batchMode = true;
     selectedIds = [];
-    batchBtn.classList.toggle('active', batchMode);
+    if (normalActions) normalActions.style.display = 'none';
+    if (batchControls) batchControls.style.display = 'flex';
+    if (batchBar)      batchBar.classList.add('is-open');
     getAllCards().forEach(function (card) {
-      var chk = card.querySelector('.pv-pl-check');
-      if (chk) chk.style.display = batchMode ? 'flex' : 'none';
-      card.classList.remove('is-selected');
+      var chk  = card.querySelector('.pv-pl-check');
       var icon = card.querySelector('.pv-pl-check-icon');
+      if (chk)  { chk.style.display = 'flex'; chk.classList.remove('checked'); }
       if (icon) icon.style.display = 'none';
-      if (chk) chk.classList.remove('checked');
+      card.classList.remove('is-selected');
     });
+    updateBatchUI();
+  }
+
+  function exitBatch() {
+    batchMode = false;
+    selectedIds = [];
+    if (normalActions) normalActions.style.display = '';
+    if (batchControls) batchControls.style.display = 'none';
+    if (batchBar)      batchBar.classList.remove('is-open');
+    getAllCards().forEach(function (card) {
+      var chk  = card.querySelector('.pv-pl-check');
+      var icon = card.querySelector('.pv-pl-check-icon');
+      if (chk)  { chk.style.display = 'none'; chk.classList.remove('checked'); }
+      if (icon) icon.style.display = 'none';
+      card.classList.remove('is-selected');
+    });
+  }
+
+  function toggleSelectAll() {
+    var cards  = getAllCards();
+    var isAll  = selectedIds.length === cards.length && cards.length > 0;
+    selectedIds = [];
+    cards.forEach(function (card) {
+      var chk  = card.querySelector('.pv-pl-check');
+      var icon = card.querySelector('.pv-pl-check-icon');
+      if (isAll) {
+        card.classList.remove('is-selected');
+        if (chk)  chk.classList.remove('checked');
+        if (icon) icon.style.display = 'none';
+      } else {
+        selectedIds.push(card.dataset.id);
+        card.classList.add('is-selected');
+        if (chk)  chk.classList.add('checked');
+        if (icon) icon.style.display = 'block';
+      }
+    });
+    updateBatchUI();
   }
 
   function handleCardClick(card) {
@@ -453,9 +568,20 @@
       if (chk)  chk.classList.remove('checked');
       if (icon) icon.style.display = 'none';
     }
+    updateBatchUI();
   }
 
-  if (batchBtn) batchBtn.addEventListener('click', toggleBatch);
+  if (batchBtn)     batchBtn.addEventListener('click', enterBatch);
+  if (cancelBtn)    cancelBtn.addEventListener('click', exitBatch);
+  if (selectAllBtn) selectAllBtn.addEventListener('click', toggleSelectAll);
+
+  if (batchCartBtn) {
+    batchCartBtn.addEventListener('click', function () {
+      if (selectedIds.length === 0) return;
+      // TODO: 串接購物車 API
+      console.log('批次加入購物車', selectedIds);
+    });
+  }
 
   getAllCards().forEach(function (card) {
     card.addEventListener('click', function (e) {
