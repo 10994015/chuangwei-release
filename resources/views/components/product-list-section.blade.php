@@ -482,6 +482,7 @@
     getAllCards().forEach(function (card) {
         card.addEventListener('click', function (e) {
             if (e.target.closest('.product-cart-icon')) return;
+            if (batchMode) e.preventDefault();
             handleCardClick(card);
         });
     });

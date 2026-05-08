@@ -28,7 +28,7 @@
 
     {{-- 全幅場景 --}}
     <div class="bl-scene">
-      <img class="bl-scene__bg" src="{{ $bgImgSrc }}" alt="" aria-hidden="true" />
+      <img class="bl-scene__bg"   src="{{ $bgImgSrc }}"   alt="" aria-hidden="true" />
       <img class="bl-scene__main" src="{{ $mainImgSrc }}" alt="主神像" />
     </div>
 
@@ -116,10 +116,12 @@
   flex-direction: column;
   align-items: center;
   overflow: hidden;
+  background-color: #0E0903;
 }
 
 .bl-scene {
   position: relative;
+  z-index: 1;          /* 建立獨立 stacking context，低於 bl-panel-wrap (z-index:10) */
   width: 100%;
   height: 100%;
   min-height: 640px;
@@ -133,7 +135,7 @@
   object-fit: cover;
   object-position: center top;
   display: block;
-  z-index: 1;
+  z-index: 1;          /* bl-scene 內部：底層 */
 }
 
 .bl-scene__main {
@@ -147,7 +149,7 @@
   object-fit: contain;
   object-position: top center;
   display: block;
-  z-index: 0;
+  z-index: 0;          /* 底圖下面，透過底圖透明區域顯示 */
 }
 
 /* ==================== 搜尋面板 ==================== */
