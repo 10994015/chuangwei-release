@@ -211,7 +211,7 @@
             </div>
 
             {{-- 分頁 --}}
-            @if($totalPages > 1)
+            @if(count($productList) > 0)
                 <div class="pl-pagination">
                     @if($currentPage <= 1)
                         <span class="pl-page-btn disabled">&lsaquo;</span>

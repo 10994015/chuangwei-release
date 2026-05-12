@@ -232,7 +232,7 @@
       </div>
 
       {{-- 分頁（server-side）--}}
-      @if($totalPages > 1)
+      @if(count($restProducts) > 0)
         <div class="pv-pl-pagination">
           @if($currentPage <= 1)
             <span class="pv-pl-page-circle disabled">
