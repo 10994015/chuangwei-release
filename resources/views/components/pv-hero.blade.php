@@ -40,7 +40,7 @@
 <div
   class="pv-carousel"
   id="{{ $carouselId }}"
-  style="height:{{ $height }}px;"
+  style="--pv-carousel-height: {{ $height }}px;"
   data-autoplay="{{ $autoPlay ? 'true' : 'false' }}"
   data-interval="{{ $interval }}"
 >
@@ -106,6 +106,7 @@
 .pv-carousel {
   position: relative;
   width: 100%;
+  height: var(--pv-carousel-height, 600px);
   background: transparent;
   user-select: none;
 }
@@ -186,7 +187,18 @@
 .pv-dot.active { background: #fff; width: 24px; border-radius: 4px; }
 .pv-dot:hover  { background: rgba(255,255,255,0.75); }
 
+@media (max-width: 1024px) and (min-width: 769px) {
+  .pv-carousel {
+    height: unset;
+    aspect-ratio: 16 / 7;
+  }
+}
+
 @media (max-width: 768px) {
+  .pv-carousel {
+    height: unset;
+    aspect-ratio: 3 / 4;
+  }
   .pv-arrow { width: 34px; height: 34px; }
   .pv-arrow svg { width: 15px; height: 15px; }
   .pv-arrow--left  { left: 7%; }

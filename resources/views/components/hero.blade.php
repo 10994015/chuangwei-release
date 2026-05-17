@@ -72,7 +72,7 @@
 <section
     class="hero"
     id="{{ $heroId }}"
-    style="height: {{ $heightVal }}"
+    style="--hero-height: {{ $heightVal }}"
     data-autoplay="{{ $autoPlay }}"
     data-interval="{{ $interval }}"
 >
@@ -257,3 +257,21 @@
     startTimer();
 })();
 </script>
+
+<style>
+#{{ $heroId }} {
+  height: var(--hero-height, 600px);
+}
+@media (max-width: 1024px) and (min-width: 769px) {
+  #{{ $heroId }} {
+    height: unset;
+    aspect-ratio: 16 / 7;
+  }
+}
+@media (max-width: 768px) {
+  #{{ $heroId }} {
+    height: unset;
+    aspect-ratio: 3 / 4;
+  }
+}
+</style>
