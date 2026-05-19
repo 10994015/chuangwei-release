@@ -139,7 +139,7 @@
 .pv-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   border-radius: 12px;
 }
@@ -198,6 +198,9 @@
   .pv-carousel {
     height: unset;
     aspect-ratio: 3 / 4;
+  }
+  .pv-img {
+    object-fit: cover;
   }
   .pv-arrow { width: 34px; height: 34px; }
   .pv-arrow svg { width: 15px; height: 15px; }

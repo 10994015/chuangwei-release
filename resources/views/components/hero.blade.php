@@ -262,6 +262,9 @@
 #{{ $heroId }} {
   height: var(--hero-height, 600px);
 }
+#{{ $heroId }} .slide-image {
+  object-fit: contain;
+}
 @media (max-width: 1024px) and (min-width: 769px) {
   #{{ $heroId }} {
     height: unset;
@@ -272,6 +275,9 @@
   #{{ $heroId }} {
     height: unset;
     aspect-ratio: 3 / 4;
+  }
+  #{{ $heroId }} .slide-image {
+    object-fit: cover;
   }
 }
 </style>
