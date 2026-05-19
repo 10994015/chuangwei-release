@@ -18,7 +18,13 @@
   $total        = 0;
 
   try {
-    $apiBase = rtrim(config('api.base_url', env('API_BASE_URL', '')), '/');
+    $host      = request()->getHost();
+    $parts     = explode('.', $host);
+    $subdomain = (count($parts) >= 3) ? $parts[0]
+               : ((count($parts) === 2 && $parts[1] === 'localhost') ? $parts[0] : '');
+    $apiBase   = $subdomain
+        ? rtrim('https://' . $subdomain . '.' . config('api.base_domain'), '/')
+        : rtrim(config('api.base_url', env('API_BASE_URL', '')), '/');
     $query   = array_filter([
       'page'       => $apiPage,
       'pageSize'   => $apiPageSize,
@@ -40,6 +46,7 @@
 
       $restProducts = array_map(fn($p) => [
         'id'         => $p['id']         ?? null,
+        'type'       => $p['type']        ?? '',
         'title'      => $p['nameZhTw']   ?? ($p['name'] ?? ''),
         'source'     => $p['tenantName'] ?? '',
         'price'      => isset($p['price']) ? 'NT$ ' . number_format((float)$p['price']) : '',
@@ -53,6 +60,7 @@
   // ── 精選（仍從 frame data）──────────────────────────────
   $mapFeatured = fn($p) => [
     'id'     => $p['id']   ?? null,
+    'type'   => $p['type'] ?? '',
     'title'  => $p['name'] ?? '',
     'source' => $p['source'] ?? ($p['tenantName'] ?? ''),
     'price'  => isset($p['price']) ? 'NT$ ' . number_format((float)$p['price']) : '',
@@ -196,7 +204,7 @@
     @if(count($restProducts) > 0)
       <div class="pv-pl-products-grid pv-pl-products-grid--rest" id="{{ $listId }}-rest">
         @foreach($restProducts as $product)
-          <a class="pv-pl-product-card" data-id="{{ $product['id'] }}"
+          <a class="pv-pl-product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}"
              href="/product/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ $currentSlug ?? 'home' }}">
             <div class="pv-pl-product-image">
               @if($product['image'])
@@ -441,6 +449,18 @@
 .pv-pl-page-circle.disabled { opacity: 0.35; cursor: default; pointer-events: none; }
 .pv-pl-page-ellipsis { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; color: var(--frame-text-muted,#bbb); letter-spacing: 2px; }
 
+.pv-pl-toast {
+  position: fixed; bottom: 80px; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: #1a1a1a; color: #fff;
+  padding: 12px 28px; border-radius: 24px;
+  font-size: 14px; font-weight: 500;
+  z-index: 9999; opacity: 0; pointer-events: none; white-space: nowrap;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.pv-pl-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+.pv-pl-toast.is-error   { background: #dc3545; }
+
 @media (max-width: 1024px) {
   .pv-pl-products-grid--rest { grid-template-columns: repeat(3,1fr); }
 }
@@ -462,7 +482,8 @@
 
 <script>
 (function () {
-  var id         = '{{ $listId }}';
+  var id      = '{{ $listId }}';
+  var apiBase = '{{ $apiBase }}';
   var featuredEl = document.getElementById(id + '-featured');
   var restEl     = document.getElementById(id + '-rest');
   var btnPrev    = document.getElementById(id + '-feat-prev');
@@ -575,11 +596,90 @@
   if (cancelBtn)    cancelBtn.addEventListener('click', exitBatch);
   if (selectAllBtn) selectAllBtn.addEventListener('click', toggleSelectAll);
 
+  // ── 購物車 API ──────────────────────────────────────────────
+
+  // LAMP 商品先取燈位 ID，回傳 Promise<string>
+  function fetchLampSlotId(productId) {
+    return fetch(apiBase + '/api/product/all/lamp/' + productId + '/slot-id', {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (data.statusCode === 200) return data.data.id;
+      throw new Error(data.message || '取得燈位失敗');
+    });
+  }
+
+  // 根據卡片 data-type 建構購物車 item，回傳 Promise<{productId, lampSlotId?}>
+  function buildCartItem(card) {
+    var productId = card.dataset.id;
+    if (card.dataset.type === 'LAMP') {
+      return fetchLampSlotId(productId)
+        .then(function (slotId) { return { productId: productId, lampSlotId: slotId }; })
+        .catch(function (err) {
+          showToast(err.message || '取得燈位失敗', true);
+          return null;
+        });
+    }
+    return Promise.resolve({ productId: productId });
+  }
+
+  // items: Array<{productId, lampSlotId?}>
+  function addToCart(items, onDone) {
+    var cartItems = items.map(function (item) {
+      var ci = { productId: item.productId, quantity: 1, isSelected: true };
+      if (item.lampSlotId) ci.lampSlotId = item.lampSlotId;
+      return ci;
+    });
+    fetch(apiBase + '/api/frontend/cart/item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ items: cartItems }),
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (data.statusCode === 200) { showToast('已成功加入購物車'); }
+      else { showToast(data.message || '加入購物車失敗', true); }
+    })
+    .catch(function () { showToast('加入購物車失敗，請稍後再試', true); })
+    .finally(function () { if (onDone) onDone(); });
+  }
+
+  function showToast(msg, isError) {
+    var toast = document.createElement('div');
+    toast.className = 'pv-pl-toast' + (isError ? ' is-error' : '');
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    requestAnimationFrame(function () { toast.classList.add('is-visible'); });
+    setTimeout(function () {
+      toast.classList.remove('is-visible');
+      setTimeout(function () { toast.remove(); }, 300);
+    }, 2500);
+  }
+
   if (batchCartBtn) {
     batchCartBtn.addEventListener('click', function () {
       if (selectedIds.length === 0) return;
-      // TODO: 串接購物車 API
-      console.log('批次加入購物車', selectedIds);
+      batchCartBtn.disabled = true;
+      batchCartBtn.textContent = '加入中…';
+      var selectedCards = getAllCards().filter(function (card) {
+        return selectedIds.indexOf(card.dataset.id) !== -1;
+      });
+      Promise.all(selectedCards.map(buildCartItem)).then(function (items) {
+        var validItems = items.filter(Boolean);
+        if (validItems.length === 0) {
+          batchCartBtn.disabled = false;
+          batchCartBtn.textContent = '批次加入購物車';
+          return;
+        }
+        addToCart(validItems, function () {
+          batchCartBtn.disabled = false;
+          batchCartBtn.textContent = '批次加入購物車';
+          exitBatch();
+        });
+      });
     });
   }
 
@@ -589,6 +689,28 @@
       if (batchMode) e.preventDefault();
       handleCardClick(card);
     });
+
+    var cartBtn = card.querySelector('.pv-pl-cart-btn');
+    if (cartBtn) {
+      cartBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!card.dataset.id) return;
+        cartBtn.style.opacity = '0.4';
+        cartBtn.style.pointerEvents = 'none';
+        buildCartItem(card).then(function (item) {
+          if (!item) {
+            cartBtn.style.opacity = '';
+            cartBtn.style.pointerEvents = '';
+            return;
+          }
+          addToCart([item], function () {
+            cartBtn.style.opacity = '';
+            cartBtn.style.pointerEvents = '';
+          });
+        });
+      });
+    }
   });
 
   // ── 精選翻頁 ──

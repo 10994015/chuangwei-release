@@ -27,7 +27,6 @@
 
 <section class="pv-products-section">
   <div class="pv-ps-container">
-
     {{-- 標題列 --}}
     <div class="pv-ps-section-header">
       <div class="pv-ps-header-left">

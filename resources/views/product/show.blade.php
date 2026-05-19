@@ -22,7 +22,17 @@
   $mainImg     = !empty($imgs) ? $imgs[0]['url'] : null;
   $skus        = $product['skus'] ?? [];
   $productId   = $product['id'] ?? '';
+  $productType = $product['type'] ?? '';
   $backUrl     = '/' . request()->query('from', 'home') . '?locale=' . $locale;
+
+  // apiBase（同 donation-product 邏輯）
+  $host      = request()->getHost();
+  $parts     = explode('.', $host);
+  $subdomain = (count($parts) >= 3) ? $parts[0]
+             : ((count($parts) === 2 && $parts[1] === 'localhost') ? $parts[0] : '');
+  $apiBase   = $subdomain
+      ? rtrim('https://' . $subdomain . '.' . config('api.base_domain'), '/')
+      : rtrim(config('api.base_url', env('API_BASE_URL', '')), '/');
 
   // 將 skus 整理成 JS 用的陣列（id → price）
   $skuPricesJson = json_encode(
@@ -159,7 +169,8 @@
               $recName  = $rec['nameZhTw'] ?? ($rec['name'] ?? '');
               $recId    = $rec['id'] ?? '';
             @endphp
-            <a class="pd-rec-card" href="/product/{{ $recId }}?locale={{ $locale }}&from={{ request()->query('from','home') }}">
+            <a class="pd-rec-card" data-id="{{ $recId }}" data-type="{{ $rec['type'] ?? '' }}"
+               href="/product/{{ $recId }}?locale={{ $locale }}&from={{ request()->query('from','home') }}">
               <div class="pd-rec-image">
                 @if($recImg)
                   <img src="{{ $recImg }}" alt="{{ $recName }}" loading="lazy" />
@@ -289,6 +300,18 @@
 .pd-rec-price { font-size: 13px; font-weight: 500; color: #E8572A; }
 .pd-rec-cart-icon { color: #E8572A; display: flex; }
 
+.pd-toast {
+  position: fixed; bottom: 80px; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: #1a1a1a; color: #fff;
+  padding: 12px 28px; border-radius: 24px;
+  font-size: 14px; font-weight: 500;
+  z-index: 9999; opacity: 0; pointer-events: none; white-space: nowrap;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.pd-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+.pd-toast.is-error   { background: #dc3545; }
+
 @media (max-width: 1024px) {
   .pd-rec-grid { grid-template-columns: repeat(3, 1fr); }
 }
@@ -302,9 +325,13 @@
 </style>
 
 <script>
-var PD_SKU_PRICES  = {!! $skuPricesJson !!};
-var PD_UNIT_PRICE  = {{ $price }};
+var PD_SKU_PRICES   = {!! $skuPricesJson !!};
+var PD_UNIT_PRICE   = {{ $price }};
+var PD_PRODUCT_ID   = '{{ $productId }}';
+var PD_PRODUCT_TYPE = '{{ $productType }}';
+var PD_API_BASE     = '{{ $apiBase }}';
 var pdQty = 1;
+var PD_CART_BTN_HTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> 加入購物車';
 
 function pdOnSkuChange(skuId) {
   if (PD_SKU_PRICES[skuId] !== undefined) {
@@ -335,17 +362,133 @@ function pdChangeQty(delta) {
   document.getElementById('pd-total').textContent = 'NT$ ' + total.toLocaleString();
 }
 
-function pdAddToCart() {
-  var btn  = document.getElementById('pd-cart-btn');
-  var spec = document.getElementById('pd-spec');
-  // TODO: 串接購物車 API
-  btn.disabled = true;
-  btn.textContent = '已加入購物車 ✓';
-  setTimeout(function() {
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> 加入購物車';
-  }, 2000);
+// ── 購物車共用函式 ────────────────────────────────────────────
+function pdShowToast(msg, isError) {
+  var toast = document.createElement('div');
+  toast.className = 'pd-toast' + (isError ? ' is-error' : '');
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  requestAnimationFrame(function () { toast.classList.add('is-visible'); });
+  setTimeout(function () {
+    toast.classList.remove('is-visible');
+    setTimeout(function () { toast.remove(); }, 300);
+  }, 2500);
 }
+
+function pdFetchLampSlotId(productId) {
+  return fetch(PD_API_BASE + '/api/product/all/lamp/' + productId + '/slot-id', {
+    credentials: 'same-origin',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+  })
+  .then(function (res) { return res.json(); })
+  .then(function (data) {
+    if (data.statusCode === 200) return data.data.id;
+    throw new Error(data.message || '取得燈位失敗');
+  });
+}
+
+function pdAddToCartApi(items, onDone) {
+  var cartItems = items.map(function (item) {
+    var ci = { productId: item.productId, quantity: item.quantity || 1, isSelected: true };
+    if (item.productSkuId) ci.productSkuId = item.productSkuId;
+    if (item.lampSlotId)   ci.lampSlotId   = item.lampSlotId;
+    return ci;
+  });
+  fetch(PD_API_BASE + '/api/frontend/cart/item', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    credentials: 'same-origin',
+    body: JSON.stringify({ items: cartItems }),
+  })
+  .then(function (res) { return res.json(); })
+  .then(function (data) {
+    if (data.statusCode === 200) { pdShowToast('已成功加入購物車'); }
+    else { pdShowToast(data.message || '加入購物車失敗', true); }
+  })
+  .catch(function () { pdShowToast('加入購物車失敗，請稍後再試', true); })
+  .finally(function () { if (onDone) onDone(); });
+}
+
+// ── 主商品加入購物車 ──────────────────────────────────────────
+function pdAddToCart() {
+  var btn   = document.getElementById('pd-cart-btn');
+  var spec  = document.getElementById('pd-spec');
+  var skuId = spec ? spec.value : null;
+
+  btn.disabled = true;
+  btn.textContent = '加入中…';
+
+  var buildItem;
+  if (PD_PRODUCT_TYPE === 'LAMP') {
+    buildItem = pdFetchLampSlotId(PD_PRODUCT_ID)
+      .then(function (slotId) {
+        var item = { productId: PD_PRODUCT_ID, lampSlotId: slotId, quantity: pdQty };
+        if (skuId) item.productSkuId = skuId;
+        return item;
+      })
+      .catch(function (err) {
+        pdShowToast(err.message || '取得燈位失敗', true);
+        return null;
+      });
+  } else {
+    var item = { productId: PD_PRODUCT_ID, quantity: pdQty };
+    if (skuId) item.productSkuId = skuId;
+    buildItem = Promise.resolve(item);
+  }
+
+  buildItem.then(function (item) {
+    if (!item) {
+      btn.disabled = false;
+      btn.innerHTML = PD_CART_BTN_HTML;
+      return;
+    }
+    pdAddToCartApi([item], function () {
+      btn.disabled = false;
+      btn.innerHTML = PD_CART_BTN_HTML;
+    });
+  });
+}
+
+// ── 推薦商品購物車圖示 ────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.pd-rec-card').forEach(function (card) {
+    var icon = card.querySelector('.pd-rec-cart-icon');
+    if (!icon) return;
+    icon.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var productId   = card.dataset.id;
+      var productType = card.dataset.type;
+      if (!productId) return;
+      icon.style.opacity = '0.4';
+      icon.style.pointerEvents = 'none';
+
+      var buildItem;
+      if (productType === 'LAMP') {
+        buildItem = pdFetchLampSlotId(productId)
+          .then(function (slotId) { return { productId: productId, lampSlotId: slotId }; })
+          .catch(function (err) {
+            pdShowToast(err.message || '取得燈位失敗', true);
+            return null;
+          });
+      } else {
+        buildItem = Promise.resolve({ productId: productId });
+      }
+
+      buildItem.then(function (item) {
+        if (!item) {
+          icon.style.opacity = '';
+          icon.style.pointerEvents = '';
+          return;
+        }
+        pdAddToCartApi([item], function () {
+          icon.style.opacity = '';
+          icon.style.pointerEvents = '';
+        });
+      });
+    });
+  });
+});
 </script>
 
 @endsection
