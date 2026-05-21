@@ -5,13 +5,12 @@ name: CFTemple CICD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -20,30 +19,23 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-#    - run: npm test
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+      - run: npm ci
+      #    - run: npm test
 
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_KEY }} # 你匯入的 SSH 私鑰
-        script: |
-          cd /home/ubuntu/cftemple_dev/chuangwei-temple
-          eval $(ssh-agent -s)     
-          ssh-add ~/.ssh/id_rsa_angke
-          source ~/.nvm/nvm.sh && nvm use 20
-          git pull origin main
-          npm install
-          npm run build
-          cd /home/ubuntu/cftemple_dev/chuangwei-release
-          git pull origin main 
-          npm install 
-          npm run build
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }} # 你匯入的 SSH 私鑰
+          script: |
+            cd /home/ubuntu/cftemple_dev/chuangwei-release
+            git pull origin main
+            npm install
+            npm run build
