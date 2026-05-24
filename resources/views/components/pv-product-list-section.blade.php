@@ -449,17 +449,6 @@
 .pv-pl-page-circle.disabled { opacity: 0.35; cursor: default; pointer-events: none; }
 .pv-pl-page-ellipsis { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; color: var(--frame-text-muted,#bbb); letter-spacing: 2px; }
 
-.pv-pl-toast {
-  position: fixed; bottom: 80px; left: 50%;
-  transform: translateX(-50%) translateY(16px);
-  background: #1a1a1a; color: #fff;
-  padding: 12px 28px; border-radius: 24px;
-  font-size: 14px; font-weight: 500;
-  z-index: 9999; opacity: 0; pointer-events: none; white-space: nowrap;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.pv-pl-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
-.pv-pl-toast.is-error   { background: #dc3545; }
 
 @media (max-width: 1024px) {
   .pv-pl-products-grid--rest { grid-template-columns: repeat(3,1fr); }
@@ -618,7 +607,7 @@
       return fetchLampSlotId(productId)
         .then(function (slotId) { return { productId: productId, lampSlotId: slotId }; })
         .catch(function (err) {
-          showToast(err.message || '取得燈位失敗', true);
+          alert(err.message || '取得燈位失敗');
           return null;
         });
     }
@@ -640,23 +629,11 @@
     })
     .then(function (res) { return res.json(); })
     .then(function (data) {
-      if (data.statusCode === 200) { showToast('已成功加入購物車'); }
-      else { showToast(data.message || '加入購物車失敗', true); }
+      if (data.statusCode === 200) { alert('已成功加入購物車'); }
+      else { alert(data.message || '加入購物車失敗'); }
     })
-    .catch(function () { showToast('加入購物車失敗，請稍後再試', true); })
+    .catch(function () { alert('加入購物車失敗，請稍後再試'); })
     .finally(function () { if (onDone) onDone(); });
-  }
-
-  function showToast(msg, isError) {
-    var toast = document.createElement('div');
-    toast.className = 'pv-pl-toast' + (isError ? ' is-error' : '');
-    toast.textContent = msg;
-    document.body.appendChild(toast);
-    requestAnimationFrame(function () { toast.classList.add('is-visible'); });
-    setTimeout(function () {
-      toast.classList.remove('is-visible');
-      setTimeout(function () { toast.remove(); }, 300);
-    }, 2500);
   }
 
   if (batchCartBtn) {
