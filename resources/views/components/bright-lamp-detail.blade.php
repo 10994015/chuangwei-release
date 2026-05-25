@@ -7,18 +7,15 @@
 --}}
 
 @php
-  $data      = $frame['data'] ?? [];
-  $lampTypes = $data['lampTypes'] ?? [
-    ['value' => 'bright', 'label' => __('ui.brightLampBasemap.lampBright')],
-    ['value' => 'peace',  'label' => __('ui.brightLampBasemap.lampPeace')],
-    ['value' => 'wealth', 'label' => __('ui.brightLampBasemap.lampWealth')],
-    ['value' => 'wisdom', 'label' => __('ui.brightLampBasemap.lampWisdom')],
-  ];
-  $pillarOptions = [
-    ['value' => '1', 'label' => '1號柱'],
-    ['value' => '2', 'label' => '2號柱'],
-    ['value' => '3', 'label' => '3號柱'],
-  ];
+  $data = $frame['data'] ?? [];
+
+  $host      = request()->getHost();
+  $parts     = explode('.', $host);
+  $subdomain = (count($parts) >= 3) ? $parts[0]
+             : ((count($parts) === 2 && $parts[1] === 'localhost') ? $parts[0] : '');
+  $apiBase   = $subdomain
+      ? rtrim('https://' . $subdomain . '.' . config('api.base_domain'), '/')
+      : rtrim(config('api.base_url', env('API_BASE_URL', '')), '/');
 @endphp
 
 <div class="bld-page">
@@ -38,19 +35,6 @@
 
   {{-- 搜尋列 --}}
   <div class="bld-search-bar">
-
-    <div class="bld-search-field">
-      <label class="bld-search-label" for="bld-filter-pillar">{{ __('ui.brightLampDetail.pillarLabel') }}</label>
-      <div class="bld-select-wrapper">
-        <select class="bld-search-select" id="bld-filter-pillar">
-          <option value="">{{ __('ui.brightLampDetail.pillarPlaceholder') }}</option>
-          @foreach($pillarOptions as $opt)
-            <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
-          @endforeach
-        </select>
-        <span class="bld-select-arrow">&#9662;</span>
-      </div>
-    </div>
 
     <div class="bld-search-field">
       <label class="bld-search-label" for="bld-filter-lamp-no">{{ __('ui.brightLampDetail.lampNoLabel') }}</label>
@@ -403,100 +387,106 @@
 
 <script>
 (function () {
+  var BLD_API_BASE  = '{{ $apiBase }}';
+  var currentLampId = '';
+  var cachedSlots   = [];
 
-  /* 從搜尋頁帶過來的初始值（由 bright-lamp.blade.php 的 JS 在跳頁時填入） */
+  /* ── 從搜尋頁跳入時呼叫 ── */
   window.__blGoDetail = function (params) {
     params = params || {};
 
-    /* 更新頁面標題 */
     var title = document.getElementById('bld-page-title');
     if (title && params.lampTypeLabel) title.textContent = params.lampTypeLabel;
 
-    /* 帶入搜尋條件 */
-    if (params.name)   document.getElementById('bld-filter-name').value  = params.name;
-    if (params.phone)  document.getElementById('bld-filter-phone').value = params.phone;
+    currentLampId = params.lampTypeId || '';
+
+    if (params.name)   document.getElementById('bld-filter-name').value    = params.name;
+    if (params.phone)  document.getElementById('bld-filter-phone').value   = params.phone;
     if (params.lampNo) document.getElementById('bld-filter-lamp-no').value = params.lampNo;
 
-    /* 執行一次搜尋 */
-    doSearch();
+    fetchSlots();
   };
 
-  document.getElementById('bld-do-search').addEventListener('click', doSearch);
+  document.getElementById('bld-do-search').addEventListener('click', applyFilter);
 
-  var MOCK_LAMPS = [
-    { id: 1,  status: 'occupied', imageUrl: null, name: '林文德', wish: '身體健康 萬事如意' },
-    { id: 2,  status: 'empty',    imageUrl: null, name: null,    wish: null },
-    { id: 3,  status: 'occupied', imageUrl: null, name: '陳美珠', wish: '闔家平安 事業順遂' },
-    { id: 4,  status: 'occupied', imageUrl: null, name: '王大明', wish: '學業進步 金榜題名' },
-    { id: 5,  status: 'empty',    imageUrl: null, name: null,    wish: null },
-    { id: 6,  status: 'occupied', imageUrl: null, name: '張雅婷', wish: '平安健康 諸事順利' },
-    { id: 7,  status: 'occupied', imageUrl: null, name: '黃志豪', wish: '財運亨通 心想事成' },
-    { id: 8,  status: 'empty',    imageUrl: null, name: null,    wish: null },
-    { id: 9,  status: 'occupied', imageUrl: null, name: '李淑芬', wish: '身體健康 萬事如意' },
-    { id: 10, status: 'occupied', imageUrl: null, name: '吳建國', wish: '事業順利 闔家安康' },
-    { id: 11, status: 'empty',    imageUrl: null, name: null,    wish: null },
-    { id: 12, status: 'occupied', imageUrl: null, name: '劉雅琴', wish: '平安喜樂 萬事如意' },
-    { id: 13, status: 'occupied', imageUrl: null, name: '蔡明輝', wish: '身體健康 財源廣進' },
-    { id: 14, status: 'empty',    imageUrl: null, name: null,    wish: null },
-    { id: 15, status: 'occupied', imageUrl: null, name: '謝佳玲', wish: '闔家幸福 萬事如意' },
-    { id: 16, status: 'occupied', imageUrl: null, name: '許志遠', wish: '事業有成 平安健康' },
-  ];
-
-  function doSearch() {
-    var name   = document.getElementById('bld-filter-name').value.trim();
-    var phone  = document.getElementById('bld-filter-phone').value.trim();
-    var lampNo = document.getElementById('bld-filter-lamp-no').value.trim();
+  /* ── API 取燈位清單 ── */
+  function fetchSlots() {
+    if (!currentLampId) { showEmpty(); return; }
 
     var grid  = document.getElementById('bld-lamp-grid');
     var empty = document.getElementById('bld-empty');
-
-    grid.innerHTML = '';
+    grid.innerHTML = '<div class="bld-loading">{{ __("ui.brightLampDetail.loading") }}</div>';
     empty.style.display = 'none';
 
-    var results = MOCK_LAMPS.filter(function (lamp) {
-      if (name   && lamp.name   && lamp.name.indexOf(name)   === -1) return false;
-      if (lampNo && String(lamp.id) !== lampNo)                       return false;
+    fetch(BLD_API_BASE + '/api/product/temple/lamp/' + currentLampId + '/slot?page=1&pageSize=200', {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res.statusCode === 200) {
+          cachedSlots = res.data.data || [];
+          applyFilter();
+        } else {
+          showEmpty();
+        }
+      })
+      .catch(function () { showEmpty(); });
+  }
+
+  /* ── 本地篩選 ── */
+  function applyFilter() {
+    var name   = document.getElementById('bld-filter-name').value.trim();
+    var lampNo = document.getElementById('bld-filter-lamp-no').value.trim();
+
+    var results = cachedSlots.filter(function (slot) {
+      if (name   && (!slot.prayerUserName || slot.prayerUserName.indexOf(name) === -1)) return false;
+      if (lampNo && String(slot.slotNumber) !== lampNo) return false;
       return true;
     });
 
-    if (results.length === 0) {
-      empty.style.display = '';
-      return;
-    }
-
-    renderLamps(results);
+    results.length === 0 ? showEmpty() : renderSlots(results);
   }
 
-  function renderLamps(lamps) {
+  function showEmpty() {
+    document.getElementById('bld-lamp-grid').innerHTML = '';
+    document.getElementById('bld-empty').style.display = '';
+  }
+
+  /* ── 渲染燈位格 ── */
+  function renderSlots(slots) {
     var grid = document.getElementById('bld-lamp-grid');
     grid.innerHTML = '';
+    document.getElementById('bld-empty').style.display = 'none';
 
-    lamps.forEach(function (lamp) {
-      var cell = document.createElement('div');
+    slots.forEach(function (slot) {
+      var cell       = document.createElement('div');
       cell.className = 'bld-cell';
 
-      var outerFrame = document.createElement('div');
+      var outerFrame       = document.createElement('div');
       outerFrame.className = 'bld-outer-frame';
 
-      var inner = document.createElement('div');
+      var inner       = document.createElement('div');
       inner.className = 'bld-inner';
 
-      if (lamp.status === 'occupied') {
-        var img = document.createElement('img');
-        img.className = 'bld-god-img';
-        img.src = lamp.imageUrl || '/images/bright-light/god.jpg';
-        img.alt = lamp.name || '神明';
+      var isOccupied = slot.status !== 'OPEN';
 
-        var nameplate = document.createElement('div');
+      if (isOccupied) {
+        var img       = document.createElement('img');
+        img.className = 'bld-god-img';
+        img.src       = slot.productSkuImg || '/images/bright-light/god.jpg';
+        img.alt       = slot.prayerUserName || '神明';
+
+        var nameplate       = document.createElement('div');
         nameplate.className = 'bld-nameplate';
 
-        var nameEl = document.createElement('div');
+        var nameEl       = document.createElement('div');
         nameEl.className = 'bld-name';
-        nameEl.textContent = lamp.name || '';
+        nameEl.textContent = slot.prayerUserName || '';
 
-        var wishEl = document.createElement('div');
+        var wishEl       = document.createElement('div');
         wishEl.className = 'bld-wish';
-        wishEl.textContent = lamp.wish || '';
+        wishEl.textContent = slot.prayer || '';
 
         nameplate.appendChild(nameEl);
         nameplate.appendChild(wishEl);

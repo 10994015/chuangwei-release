@@ -4,17 +4,40 @@
   $bgImgSrc     = $data['bgImgSrc']     ?? '/images/bright-light/bg.png';
   $mainImgSrc   = $data['mainImgSrc']   ?? '/images/bright-light/main.jpg';
   $borderOption = $data['borderOption'] ?? 'border';
-  $lampTypes    = $data['lampTypes']    ?? [
-    ['value' => 'bright', 'label' => __('ui.brightLampBasemap.lampBright')],
-    ['value' => 'peace',  'label' => __('ui.brightLampBasemap.lampPeace')],
-    ['value' => 'wealth', 'label' => __('ui.brightLampBasemap.lampWealth')],
-    ['value' => 'wisdom', 'label' => __('ui.brightLampBasemap.lampWisdom')],
-  ];
 
   $borderSrc = match($borderOption) {
     'border' => '/images/bright-light/border.png',
     default  => '/images/bright-light/border.png',
   };
+
+  // ── 呼叫 /api/product/temple/lamp 取得燈別清單 ────────────────
+  $lampTypes = [];
+  try {
+    $host      = request()->getHost();
+    $parts     = explode('.', $host);
+    $subdomain = (count($parts) >= 3) ? $parts[0]
+               : ((count($parts) === 2 && $parts[1] === 'localhost') ? $parts[0] : '');
+    $apiBase   = $subdomain
+        ? rtrim('https://' . $subdomain . '.' . config('api.base_domain'), '/')
+        : rtrim(config('api.base_url', env('API_BASE_URL', '')), '/');
+
+    $lampRes = \Illuminate\Support\Facades\Http::withOptions(['cookies' => false])
+        ->withHeaders(['Cookie' => request()->header('Cookie', '')])
+        ->get($apiBase . '/api/product/temple/lamp', ['page' => 1, 'pageSize' => 50]);
+
+    if ($lampRes->status() === 200) {
+      $lampItems = $lampRes->json('data.data') ?? [];
+      $lampTypes = array_map(fn($item) => [
+        'value' => $item['id']       ?? '',
+        'label' => $item['nameZhTw'] ?? ($item['name'] ?? ''),
+        'img'   => $item['coverImg'] ?? '',
+      ], array_filter($lampItems, fn($item) => !empty($item['id'])));
+    }
+  } catch (\Throwable $e) {
+    \Illuminate\Support\Facades\Log::error('[bright-lamp] API error: ' . $e->getMessage());
+  }
+
+
 @endphp
 
 <div class="bright-lamp-wrapper" id="bright-lamp-root"
@@ -43,9 +66,9 @@
           <div class="bl-panel__selects">
             <div class="bl-select-wrapper">
               <select class="bl-panel__select" id="bl-lamp-type">
-                <option value="">{{ __('ui.brightLampBasemap.selectLampType') }}</option>
-                @foreach($lampTypes as $opt)
-                  <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                <option value="" data-img=""{{ empty($lampTypes) ? '' : ' style="display:none"' }}>{{ __('ui.brightLampBasemap.selectLampType') }}</option>
+                @foreach($lampTypes as $i => $opt)
+                  <option value="{{ $opt['value'] }}" data-img="{{ $opt['img'] }}"{{ $i === 0 ? ' selected' : '' }}>{{ $opt['label'] }}</option>
                 @endforeach
               </select>
               <span class="bl-select-arrow">&#9662;</span>
@@ -322,6 +345,19 @@
   var fieldsLampNo  = document.getElementById('bl-fields-lamp-no');
   var searchSection = document.getElementById('bright-lamp-search');
   var detailSection = document.getElementById('bright-lamp-detail');
+  var lampTypeSelect = document.getElementById('bl-lamp-type');
+  var mainImg        = document.querySelector('.bl-scene__main');
+  var defaultMainSrc = mainImg ? mainImg.getAttribute('src') : '';
+
+  function switchLampImg() {
+    if (!mainImg) return;
+    var selected = lampTypeSelect.options[lampTypeSelect.selectedIndex];
+    var img = selected ? selected.getAttribute('data-img') : '';
+    mainImg.src = img || defaultMainSrc;
+  }
+
+  lampTypeSelect.addEventListener('change', switchLampImg);
+  switchLampImg(); // 頁面載入時套用預設選項的圖片
 
   function switchMode() {
     if (modeSelect.value === 'lamp-no') {
@@ -338,16 +374,20 @@
     detailSection.style.display = '';
 
     var lampTypeSelect = document.getElementById('bl-lamp-type');
-    var lampTypeLabel  = lampTypeSelect.options[lampTypeSelect.selectedIndex]?.text || '光明燈';
+    var selectedOpt    = lampTypeSelect.options[lampTypeSelect.selectedIndex];
+    var lampTypeLabel  = selectedOpt?.text  || '光明燈';
+    var lampTypeId     = selectedOpt?.value || '';
     var name    = document.getElementById('bl-input-name')?.value    || '';
     var phone   = document.getElementById('bl-input-phone')?.value   || '';
     var lampNo  = document.getElementById('bl-input-lamp-no')?.value || '';
 
+    var payload = { lampTypeLabel: lampTypeLabel, lampTypeId: lampTypeId, name: name, phone: phone, lampNo: lampNo };
+
     if (window.__blGoDetail) {
-      window.__blGoDetail({ lampTypeLabel: lampTypeLabel, name: name, phone: phone, lampNo: lampNo });
+      window.__blGoDetail(payload);
     } else {
       setTimeout(function () {
-        window.__blGoDetail && window.__blGoDetail({ lampTypeLabel: lampTypeLabel, name: name, phone: phone, lampNo: lampNo });
+        window.__blGoDetail && window.__blGoDetail(payload);
       }, 50);
     }
   }
