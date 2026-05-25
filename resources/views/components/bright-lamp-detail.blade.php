@@ -557,7 +557,8 @@
       .then(function (r) { return r.json(); })
       .then(function (res) {
         if (res.statusCode !== 200) throw new Error(res.message || '取得燈位失敗');
-        var lampSlotId = res.data.id;
+        var lampSlotId = res.data && res.data.id;
+        if (!lampSlotId) throw new Error('無法取得燈位 ID，請稍後再試');
 
         var cartItem = { productId: productId, lampSlotId: lampSlotId, quantity: 1, isSelected: true };
         if (skuId) cartItem.productSkuId = skuId;
