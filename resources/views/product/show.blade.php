@@ -381,10 +381,13 @@ function pdFetchLampSlotId(productId) {
 
 function pdAddToCartApi(items, onDone) {
   var cartItems = items.map(function (item) {
-    var ci = { productId: item.productId, quantity: item.quantity || 1, isSelected: true };
-    if (item.productSkuId) ci.productSkuId = item.productSkuId;
-    if (item.lampSlotId)   ci.lampSlotId   = item.lampSlotId;
-    return ci;
+    return {
+      productId:    item.productId,
+      productSkuId: item.productSkuId || null,
+      lampSlotId:   item.lampSlotId   || null,
+      quantity:     item.quantity || 1,
+      isSelected:   true
+    };
   });
   fetch(PD_API_BASE + '/api/frontend/cart/item', {
     method: 'POST',
@@ -419,7 +422,7 @@ function pdAddToCart() {
     Promise.all(fetches)
       .then(function (slotIds) {
         var items = slotIds.map(function (slotId) {
-          return { productId: PD_PRODUCT_ID, lampSlotId: slotId, quantity: 1 };
+          return { productId: PD_PRODUCT_ID, productSkuId: skuId || null, lampSlotId: slotId, quantity: 1 };
         });
         pdAddToCartApi(items, function () {
           btn.disabled = false;
@@ -432,8 +435,7 @@ function pdAddToCart() {
         btn.innerHTML = PD_CART_BTN_HTML;
       });
   } else {
-    var item = { productId: PD_PRODUCT_ID, quantity: pdQty };
-    if (skuId) item.productSkuId = skuId;
+    var item = { productId: PD_PRODUCT_ID, productSkuId: skuId || null, lampSlotId: null, quantity: pdQty };
     pdAddToCartApi([item], function () {
       btn.disabled = false;
       btn.innerHTML = PD_CART_BTN_HTML;
@@ -458,13 +460,13 @@ document.addEventListener('DOMContentLoaded', function () {
       var buildItem;
       if (productType === 'LAMP') {
         buildItem = pdFetchLampSlotId(productId)
-          .then(function (slotId) { return { productId: productId, lampSlotId: slotId }; })
+          .then(function (slotId) { return { productId: productId, productSkuId: null, lampSlotId: slotId }; })
           .catch(function (err) {
             alert(err.message || '取得燈位失敗');
             return null;
           });
       } else {
-        buildItem = Promise.resolve({ productId: productId });
+        buildItem = Promise.resolve({ productId: productId, productSkuId: null, lampSlotId: null });
       }
 
       buildItem.then(function (item) {

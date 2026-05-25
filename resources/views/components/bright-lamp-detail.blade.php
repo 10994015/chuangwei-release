@@ -560,8 +560,13 @@
         var lampSlotId = res.data && res.data.lampSlotId;
         if (!lampSlotId) throw new Error('無法取得燈位 ID，請稍後再試');
 
-        var cartItem = { productId: productId, lampSlotId: lampSlotId, quantity: 1, isSelected: true };
-        if (skuId) cartItem.productSkuId = skuId;
+        var cartItem = {
+          productId:    productId,
+          productSkuId: skuId || null,
+          lampSlotId:   lampSlotId,
+          quantity:     1,
+          isSelected:   true
+        };
 
         return fetch(BLD_API_BASE + '/api/frontend/cart/item', {
           method: 'POST',

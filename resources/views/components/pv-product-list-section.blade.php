@@ -623,11 +623,15 @@
     return Promise.resolve({ productId: productId });
   }
 
-  // items: Array<{productId, lampSlotId?, unitPrice?}>
   function addToCart(items, onDone) {
     var cartItems = items.map(function (item) {
-      var ci = { productId: item.productId, quantity: 1, isSelected: true };
-      if (item.lampSlotId) ci.lampSlotId  = item.lampSlotId;
+      var ci = {
+        productId:    item.productId,
+        productSkuId: item.productSkuId || null,
+        lampSlotId:   item.lampSlotId   || null,
+        quantity:     1,
+        isSelected:   true
+      };
       if ('unitPrice' in item) ci.unitPrice = item.unitPrice;
       return ci;
     });
