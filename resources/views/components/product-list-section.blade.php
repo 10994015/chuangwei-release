@@ -524,7 +524,7 @@
         var cartItems = items.map(function (item) {
             var ci = { productId: item.productId, quantity: 1, isSelected: true };
             if (item.lampSlotId) ci.lampSlotId = item.lampSlotId;
-            if (item.unitPrice)  ci.unitPrice  = item.unitPrice;
+            if ('unitPrice' in item) ci.unitPrice = item.unitPrice;
             return ci;
         });
         fetch(apiBase + '/api/frontend/cart/item', {
