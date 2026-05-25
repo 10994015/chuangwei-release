@@ -292,6 +292,10 @@
   border-bottom: 2px solid #8b5a20;
 }
 
+/* 空位可點擊樣式 */
+.bld-cell--available:hover { filter: brightness(1.2); outline: 2px solid #c87820; }
+.bld-cell--loading { opacity: 0.5; pointer-events: none; cursor: wait; }
+
 /* 燈位編號（頂部橫條） */
 .bld-slot-no {
   position: absolute;
@@ -522,12 +526,70 @@
         emptyImg.alt = '';
         emptyImg.setAttribute('aria-hidden', 'true');
         inner.appendChild(emptyImg);
+
+        /* 空位可點擊加入購物車 */
+        cell.classList.add('bld-cell--available');
+        cell.addEventListener('click', (function (s) {
+          return function () { handleAddToCart(s, cell); };
+        })(slot));
       }
 
       outerFrame.appendChild(inner);
       cell.appendChild(outerFrame);
       grid.appendChild(cell);
     });
+  }
+
+  /* ── 點空位 → 取 lampSlotId → 加購物車 ── */
+  function handleAddToCart(slot, cell) {
+    if (cell.dataset.loading) return;
+    cell.dataset.loading = '1';
+    cell.classList.add('bld-cell--loading');
+
+    var productId  = slot.productId;
+    var slotNumber = slot.slotNumber;
+
+    fetch(BLD_API_BASE + '/api/product/all/lamp/' + productId + '/slot-id?slotNumber=' + slotNumber, {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res.statusCode !== 200) throw new Error(res.message || '取得燈位失敗');
+        var lampSlotId = res.data.id;
+
+        return fetch(BLD_API_BASE + '/api/frontend/cart/item', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({
+            items: [{
+              productId:  productId,
+              lampSlotId: lampSlotId,
+              quantity:   1,
+              isSelected: true
+            }]
+          })
+        });
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res.statusCode === 200) {
+          alert('已成功加入購物車');
+        } else {
+          alert(res.message || '加入購物車失敗');
+        }
+      })
+      .catch(function (err) {
+        alert(err.message || '操作失敗，請稍後再試');
+      })
+      .finally(function () {
+        delete cell.dataset.loading;
+        cell.classList.remove('bld-cell--loading');
+      });
   }
 
 })();
