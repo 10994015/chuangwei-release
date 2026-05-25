@@ -292,6 +292,24 @@
   border-bottom: 2px solid #8b5a20;
 }
 
+/* 燈位編號（頂部橫條） */
+.bld-slot-no {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #f5d080;
+  letter-spacing: 1px;
+  z-index: 5;
+  pointer-events: none;
+}
+
 /* 神明圖片 */
 .bld-god-img {
   position: absolute;
@@ -424,7 +442,6 @@
     })
       .then(function (r) { return r.json(); })
       .then(function (res) {
-        console.log('[bld-slot API]', res); // DEBUG: 確認後移除
         if (res.statusCode === 200) {
           cachedSlots = res.data.data || [];
           applyFilter();
@@ -469,6 +486,11 @@
 
       var inner       = document.createElement('div');
       inner.className = 'bld-inner';
+
+      var slotNo = document.createElement('div');
+      slotNo.className   = 'bld-slot-no';
+      slotNo.textContent = slot.slotNumber || '';
+      inner.appendChild(slotNo);
 
       var isOccupied = slot.status !== 'OPEN';
 
