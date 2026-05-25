@@ -371,7 +371,7 @@ function pdFetchLampSlotId(productId) {
   .then(function (res) { return res.json(); })
   .then(function (data) {
     if (data.statusCode === 200) {
-      var slotId = data.data && data.data.id;
+      var slotId = data.data && data.data.lampSlotId;
       if (!slotId) throw new Error('無法取得燈位 ID，請稍後再試');
       return slotId;
     }
