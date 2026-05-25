@@ -424,6 +424,7 @@
     })
       .then(function (r) { return r.json(); })
       .then(function (res) {
+        console.log('[bld-slot API]', res); // DEBUG: 確認後移除
         if (res.statusCode === 200) {
           cachedSlots = res.data.data || [];
           applyFilter();
