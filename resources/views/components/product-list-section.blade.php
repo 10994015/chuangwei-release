@@ -63,6 +63,7 @@
             'tenantName' => $item['tenantName'] ?? '',
             'price'      => $price,
             'rawPrice'   => isset($item['price']) ? (float)$item['price'] : ($minPrice ?? 0),
+            'skuId'      => $item['skus'][0]['id'] ?? null,
             'image'      => $image,
             'status'     => $item['status']     ?? '',
         ];
@@ -177,7 +178,7 @@
         @if(count($productList) > 0)
             <div class="products-grid products-grid--rest" id="{{ $listId }}-rest">
                 @foreach($productList as $product)
-                    <a class="product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}" data-price="{{ $product['rawPrice'] }}"
+                    <a class="product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}" data-price="{{ $product['rawPrice'] }}" data-sku="{{ $product['skuId'] }}"
                        href="/product/temple/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ request()->segment(1) ?: 'home' }}">
                         <div class="product-image">
                             @if($product['image'])
@@ -506,18 +507,19 @@
 
     function buildCartItem(card) {
         var productId = card.dataset.id;
+        var skuId     = card.dataset.sku || null;
         if (card.dataset.type === 'LAMP') {
             return fetchLampSlotId(productId)
-                .then(function (slotId) { return { productId: productId, lampSlotId: slotId }; })
+                .then(function (slotId) { return { productId: productId, productSkuId: skuId, lampSlotId: slotId }; })
                 .catch(function (err) {
                     alert(err.message || '取得燈位失敗');
                     return null;
                 });
         }
         if (card.dataset.type === 'DONATION') {
-            return Promise.resolve({ productId: productId, unitPrice: parseFloat(card.dataset.price) || 0 });
+            return Promise.resolve({ productId: productId, productSkuId: skuId, unitPrice: parseFloat(card.dataset.price) || 0 });
         }
-        return Promise.resolve({ productId: productId });
+        return Promise.resolve({ productId: productId, productSkuId: skuId });
     }
 
     function addToCart(items, onDone) {

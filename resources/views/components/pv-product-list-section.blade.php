@@ -51,6 +51,7 @@
         'source'     => $p['tenantName'] ?? '',
         'price'      => isset($p['price']) ? 'NT$ ' . number_format((float)$p['price']) : '',
         'rawPrice'   => isset($p['price']) ? (float)$p['price'] : 0,
+        'skuId'      => $p['skus'][0]['id'] ?? null,
         'image'      => $p['coverImg'] ?? (!empty($p['imgs']) ? ($p['imgs'][0]['url'] ?? null) : null),
         'badge'      => null,
         'badgeClass' => 'default',
@@ -66,6 +67,7 @@
     'source'   => $p['source'] ?? ($p['tenantName'] ?? ''),
     'price'    => isset($p['price']) ? 'NT$ ' . number_format((float)$p['price']) : '',
     'rawPrice' => isset($p['price']) ? (float)$p['price'] : 0,
+    'skuId'    => $p['skus'][0]['id'] ?? null,
     'image'    => $p['coverImg'] ?? ($p['imgSrc'] ?? null),
     'badge'  => (isset($p['labels']) && is_array($p['labels']) && count($p['labels'])) ? $p['labels'][0] : null,
     'badgeClass' => (function() use ($p) {
@@ -166,7 +168,7 @@
     @if(!empty($featuredProducts))
     <div class="pv-pl-products-grid pv-pl-products-grid--featured" id="{{ $listId }}-featured">
       @foreach($featuredProducts as $product)
-        <a class="pv-pl-product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}" data-price="{{ $product['rawPrice'] }}"
+        <a class="pv-pl-product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}" data-price="{{ $product['rawPrice'] }}" data-sku="{{ $product['skuId'] }}"
            href="/product/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ $currentSlug ?? 'home' }}">
           <div class="pv-pl-product-image">
             @if($product['image'])
@@ -206,7 +208,7 @@
     @if(count($restProducts) > 0)
       <div class="pv-pl-products-grid pv-pl-products-grid--rest" id="{{ $listId }}-rest">
         @foreach($restProducts as $product)
-          <a class="pv-pl-product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}" data-price="{{ $product['rawPrice'] }}"
+          <a class="pv-pl-product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}" data-price="{{ $product['rawPrice'] }}" data-sku="{{ $product['skuId'] }}"
              href="/product/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ $currentSlug ?? 'home' }}">
             <div class="pv-pl-product-image">
               @if($product['image'])
@@ -606,21 +608,21 @@
     });
   }
 
-  // 根據卡片 data-type 建構購物車 item，回傳 Promise<{productId, lampSlotId?, unitPrice?}>
   function buildCartItem(card) {
     var productId = card.dataset.id;
+    var skuId     = card.dataset.sku || null;
     if (card.dataset.type === 'LAMP') {
       return fetchLampSlotId(productId)
-        .then(function (slotId) { return { productId: productId, lampSlotId: slotId }; })
+        .then(function (slotId) { return { productId: productId, productSkuId: skuId, lampSlotId: slotId }; })
         .catch(function (err) {
           alert(err.message || '取得燈位失敗');
           return null;
         });
     }
     if (card.dataset.type === 'DONATION') {
-      return Promise.resolve({ productId: productId, unitPrice: parseFloat(card.dataset.price) || 0 });
+      return Promise.resolve({ productId: productId, productSkuId: skuId, unitPrice: parseFloat(card.dataset.price) || 0 });
     }
-    return Promise.resolve({ productId: productId });
+    return Promise.resolve({ productId: productId, productSkuId: skuId });
   }
 
   function addToCart(items, onDone) {
