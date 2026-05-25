@@ -548,6 +548,7 @@
 
     var productId  = slot.productId;
     var slotNumber = slot.slotNumber;
+    var skuId      = slot.isSpecialSlot ? slot.specialLampSkuId : slot.chooseLampSkuId;
 
     fetch(BLD_API_BASE + '/api/product/all/lamp/' + productId + '/slot-id?slotNumber=' + slotNumber, {
       credentials: 'same-origin',
@@ -558,6 +559,9 @@
         if (res.statusCode !== 200) throw new Error(res.message || '取得燈位失敗');
         var lampSlotId = res.data.id;
 
+        var cartItem = { productId: productId, lampSlotId: lampSlotId, quantity: 1, isSelected: true };
+        if (skuId) cartItem.productSkuId = skuId;
+
         return fetch(BLD_API_BASE + '/api/frontend/cart/item', {
           method: 'POST',
           credentials: 'same-origin',
@@ -565,14 +569,7 @@
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
           },
-          body: JSON.stringify({
-            items: [{
-              productId:  productId,
-              lampSlotId: lampSlotId,
-              quantity:   1,
-              isSelected: true
-            }]
-          })
+          body: JSON.stringify({ items: [cartItem] })
         });
       })
       .then(function (r) { return r.json(); })

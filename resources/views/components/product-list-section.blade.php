@@ -62,6 +62,7 @@
             'title'      => $item['nameZhTw']   ?? ($item['name'] ?? ''),
             'tenantName' => $item['tenantName'] ?? '',
             'price'      => $price,
+            'rawPrice'   => isset($item['price']) ? (float)$item['price'] : ($minPrice ?? 0),
             'image'      => $image,
             'status'     => $item['status']     ?? '',
         ];
@@ -176,7 +177,7 @@
         @if(count($productList) > 0)
             <div class="products-grid products-grid--rest" id="{{ $listId }}-rest">
                 @foreach($productList as $product)
-                    <a class="product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}"
+                    <a class="product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}" data-price="{{ $product['rawPrice'] }}"
                        href="/product/temple/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ request()->segment(1) ?: 'home' }}">
                         <div class="product-image">
                             @if($product['image'])
@@ -505,9 +506,12 @@
             return fetchLampSlotId(productId)
                 .then(function (slotId) { return { productId: productId, lampSlotId: slotId }; })
                 .catch(function (err) {
-                    showToast(err.message || '取得燈位失敗', true);
+                    alert(err.message || '取得燈位失敗');
                     return null;
                 });
+        }
+        if (card.dataset.type === 'DONATION') {
+            return Promise.resolve({ productId: productId, unitPrice: parseFloat(card.dataset.price) || 0 });
         }
         return Promise.resolve({ productId: productId });
     }
@@ -516,6 +520,7 @@
         var cartItems = items.map(function (item) {
             var ci = { productId: item.productId, quantity: 1, isSelected: true };
             if (item.lampSlotId) ci.lampSlotId = item.lampSlotId;
+            if (item.unitPrice)  ci.unitPrice  = item.unitPrice;
             return ci;
         });
         fetch(apiBase + '/api/frontend/cart/item', {
@@ -526,10 +531,10 @@
         })
         .then(function (res) { return res.json(); })
         .then(function (data) {
-            if (data.statusCode === 200) { showToast('已成功加入購物車'); }
-            else { showToast(data.message || '加入購物車失敗', true); }
+            if (data.statusCode === 200) { alert('已成功加入購物車'); }
+            else { alert(data.message || '加入購物車失敗'); }
         })
-        .catch(function () { showToast('加入購物車失敗，請稍後再試', true); })
+        .catch(function () { alert('加入購物車失敗，請稍後再試'); })
         .finally(function () { if (onDone) onDone(); });
     }
 

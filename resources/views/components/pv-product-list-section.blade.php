@@ -50,6 +50,7 @@
         'title'      => $p['nameZhTw']   ?? ($p['name'] ?? ''),
         'source'     => $p['tenantName'] ?? '',
         'price'      => isset($p['price']) ? 'NT$ ' . number_format((float)$p['price']) : '',
+        'rawPrice'   => isset($p['price']) ? (float)$p['price'] : 0,
         'image'      => $p['coverImg'] ?? (!empty($p['imgs']) ? ($p['imgs'][0]['url'] ?? null) : null),
         'badge'      => null,
         'badgeClass' => 'default',
@@ -59,12 +60,13 @@
 
   // ── 精選（仍從 frame data）──────────────────────────────
   $mapFeatured = fn($p) => [
-    'id'     => $p['id']   ?? null,
-    'type'   => $p['type'] ?? '',
-    'title'  => $p['name'] ?? '',
-    'source' => $p['source'] ?? ($p['tenantName'] ?? ''),
-    'price'  => isset($p['price']) ? 'NT$ ' . number_format((float)$p['price']) : '',
-    'image'  => $p['coverImg'] ?? ($p['imgSrc'] ?? null),
+    'id'       => $p['id']   ?? null,
+    'type'     => $p['type'] ?? '',
+    'title'    => $p['name'] ?? '',
+    'source'   => $p['source'] ?? ($p['tenantName'] ?? ''),
+    'price'    => isset($p['price']) ? 'NT$ ' . number_format((float)$p['price']) : '',
+    'rawPrice' => isset($p['price']) ? (float)$p['price'] : 0,
+    'image'    => $p['coverImg'] ?? ($p['imgSrc'] ?? null),
     'badge'  => (isset($p['labels']) && is_array($p['labels']) && count($p['labels'])) ? $p['labels'][0] : null,
     'badgeClass' => (function() use ($p) {
       $l = $p['labels'][0] ?? '';
@@ -164,7 +166,7 @@
     @if(!empty($featuredProducts))
     <div class="pv-pl-products-grid pv-pl-products-grid--featured" id="{{ $listId }}-featured">
       @foreach($featuredProducts as $product)
-        <a class="pv-pl-product-card" data-id="{{ $product['id'] }}"
+        <a class="pv-pl-product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}" data-price="{{ $product['rawPrice'] }}"
            href="/product/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ $currentSlug ?? 'home' }}">
           <div class="pv-pl-product-image">
             @if($product['image'])
@@ -204,7 +206,7 @@
     @if(count($restProducts) > 0)
       <div class="pv-pl-products-grid pv-pl-products-grid--rest" id="{{ $listId }}-rest">
         @foreach($restProducts as $product)
-          <a class="pv-pl-product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}"
+          <a class="pv-pl-product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}" data-price="{{ $product['rawPrice'] }}"
              href="/product/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ $currentSlug ?? 'home' }}">
             <div class="pv-pl-product-image">
               @if($product['image'])
@@ -600,7 +602,7 @@
     });
   }
 
-  // 根據卡片 data-type 建構購物車 item，回傳 Promise<{productId, lampSlotId?}>
+  // 根據卡片 data-type 建構購物車 item，回傳 Promise<{productId, lampSlotId?, unitPrice?}>
   function buildCartItem(card) {
     var productId = card.dataset.id;
     if (card.dataset.type === 'LAMP') {
@@ -611,14 +613,18 @@
           return null;
         });
     }
+    if (card.dataset.type === 'DONATION') {
+      return Promise.resolve({ productId: productId, unitPrice: parseFloat(card.dataset.price) || 0 });
+    }
     return Promise.resolve({ productId: productId });
   }
 
-  // items: Array<{productId, lampSlotId?}>
+  // items: Array<{productId, lampSlotId?, unitPrice?}>
   function addToCart(items, onDone) {
     var cartItems = items.map(function (item) {
       var ci = { productId: item.productId, quantity: 1, isSelected: true };
-      if (item.lampSlotId) ci.lampSlotId = item.lampSlotId;
+      if (item.lampSlotId) ci.lampSlotId  = item.lampSlotId;
+      if (item.unitPrice)  ci.unitPrice   = item.unitPrice;
       return ci;
     });
     fetch(apiBase + '/api/frontend/cart/item', {

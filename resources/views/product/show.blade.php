@@ -175,7 +175,7 @@
               $recName  = $rec['nameZhTw'] ?? ($rec['name'] ?? '');
               $recId    = $rec['id'] ?? '';
             @endphp
-            <a class="pd-rec-card" data-id="{{ $recId }}" data-type="{{ $rec['type'] ?? '' }}"
+            <a class="pd-rec-card" data-id="{{ $recId }}" data-type="{{ $rec['type'] ?? '' }}" data-price="{{ isset($rec['price']) ? (float)$rec['price'] : 0 }}"
                href="/product/{{ $recId }}?locale={{ $locale }}&from={{ request()->query('from','home') }}">
               <div class="pd-rec-image">
                 @if($recImg)
@@ -380,6 +380,7 @@ function pdAddToCartApi(items, onDone) {
     var ci = { productId: item.productId, quantity: item.quantity || 1, isSelected: true };
     if (item.productSkuId) ci.productSkuId = item.productSkuId;
     if (item.lampSlotId)   ci.lampSlotId   = item.lampSlotId;
+    if (item.unitPrice)    ci.unitPrice    = item.unitPrice;
     return ci;
   });
   fetch(PD_API_BASE + '/api/frontend/cart/item', {
@@ -427,6 +428,12 @@ function pdAddToCart() {
         btn.disabled = false;
         btn.innerHTML = PD_CART_BTN_HTML;
       });
+  } else if (PD_PRODUCT_TYPE === 'DONATION') {
+    var item = { productId: PD_PRODUCT_ID, quantity: 1, unitPrice: PD_UNIT_PRICE, isSelected: true };
+    pdAddToCartApi([item], function () {
+      btn.disabled = false;
+      btn.innerHTML = PD_CART_BTN_HTML;
+    });
   } else {
     var item = { productId: PD_PRODUCT_ID, quantity: pdQty };
     if (skuId) item.productSkuId = skuId;
@@ -459,6 +466,8 @@ document.addEventListener('DOMContentLoaded', function () {
             alert(err.message || '取得燈位失敗');
             return null;
           });
+      } else if (productType === 'DONATION') {
+        buildItem = Promise.resolve({ productId: productId, unitPrice: parseFloat(card.dataset.price) || 0 });
       } else {
         buildItem = Promise.resolve({ productId: productId });
       }
