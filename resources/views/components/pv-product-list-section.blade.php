@@ -169,7 +169,7 @@
     <div class="pv-pl-products-grid pv-pl-products-grid--featured" id="{{ $listId }}-featured">
       @foreach($featuredProducts as $product)
         <a class="pv-pl-product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}" data-price="{{ $product['rawPrice'] }}" data-sku="{{ $product['skuId'] }}"
-           href="/product/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ $currentSlug ?? 'home' }}">
+           href="/product/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ request()->segment(1) ?: 'home' }}">
           <div class="pv-pl-product-image">
             @if($product['image'])
               <img src="{{ $product['image'] }}" alt="{{ $product['title'] }}" class="pv-pl-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
@@ -209,7 +209,7 @@
       <div class="pv-pl-products-grid pv-pl-products-grid--rest" id="{{ $listId }}-rest">
         @foreach($restProducts as $product)
           <a class="pv-pl-product-card" data-id="{{ $product['id'] }}" data-type="{{ $product['type'] }}" data-price="{{ $product['rawPrice'] }}" data-sku="{{ $product['skuId'] }}"
-             href="/product/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ $currentSlug ?? 'home' }}">
+             href="/product/{{ $product['id'] }}?locale={{ request('locale','ZH-TW') }}&from={{ request()->segment(1) ?: 'home' }}">
             <div class="pv-pl-product-image">
               @if($product['image'])
                 <img src="{{ $product['image'] }}" alt="{{ $product['title'] }}" class="pv-pl-image" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />

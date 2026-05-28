@@ -168,7 +168,7 @@
   transform: translateX(-50%);
   height: 85%;
   width: auto;
-  max-width: 36%;
+  max-width: 52%;
   object-fit: contain;
   object-position: top center;
   display: block;
@@ -286,7 +286,7 @@
 
 /* ==================== 平板 RWD（1024px）==================== */
 @media (max-width: 1024px) {
-  .bl-scene__main { max-width: 42%; height: 78%; }
+  .bl-scene__main { max-width: 56%; height: 78%; }
   .bl-panel-wrap  { max-width: 460px; }
   .bl-panel__body { padding: 20px 24px 24px; }
 }

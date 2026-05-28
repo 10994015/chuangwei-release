@@ -581,14 +581,12 @@
 
 <script>
 (function () {
-  var BLD_API_BASE    = '{{ $apiBase }}';
-  var currentLampId   = '';
+  var BLD_API_BASE     = '{{ $apiBase }}';
+  var currentLampId    = '';
   var currentLampLabel = '';
-  var cachedSlots     = [];
-  var filteredSlots   = [];
-  var currentPage     = 1;
-  var PAGE_SIZE       = 20;
-  var pendingSlot     = null;
+  var currentApiPage   = 1;
+  var API_PAGE_SIZE    = 20;
+  var pendingSlot      = null;
 
   /* ── 從搜尋頁跳入時呼叫 ── */
   window.__blGoDetail = function (params) {
@@ -604,29 +602,53 @@
     if (params.phone)  document.getElementById('bld-filter-phone').value   = params.phone;
     if (params.lampNo) document.getElementById('bld-filter-lamp-no').value = params.lampNo;
 
-    fetchSlots();
+    fetchAndRender(1);
   };
 
   document.getElementById('bld-do-search').addEventListener('click', applyFilter);
 
-  /* ── API 取燈位清單 ── */
-  function fetchSlots() {
+  /* ── 篩選：重置頁碼後打 API ── */
+  function applyFilter() {
+    currentApiPage = 1;
+    fetchAndRender(1);
+  }
+
+  /* ── 呼叫 API（帶篩選參數 + 分頁） ── */
+  function fetchAndRender(page) {
     if (!currentLampId) { showEmpty(); return; }
+
+    currentApiPage = page;
 
     var grid  = document.getElementById('bld-lamp-grid');
     var empty = document.getElementById('bld-empty');
     grid.innerHTML = '<div class="bld-loading">{{ __("ui.brightLampDetail.loading") }}</div>';
     empty.style.display = 'none';
+    document.getElementById('bld-pagination').innerHTML = '';
 
-    fetch(BLD_API_BASE + '/api/product/temple/lamp/' + currentLampId + '/slot?page=1&pageSize=200', {
+    var name   = document.getElementById('bld-filter-name').value.trim();
+    var phone  = document.getElementById('bld-filter-phone').value.trim();
+    var lampNo = document.getElementById('bld-filter-lamp-no').value.trim();
+
+    var params = 'page=' + page + '&pageSize=' + API_PAGE_SIZE;
+    if (name)   params += '&prayerUserName='  + encodeURIComponent(name);
+    if (phone)  params += '&prayerUserPhone=' + encodeURIComponent(phone);
+    if (lampNo) params += '&slotNumber='      + encodeURIComponent(lampNo);
+
+    fetch(BLD_API_BASE + '/api/product/temple/lamp/' + currentLampId + '/slot?' + params, {
       credentials: 'same-origin',
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
       .then(function (r) { return r.json(); })
       .then(function (res) {
         if (res.statusCode === 200) {
-          cachedSlots = res.data.data || [];
-          applyFilter();
+          var slots      = res.data.data       || [];
+          var totalPages = res.data.totalPages || 1;
+          if (slots.length === 0) {
+            showEmpty();
+          } else {
+            renderSlots(slots);
+            renderPagination(page, totalPages);
+          }
         } else {
           showEmpty();
         }
@@ -634,33 +656,10 @@
       .catch(function () { showEmpty(); });
   }
 
-  /* ── 本地篩選 ── */
-  function applyFilter() {
-    var name   = document.getElementById('bld-filter-name').value.trim();
-    var lampNo = document.getElementById('bld-filter-lamp-no').value.trim();
-
-    filteredSlots = cachedSlots.filter(function (slot) {
-      if (name   && (!slot.prayerUserName || slot.prayerUserName.indexOf(name) === -1)) return false;
-      if (lampNo && String(slot.slotNumber) !== lampNo) return false;
-      return true;
-    });
-
-    currentPage = 1;
-    filteredSlots.length === 0 ? showEmpty() : renderPage(currentPage);
-  }
-
   function showEmpty() {
     document.getElementById('bld-lamp-grid').innerHTML = '';
     document.getElementById('bld-empty').style.display = '';
     document.getElementById('bld-pagination').innerHTML = '';
-  }
-
-  /* ── 分頁渲染 ── */
-  function renderPage(page) {
-    var start     = (page - 1) * PAGE_SIZE;
-    var pageSlots = filteredSlots.slice(start, start + PAGE_SIZE);
-    renderSlots(pageSlots);
-    renderPagination(page, Math.ceil(filteredSlots.length / PAGE_SIZE));
   }
 
   function renderPagination(page, totalPages) {
@@ -674,19 +673,16 @@
       btn.textContent = label;
       if (isDisabled) btn.disabled = true;
       btn.addEventListener('click', function () {
-        currentPage = targetPage;
-        renderPage(currentPage);
+        fetchAndRender(targetPage);
         document.getElementById('bld-lamp-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
       return btn;
     }
 
     pager.appendChild(makeBtn('‹', page - 1, false, page <= 1));
-
     for (var i = 1; i <= totalPages; i++) {
       pager.appendChild(makeBtn(String(i), i, i === page, false));
     }
-
     pager.appendChild(makeBtn('›', page + 1, false, page >= totalPages));
   }
 
