@@ -759,6 +759,15 @@
     pendingSlot = slot;
     console.log('[bright-lamp-detail] slot data:', JSON.stringify(slot, null, 2));
 
+    // 同時 log slot-id API 回傳
+    fetch(BLD_API_BASE + '/api/product/all/lamp/' + slot.productId + '/slot-id?slotNumber=' + slot.slotNumber, {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(res){ console.log('[bright-lamp-detail] slot-id API response:', JSON.stringify(res, null, 2)); })
+    .catch(function(e){ console.log('[bright-lamp-detail] slot-id API error:', e); });
+
     // 燈種名稱
     document.getElementById('bld-mval-lamp').textContent = currentLampLabel || '—';
 
