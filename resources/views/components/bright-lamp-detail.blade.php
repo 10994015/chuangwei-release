@@ -757,6 +757,7 @@
 
   function openSlotModal(slot) {
     pendingSlot = slot;
+    console.log('[bright-lamp-detail] slot data:', JSON.stringify(slot, null, 2));
 
     // 燈種名稱
     document.getElementById('bld-mval-lamp').textContent = currentLampLabel || '—';
