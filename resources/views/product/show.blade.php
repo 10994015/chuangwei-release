@@ -381,13 +381,15 @@ function pdFetchLampSlotId(productId) {
 
 function pdAddToCartApi(items, onDone) {
   var cartItems = items.map(function (item) {
-    return {
+    var ci = {
       productId:    item.productId,
       productSkuId: item.productSkuId || null,
       lampSlotId:   item.lampSlotId   || null,
       quantity:     item.quantity || 1,
       isSelected:   true
     };
+    if ('unitPrice' in item) ci.unitPrice = item.unitPrice;
+    return ci;
   });
   fetch(PD_API_BASE + '/api/frontend/cart/item', {
     method: 'POST',
@@ -436,6 +438,7 @@ function pdAddToCart() {
       });
   } else {
     var item = { productId: PD_PRODUCT_ID, productSkuId: skuId || null, lampSlotId: null, quantity: pdQty };
+    if (PD_PRODUCT_TYPE === 'DONATION') item.unitPrice = PD_UNIT_PRICE;
     pdAddToCartApi([item], function () {
       btn.disabled = false;
       btn.innerHTML = PD_CART_BTN_HTML;
